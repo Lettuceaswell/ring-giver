@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Sea King</title>
+<meta name="theme-color" content="#0e1116">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#0e1116;--panel:#171c24;--line:#2a3340;--ink:#e6dfd0;--dim:#8d94a0;--gold:#d9a84a;--red:#c8503e;--green:#6fae68;--sea:#1d3a52}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 Georgia,'Times New Roman',serif}
+body{padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom))}
+#app{max-width:520px;margin:0 auto;padding:0 12px}
+h1,h2,h3{font-weight:normal;margin:0}
+h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin:18px 0 8px}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 8px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.top .year{font-size:26px;color:var(--gold)}
+.top .king{font-size:14px;color:var(--dim)}
+.top .res{text-align:right;font-size:15px;white-space:nowrap}
+.res b{color:var(--gold);font-weight:normal}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.name{font-size:17px}
+.stats{color:var(--dim);font-size:13px;letter-spacing:.04em}
+.stats b{color:var(--ink);font-weight:normal}
+.tag{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle}
+.tag.kin{color:var(--green);border-color:var(--green)}
+.men{display:flex;align-items:center;gap:4px}
+.men button{width:34px;height:34px;font-size:20px;line-height:1}
+.men .n{min-width:52px;text-align:center;font-size:17px}
+.men .cap{font-size:11px;color:var(--dim)}
+button{font:inherit;background:#222a35;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer}
+button:disabled{opacity:.35}
+button.gold{background:var(--gold);color:#1a1200;border-color:var(--gold);font-size:17px}
+button.small{padding:5px 9px;font-size:13px}
+button.sel{border-color:var(--gold);color:var(--gold)}
+.where{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.bar{height:10px;background:#2a2f38;border-radius:5px;overflow:hidden;margin:6px 0 2px;display:flex}
+.bar i{display:block;height:100%}
+.bar .s{background:var(--gold)}.bar .d{background:var(--red)}
+.odds{font-size:13px;color:var(--dim)}
+.empty{color:var(--dim);font-style:italic}
+.sail{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%);z-index:6}
+.sail button{width:100%;max-width:496px;display:block;margin:0 auto;padding:14px;border-radius:12px}
+.overlay{position:fixed;inset:0;background:rgba(5,7,10,.92);z-index:20;overflow:auto;padding:24px 14px calc(24px + env(safe-area-inset-bottom))}
+.scene{max-width:480px;margin:6vh auto 0;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:20px 18px}
+.scene h1{font-size:24px;color:var(--gold);margin-bottom:10px}
+.scene p{margin:6px 0}
+.scene .actions{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.scene .actions button{padding:12px}
+.pick{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:6px 0;cursor:pointer;background:#1c232d}
+.pick:active{border-color:var(--gold)}
+.pick .name{color:var(--gold)}
+.result{font-size:34px;color:var(--gold);margin:10px 0}
+.result.lose{color:var(--red)}
+.log{font-size:13px;color:var(--dim);margin-top:16px}
+.log div{padding:3px 0;border-top:1px solid var(--line)}
+svg{width:100%;height:auto;display:block;background:var(--sea);border-radius:10px;border:1px solid var(--line)}
+.coast{fill:#8d94a0}.coast.seen{fill:#e6dfd0}.coast.hold{fill:#d9a84a}.coast.home{fill:#fff}
+.lbl{font:10px Georgia,serif;fill:#c9c2b4;pointer-events:none}
+.dest{fill:none;stroke:#d9a84a;stroke-width:2}
+.edge{stroke:#2e4f6a;stroke-width:1.5}
+select{font:inherit;background:#222a35;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;width:100%}
+.shore{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);font-size:14px}
+.shore:first-child{border-top:0}
+.muted{color:var(--dim)}
+.rich{color:var(--gold)}
+details summary{cursor:pointer;color:var(--dim);font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin:18px 0 8px;list-style:none}
+details summary::after{content:' ▸'}details[open] summary::after{content:' ▾'}
+.setup{max-width:480px;margin:10vh auto;padding:0 14px}
+.setup h1{font-size:34px;color:var(--gold);margin-bottom:4px}
+.setup .sub{color:var(--dim);margin-bottom:24px}
+.setup .pick{padding:14px}
+.setup .pick small{display:block;color:var(--dim);margin-top:4px}
+.custom{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:8px}
+.custom input{font:inherit;background:#222a35;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;width:100%}
+.hint{font-size:13px;color:var(--dim);margin:4px 0 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="world.js"></script>
+<script src="game.js"></script>
+<script src="ui.js"></script>
+<script>if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');</script>
+</body>
+</html>
