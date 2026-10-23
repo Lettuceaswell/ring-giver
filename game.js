@@ -34,6 +34,8 @@ function reachable(s, id) { // within 2 of home or any holding
 }
 function revealAround(s, id) { s.shores[id].known = s.shores[id].seen = true; for (const n of s.shores[id].neighbors) { s.shores[n].known = s.shores[n].seen = true; } }
 function isHolding(s, id) { return s.holdings.some(h => h.id === id); }
+function holdPay(sh) { return Math.max(10, Math.round(sh.baseLoot / 4)); }
+function stayUnrest(s, sh) { return clamp(Math.round(sh.baseDef / 1.5) - (has(s,'landtaker') ? 20 : 0), 10, 100); }
 
 // ---- New game ------------------------------------------------------------------
 function newGame(kingKey, custom) {
@@ -67,6 +69,13 @@ function addMen(s, id, d) {
   const m = s.notables.find(x => x.id === id);
   m.men = clamp(m.men + d, 0, Math.min(fCap(s, m), m.men + unledMen(s)));
 }
+function boardAll(s) {
+  if (s.phase !== 'spring') return;
+  for (const m of s.notables) if (m.place === 'home') m.place = 'ship';
+  const ship = s.notables.filter(m => m.place === 'ship').sort((a, b) => (b.isKing ? 1 : 0) - (a.isKing ? 1 : 0) || b.combat - a.combat);
+  for (const m of ship) m.men = Math.min(fCap(s, m), m.men + unledMen(s));
+}
+function setDestination(s, id) { if (s.phase === 'spring' && s.notables.some(m => m.place === 'ship')) s.destination = id; }
 function marry(s, childId, jarlId) {
   const d = s.children.find(c => c.id === childId), j = s.notables.find(m => m.id === jarlId);
   if (!d || !j || d.sex !== 'f' || d.age < 16 || j.isKing || j.kin) return;
@@ -88,6 +97,7 @@ function takeTitle(s, key) { s.king.titles.push(key); s.reign.title = TITLES[key
 // ---- Summer -----------------------------------------------------------------------
 function sail(s) {
   if (s.phase !== 'spring') return;
+  if (s.notables.some(m => m.place === 'ship') && !s.destination) return;
   s.phase = 'summer';
   const ship = s.notables.filter(m => m.place === 'ship');
   if (ship.length && s.destination && strengthShip(s) > 0) {
@@ -150,8 +160,8 @@ function chooseStay(s, jarlId) {
   if (jarlId === 'walked') { const w = sh.walked; j = makeMan(w.name, w.combat, w.rule, w.follow, { age: 40 }); s.notables.push(j); }
   else j = s.notables.find(m => m.id === jarlId);
   sh.walked = null;
-  const unrest = clamp(Math.round(sh.baseDef / 1.5) - (has(s,'landtaker') ? 20 : 0), 10, 100);
-  s.holdings.push({ id: sh.id, name: sh.name, pay: Math.max(10, Math.round(sh.baseLoot / 4)), unrest, quiet: 0, empty: 0, taken: s.year });
+  const unrest = stayUnrest(s, sh);
+  s.holdings.push({ id: sh.id, name: sh.name, pay: holdPay(sh), unrest, quiet: 0, empty: 0, taken: s.year });
   j.place = sh.id; s.deeds.stays++;
   revealAround(s, sh.id);
   s.log.push(`${s.year}: ${j.name} stays at ${sh.name}. It is ours.`);

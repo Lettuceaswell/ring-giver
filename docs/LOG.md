@@ -2,6 +2,46 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-23 (session 3, playtest 1)
+
+**Source:** Levi's first phone playtest, voice notes at `/mnt/g/Projects/transcribe/transcriptions/2026-10-23_ring-giver-playtest-notes.txt` (summary beside it in `summaries/`). The transcribe pipeline already ran scribe and Notion intake on it; this entry is the project side.
+
+**What he reported, and what happened to each**
+
+| # | Note | Outcome |
+|---|---|---|
+| 1 | Sailing with the King is always the right move; why is it a decision? | Design question → TODO 12 |
+| 2 | Character cards do nothing but move. No children, marriages, diplomacy, neighbors. "Scratch the CK3 itch." | Design question → TODO 13. Marriage already existed but was hidden in a native select; now buttons on the daughter's card |
+| 3 | Destination dropdown is a native Apple list; breaks theme; wants loot-sorted, columns aligned | **Built.** Native select gone. Themed sheet, richest first, name / loot / def in fixed columns, odds and holdable under the name, Sail blind as a dashed row at the foot |
+| 4 | Double-tap glitch on + / − | **Fixed.** `touch-action: manipulation` everywhere. iOS was reading the second fast tap as a double-tap zoom |
+| 5 | Landfall: show the map with the three coasts highlighted | **Built.** The Landfall sheet carries its own map, cropped to the three, each ringed and pulsing, the rest dimmed |
+| 6 | Plunder or Stay: no idea what the holding pays, what unrest it starts at, or whether the jarl can hold it | **Built.** Card states pay per year, starting unrest, the rule in one sentence, then one pick per candidate jarl with C/R/F, men of cap, and a Holds-vs-Unrest bar in words |
+| 7 | Vassal relationship / opinion system | Design question → TODO 13b |
+| 8 | Likes the winter events; open to more | → TODO 16 |
+| 9 | Moving the kingdom, development catching up | Design question → TODO 14 |
+| 10 | A real map: pinch-zoom, tap holdings for detail, regions with bonuses, a target button so you don't scroll the list | **Partly built.** Tap any known coast on the map to set it as destination (the target button). Rest → TODO 15 |
+| 11 | Dot sizing by loot | **Built.** Radius is tiered on loot once a coast is seen or rumored. Hollow dot = cannot hold |
+| 12 | Map blends into the top band when scrolled | **Fixed.** Sea is one step deeper than the band (`--sea`), band has a hairline and a soft drop |
+| 13 | Lindisfarne not holdable, found out on arrival | **Fixed as information.** "cannot hold" shows in the picker, the destination row, and as a hollow dot. Whether it *should* be holdable → TODO 17 |
+| 14 | Quick "all unlanded men to the ship" | **Built.** "Everyone aboard": everyone at home boards, King first, each filled to his cap from the unled pool |
+| 15 | Forgot a destination and pressed Sail | **Fixed.** With men aboard and no destination the big button reads "Choose a destination" and opens the picker; `sail()` refuses too. Empty ship reads "Stay home this year" |
+
+**Code notes**
+- `UI` in `ui.js` holds screen state that is not game state (the picker). Game state stays in `S`.
+- `holdPay(sh)` and `stayUnrest(s, sh)` in `game.js` are the one source for what a Stay will cost; the card and the rule share them.
+- `boardAll(s)`, `setDestination(s, id)` in `game.js`. `mapHTML(targets)` draws the Landfall crop when given the three ids.
+- `statLine` tolerates a man with no age (walked jarls).
+- SW cache name unchanged (`seaking-v2`): file list did not change, fetch is network-first.
+
+**Verified:** headless, a scripted dynasty 793→1066 over 22 generations through the new flows, no errors (`smoke.js` lived in the job tmp dir, not committed). In Chrome at 390 px: main screen with destination set, the picker, Landfall with map, the Stay card. Not on the phone yet.
+
+**Seen in testing, for tuning (TODO 11):** a new holding starts at unrest `baseDef / 1.5`. A jarl who just raided with 10 men and Rule 2 shows "Holds 20 vs Unrest 84 · hopeless". The first summer is free, but unless men go to him in spring it revolts the next. The card now says so honestly; the number may be too steep. Also: a walked jarl who kneels at Stay comes back with no men.
+
+**Next**
+1. Levi's calls on TODO 12–17. The CK3 list (13) wants its own session: walk CK3's systems one by one, keep / cut / reshape.
+2. Pinch-zoom on the map and a tappable Man card are the two cheapest asks left from the notes.
+3. Push and play again on the phone.
+
 ## 2026-10-23 (session 2, "Ring Giver")
 
 **State:** playable, published, restyled to House Hansen. Live at https://lettuceaswell.github.io/ring-giver/ (GitHub Pages, master, root). Service worker is network-first, cache `seaking-v2`; bump `V` in `sw.js` whenever the cached file list changes.

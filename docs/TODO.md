@@ -34,3 +34,34 @@ The daily seed gives the family a shared world, but what ends a session? **Recom
 
 ## 11. Numbers
 Everything in GDD §13 is a first pass. Tune only after the loop is playable end to end: one dynasty, three generations, one death.
+
+---
+
+## From playtest 1 (2026-10-23)
+
+Levi's phone notes. What could be built was built (see LOG). These are the calls that change what the game *is*.
+
+## 12. Why would the King ever stay home?
+Right now sailing with the King is always right, so the choice is dead. Levi: being away should not cost; staying should be worth something when you can afford it. **Recommend:** the King at home does the one thing only a King does: he holds the hall. Fold this into item 4 (home hall as a holding): with the King home it pays its yield, and his held years grow his Rule the way a jarl's do. Rule is what the Oath weighs, so a King who can afford to stay home is buying his heir a smoother succession. No new rule, one existing rule pointed at the King.
+
+## 13. The CK3 itch
+Levi wants to touch his people: children, marriages, neighbors, an opinion system. Three pieces, cheapest first:
+- **a. A Man card.** Tap any name and a sheet opens: his stats, his story (raids, held years, kin), and every action that exists for him (marry a daughter to him, send him to a holding or the ship). Marriage is already in the rules; it was just buried. **Recommend:** build this first; it is a screen, not a system.
+- **b. Opinion.** Rather than a new stat, show the Oath verdict on every jarl's card now: "would kneel to Bjorn" / "would walk · price 45". It is the same check the Oath runs, shown early, so the player can act (marry, pay, send him somewhere dangerous). **Recommend:** this *is* the opinion system; no second loyalty number.
+- **c. Neighbors.** **Flag:** real neighboring rulers you can treat with are AI kings, which the GDD rules out, and they roughly double the game. ~80% version: the neighbors you already have are the shores and walked jarls. One diplomatic act, **Tribute**: demand it from a beaten shore instead of holding it (pays less than a holding, needs no jarl, lapses if you lose a fight there). Your call. Either way, 13 wants its own session: CK3's systems one by one, keep / cut / reshape.
+
+## 14. Moving the hall
+Vestfold → Lindisfarne as a long game, with development catching up. **Flag:** development / culture is a new noun with its own clock. ~80% version, no new noun: a one-time **Move the hall** to any holding you have held five quiet years. The hall's yield becomes that holding's, "within reach" recomputes from there, the old hall becomes an ordinary holding. **Recommend:** decide 4 first (what the home hall is), then this falls out of it.
+
+## 15. A real map
+Built today: tap a coast to target it, dot size by loot, hollow dot for cannot-hold, Landfall shows the three. Still asked for, in order of cost:
+- **Pinch-zoom and pan.** Cheap (one afternoon). **Recommend:** next session.
+- **Tap a holding for its details.** Same sheet pattern as the Man card (13a). Cheap.
+- **Real coastline art.** One SVG traced from a public-domain map of the North Sea / Baltic / Atlantic coasts, drawn in the Forge palette behind the dots. Medium; needs your eye on a draft before it is finished.
+- **Regions with bonuses, Risk-style.** **Flag:** a region is a new noun on every shore. ~80% version: every shore already has a culture (norse, saxon, frank, gael). Hold every coast of one culture and earn a named bonus. Four regions for free. Your call.
+
+## 16. More winter events
+Levi likes them and is open to more. Item 6 capped the deck at ten. **Recommend:** raise the cap to sixteen once a list exists; draft the list next session; same rule as before, no card introduces a new noun.
+
+## 17. Unholdable shores
+Lindisfarne, Paris, Tours, Galicia, Lisbon cannot be held. It now says so before you sail. The question is whether that rule stays. **Recommend:** keep it, and let the world say why in one line each (a monastery, a walled city three turns upstream, too far). Famous shores that can never be owned are what keep raiding worth doing after the map is full.

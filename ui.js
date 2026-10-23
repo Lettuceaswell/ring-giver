@@ -1,7 +1,8 @@
 let S = load();
+const UI = { picker: false }; // screen state that is not game state
 const $ = sel => document.querySelector(sel);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
-const statLine = m => `<span class="stats">C <b>${m.combat}</b> · R <b>${m.rule}</b> · F <b>${m.follow}</b> · age ${m.age}</span>`;
+const statLine = m => `<span class="stats">C <b>${m.combat}</b> · R <b>${m.rule}</b> · F <b>${m.follow}</b>${m.age ? ` · age ${m.age}` : ''}</span>`;
 const shoreOf = id => S.shores[id];
 const notable = id => S.notables.find(m => m.id === id);
 // line icons at the brand's thin strand weight: one stroke, no fills, nothing that is a symbol
@@ -22,7 +23,8 @@ const ico = k => `<svg class="ico" viewBox="0 0 20 20" aria-hidden="true">${ICON
 function render() {
   const app = $('#app');
   if (!S) { app.innerHTML = setupHTML(); return; }
-  app.innerHTML = mainHTML() + (S.queue.length ? overlayHTML(S.queue[0]) : '');
+  if (S.queue.length) UI.picker = false;
+  app.innerHTML = mainHTML() + (S.queue.length ? overlayHTML(S.queue[0]) : UI.picker ? pickerHTML() : '');
   window.scrollTo(0, window._scrollY || 0);
 }
 function act(fn) { window._scrollY = window.scrollY; fn(); save(S); render(); }
@@ -70,17 +72,46 @@ function mainHTML() {
   ${shoresHTML()}
   <div class="log">${S.log.slice(-6).reverse().map(l => `<div>${esc(l)}</div>`).join('')}</div>
   <details><summary>Dynasty</summary>${dynastyHTML()}<button class="small" onclick="if(confirm('Abandon this dynasty?')){localStorage.removeItem('seaking');S=null;render()}">Start over</button></details>
-  <div class="sail"><button class="primary" ${spring ? '' : 'disabled'} onclick="act(()=>sail(S))">${spring ? (ship.length && S.destination ? `Sail for ${S.destination === 'blind' ? 'the dark' : esc(shoreOf(S.destination).name)}` : 'Sail · stay home this year') : 'Winter'}</button></div>`;
+  ${sailButton(ship)}`;
+}
+function sailButton(ship) {
+  const spring = S.phase === 'spring', manned = ship.length > 0;
+  let label, fn = 'act(()=>sail(S))', cls = 'primary';
+  if (!spring) label = 'Winter';
+  else if (!manned) label = 'Stay home this year';
+  else if (!S.destination) { label = 'Choose a destination'; fn = 'UI.picker=true;render()'; cls = 'primary ask'; }
+  else label = `Sail for ${S.destination === 'blind' ? 'the dark' : esc(shoreOf(S.destination).name)}`;
+  return `<div class="sail"><button class="${cls}" ${spring ? '' : 'disabled'} onclick="${fn}">${label}</button></div>`;
 }
 function destHTML(ship) {
-  const known = Object.values(S.shores).filter(x => x.known && x.id !== HOME_ID && !isHolding(S, x.id)).sort((a, b) => dist(S, HOME_ID, a.id) - dist(S, HOME_ID, b.id));
-  const sel = `<select onchange="act(()=>S.destination=this.value||null)" ${ship.length ? '' : 'disabled'}><option value="">— destination —</option>
-    <option value="blind" ${S.destination === 'blind' ? 'selected' : ''}>Sail blind (${has(S,'farsailor') ? 5 : 3} dark coasts)</option>
-    ${known.map(x => `<option value="${x.id}" ${S.destination === x.id ? 'selected' : ''}>${esc(x.name)} — ${x.seen ? `loot ${x.loot}, ${x.def} defenders` : 'rich, by rumor'}${x.walked ? ' (walked jarl)' : ''}</option>`).join('')}</select>`;
+  const spring = S.phase === 'spring', d = S.destination, x = d && d !== 'blind' ? shoreOf(d) : null;
+  const label = !ship.length ? 'No one aboard' : !d ? 'Choose a destination' : d === 'blind' ? 'Sail blind' : esc(x.name);
+  const sub = x ? (x.seen ? `loot ${x.loot} · ${x.def} defenders · ${x.holdable ? 'holdable' : 'cannot hold'}` : 'rich, by rumor') : d === 'blind' ? `${has(S,'farsailor') ? 5 : 3} dark coasts, fog until you arrive` : '';
   const Sh = strengthShip(S); let bar = '';
-  if (S.destination && S.destination !== 'blind' && shoreOf(S.destination).seen) bar = barHTML(Sh, shoreOf(S.destination).def);
-  else if (ship.length) bar = `<div class="odds">Ship strength ${Sh}. ${S.destination === 'blind' ? 'Fog until you arrive.' : ''}</div>`;
-  return `<div class="card">${sel}${bar}${ship.length ? '' : '<div class="hint">Move a man to the ship to choose a destination.</div>'}</div>`;
+  if (x && x.seen) bar = barHTML(Sh, x.def);
+  else if (ship.length) bar = `<div class="odds">Ship strength ${Sh}.</div>`;
+  const atHome = S.notables.some(m => m.place === 'home');
+  return `<div class="card">
+    <button class="dest${d ? ' set' : ''}" ${ship.length && spring ? '' : 'disabled'} onclick="UI.picker=true;render()"><span><span class="dname">${label}</span>${sub ? `<br><span class="stats">${sub}</span>` : ''}</span><span class="chev">▸</span></button>
+    ${bar}
+    ${spring && atHome ? `<div class="where"><button class="small" onclick="act(()=>boardAll(S))">Everyone aboard</button><span class="hint" style="margin:0;align-self:center">all at home board, filled from the unled</span></div>` : ''}</div>`;
+}
+// the destination picker: one sheet, every known shore in the same shape, richest first
+function pickerHTML() {
+  const Sh = strengthShip(S);
+  const known = Object.values(S.shores).filter(x => x.known && x.id !== HOME_ID && !isHolding(S, x.id))
+    .sort((a, b) => (b.seen ? b.loot : 999) - (a.seen ? a.loot : 999) || a.name.localeCompare(b.name));
+  const row = x => `<div class="prow${S.destination === x.id ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'${x.id}');UI.picker=false})">
+    <span class="pname">${esc(x.name)}${x.walked ? `<small>${esc(x.walked.name)}'s now</small>` : x.rumored && !x.seen ? '<small>rich, by rumor</small>' : ''}</span>
+    <span class="pnum rich">${x.seen ? x.loot : '?'}</span><span class="pnum">${x.seen ? x.def : '?'}</span>
+    <span class="psub">${x.seen ? oddsWords(Sh, x.def) : 'unknown'} · ${x.holdable ? 'holdable' : 'cannot hold'}</span></div>`;
+  const blind = `<div class="prow blind${S.destination === 'blind' ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'blind');UI.picker=false})">
+    <span class="pname">Sail blind</span><span class="pnum">—</span><span class="pnum">—</span><span class="psub">${has(S,'farsailor') ? 5 : 3} dark coasts · fog until you arrive</span></div>`;
+  return `<div class="overlay" onclick="if(event.target===this){UI.picker=false;render()}"><div class="scene">
+    <h1>${ico('ship')}Where?</h1><p>Ship strength <b class="rich">${Sh}</b>. Richest first. Tap a coast on the map works too.</p>
+    <div class="phead"><span>Shore</span><span>loot</span><span>def</span></div>
+    ${known.map(row).join('')}${blind}
+    <div class="actions"><button onclick="UI.picker=false;render()">Back</button></div></div></div>`;
 }
 function barHTML(Sv, D, labelS = 'Ship', labelD = 'Defenders', anim = false) {
   const tot = Sv + D || 1;
@@ -103,7 +134,7 @@ function childrenHTML() {
   if (!S.children.length) return '';
   const jarls = S.notables.filter(m => !m.isKing && !m.kin);
   return `<h2>${ico('men')}Children</h2>` + S.children.map(c => `<div class="card row"><span>${esc(c.name)} <span class="stats">${c.sex === 'm' ? 'son' : 'daughter'}, ${c.age}${c.married ? `, wife of ${esc(c.married)}` : c.ofAge ? ', in the hall' : ''}</span></span>
-    ${c.sex === 'f' && c.age >= 16 && !c.married && jarls.length && S.phase === 'spring' ? `<select onchange="if(this.value)act(()=>marry(S,'${c.id}',this.value))"><option value="">Marry to…</option>${jarls.map(j => `<option value="${j.id}">${esc(j.name)}</option>`).join('')}</select>` : ''}</div>`).join('');
+    </div>${c.sex === 'f' && c.age >= 16 && !c.married && jarls.length && S.phase === 'spring' ? `<div class="card" style="margin-top:-8px;border-top:0"><div class="hint" style="margin:0 0 6px">Marry her to a jarl and he is kin. Kin kneel.</div><div class="where">${jarls.map(j => `<button class="small" onclick="act(()=>marry(S,'${c.id}','${j.id}'))">${esc(j.name)} <span class="stats">F ${j.follow}</span></button>`).join('')}</div></div>` : ''}`).join('');
 }
 function wandererHTML() {
   if (S.phase !== 'spring') return '';
@@ -119,23 +150,28 @@ function shoresHTML() {
 function dynastyHTML() {
   return S.dynasty.map(d => `<div class="card"><span class="name">${esc(d.king)}</span> <span class="stats">${d.from}–${d.to}${d.title ? ' · ' + d.title : ''}</span><br><span class="stats">${d.bestRaid ? `Richest raid: ${d.bestRaid.shore}, ${d.bestRaid.loot} silver (${d.bestRaid.year}). ` : 'Never raided. '}Most holdings: ${d.bestHoldings}.</span></div>`).join('') + `<div class="hint">Generation ${S.gen}. World seed ${S.day}.</div>`;
 }
-function mapHTML() {
+function mapHTML(targets) {
   const known = Object.values(S.shores).filter(x => x.known);
+  const tappable = !targets && S.phase === 'spring' && !S.queue.length && S.notables.some(m => m.place === 'ship');
   // the edge of the known world: unnamed coasts one step past what is known, drawn in iron
   const dark = Object.values(S.shores).filter(x => !x.known && x.neighbors.some(n => S.shores[n].known));
   const edges = EDGES.filter(([a, b]) => S.shores[a].known || S.shores[b].known).filter(([a, b]) => (S.shores[a].known || dark.includes(S.shores[a])) && (S.shores[b].known || dark.includes(S.shores[b])))
     .map(([a, b]) => `<line class="edge${S.shores[a].known && S.shores[b].known ? '' : ' dark'}" x1="${S.shores[a].x}" y1="${S.shores[a].y}" x2="${S.shores[b].x}" y2="${S.shores[b].y}"/>`).join('');
-  const dots = known.map(x => { const cls = x.id === HOME_ID ? 'home' : isHolding(S, x.id) ? 'hold' : x.seen ? 'seen' : '';
-    return `<circle class="coast ${cls}" cx="${x.x}" cy="${x.y}" r="${x.famous ? 4.5 : 3}"/>${S.destination === x.id ? `<circle class="dest" cx="${x.x}" cy="${x.y}" r="8"/>` : ''}<text class="lbl" x="${x.x + 6}" y="${x.y + 3}">${esc(x.name)}</text>`; }).join('')
+  const dots = known.map(x => {
+    const mine = x.id === HOME_ID || isHolding(S, x.id), tgt = targets && targets.includes(x.id);
+    const cls = x.id === HOME_ID ? 'home' : isHolding(S, x.id) ? 'hold' : x.seen ? (x.holdable ? 'seen' : 'seen nohold') : '';
+    const r = mine ? 4 : (x.seen || x.rumored) ? 2.5 + Math.min(3, x.baseLoot / 80) : 3; // dot size is loot, in tiers
+    const can = tappable && !mine;
+    return `<g class="${tgt ? 'tgt' : targets ? 'dim' : ''}${can ? ' tap' : ''}" ${can ? `onclick="act(()=>setDestination(S,'${x.id}'))"` : ''}>${can ? `<circle class="hit" cx="${x.x}" cy="${x.y}" r="13"/>` : ''}<circle class="coast ${cls}" cx="${x.x}" cy="${x.y}" r="${r.toFixed(1)}"/>${S.destination === x.id && !targets ? `<circle class="dest" cx="${x.x}" cy="${x.y}" r="${(r + 4).toFixed(1)}"/>` : ''}${tgt ? `<circle class="ring" cx="${x.x}" cy="${x.y}" r="${(r + 5).toFixed(1)}"/>` : ''}<text class="lbl" x="${x.x + r + 3}" y="${x.y + 3}">${esc(x.name)}</text></g>`; }).join('')
     + dark.map(x => `<circle class="coast dark" cx="${x.x}" cy="${x.y}" r="2"/>`).join('');
   // crop to what is drawn, with room for the labels; never narrower than the eye expects
-  const all = [...known, ...dark], pad = 28;
+  const all = targets ? targets.map(id => S.shores[id]) : [...known, ...dark], pad = targets ? 40 : 28;
   let x0 = Math.min(...all.map(x => x.x)) - pad, x1 = Math.max(...all.map(x => x.x)) + pad + 40, y0 = Math.min(...all.map(x => x.y)) - pad, y1 = Math.max(...all.map(x => x.y)) + pad;
   const minW = 220, minH = 150;
   if (x1 - x0 < minW) { const c = (x0 + x1) / 2; x0 = c - minW / 2; x1 = c + minW / 2; }
   if (y1 - y0 < minH) { const c = (y0 + y1) / 2; y0 = c - minH / 2; y1 = c + minH / 2; }
   if ((y1 - y0) / (x1 - x0) > 1.1) { const c = (x0 + x1) / 2, w = (y1 - y0) / 1.1; x0 = c - w / 2; x1 = c + w / 2; }
-  return `<svg class="map" viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${(x1 - x0).toFixed(0)} ${(y1 - y0).toFixed(0)}">${edges}${dots}</svg>`;
+  return `<svg class="map${targets ? ' landfall' : ''}" viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${(x1 - x0).toFixed(0)} ${(y1 - y0).toFixed(0)}">${edges}${dots}</svg>`;
 }
 
 // ---- Scenes -------------------------------------------------------------------------------
@@ -146,14 +182,20 @@ function overlayHTML(sc) {
   else if (sc.t === 'fork') h = `<h1>${ico('fork')}${esc(S.king.name)} is ${S.king.age}</h1><p>What they call him is what he did. Choose one.</p>${sc.offers.map(k => `<div class="pick" onclick="act(()=>takeTitle(S,'${k}'))"><span class="name">${TITLES[k].name}</span><br><span class="stats">${TITLES[k].text}</span></div>`).join('')}`;
   else if (sc.t === 'noSail') h = `<h1>Summer</h1><p>The ship stays beached. The land contests itself.</p><div class="actions">${btn('On', 'next(S)')}</div>`;
   else if (sc.t === 'arrive') { const Sh = strengthShip(S);
-    h = `<h1>${ico('ship')}Landfall</h1><p>The fog lifts. Ship strength <b class="rich">${Sh}</b>. Pick one.</p>${sc.targets.map(id => { const x = shoreOf(id);
+    h = `<h1>${ico('ship')}Landfall</h1>${mapHTML(sc.targets)}<p>The fog lifts. Ship strength <b class="rich">${Sh}</b>. Pick one.</p>${sc.targets.map(id => { const x = shoreOf(id);
       return `<div class="pick" onclick="act(()=>chooseTarget(S,'${id}'))"><div class="row"><span class="name">${esc(x.name)}</span><span class="stats">loot <b class="rich">${x.loot}</b>${x.holdable ? ' · holdable' : ''}${x.walked ? ` · ${esc(x.walked.name)} holds it` : ''}</span></div>${barHTML(Sh, x.def)}</div>`; }).join('')}`; }
   else if (sc.t === 'fight') { const x = shoreOf(sc.shore);
     h = `<h1>${ico('axe')}${esc(x.name)}</h1>${barHTML(sc.S, sc.D, 'Ship', 'Defenders', true)}<div class="result ${sc.win ? '' : 'lose'}">${sc.win ? (sc.margin > 1 ? 'Rout.' : sc.margin > 0.3 ? 'Victory.' : 'A narrow thing.') : 'Driven back.'}</div>
     <p>${sc.win ? `${sc.loot} silver in loot.` : 'No loot.'} ${sc.losses} men lost.${sc.win && sc.margin > 1 ? ' The men will follow these jarls anywhere.' : ''}</p><div class="actions">${btn('On', 'next(S)')}</div>`; }
-  else if (sc.t === 'stay') { const x = shoreOf(sc.shore), ship = S.notables.filter(m => m.place === 'ship' && !m.isKing);
-    h = `<h1>${ico('land')}Plunder or stay?</h1><p><b>Plunder:</b> take ${sc.loot} silver and come home.</p><p><b>Stay:</b> forfeit the loot. ${esc(x.name)} becomes a holding paying ~${Math.max(10, Math.round(x.baseLoot / 4))} a year, and the jarl who stays holds it with his men.</p>
-    <div class="actions">${btn(`Plunder · ${sc.loot} silver`, 'choosePlunder(S)')}${sc.walked ? btn(`${esc(x.walked.name)} kneels and keeps it`, `chooseStay(S,'walked')`, '')  : ''}${ship.map(m => btn(`${esc(m.name)} stays (R ${m.rule}, ${m.men} men)`, `chooseStay(S,'${m.id}')`, '')).join('')}</div>`; }
+  else if (sc.t === 'stay') { const x = shoreOf(sc.shore), ship = S.notables.filter(m => m.place === 'ship' && !m.isKing), pay = holdPay(x), unrest = stayUnrest(S, x);
+    const who = m => `<div class="pick" onclick="act(()=>chooseStay(S,'${m.id}'))"><div class="row"><div><span class="name">${esc(m.name)} stays</span><br>${statLine(m)}</div><span class="stats"><b>${m.men}</b> of ${fCap(S, m)} men</span></div>${barHTML(m.rule * m.men, unrest, 'Holds', 'Unrest')}</div>`;
+    h = `<h1>${ico('land')}Plunder or stay?</h1>
+    <p><b>Plunder:</b> ${sc.loot} silver now, and sail home.</p>
+    <p><b>Stay:</b> forfeit the loot. ${esc(x.name)} becomes a holding. It pays <b class="rich">${pay}</b> silver a year and starts at unrest <b>${unrest}</b>, falling 5 each held summer. Every summer the jarl's Rule × men must beat the unrest or it revolts. The first summer is his for free.</p>
+    <div class="actions">${btn(`Plunder · ${sc.loot} silver`, 'choosePlunder(S)')}</div>
+    <h2>Or leave a jarl</h2>
+    ${sc.walked ? `<div class="pick" onclick="act(()=>chooseStay(S,'walked'))"><div class="row"><div><span class="name">${esc(x.walked.name)} kneels and keeps it</span><br>${statLine(x.walked)}</div><span class="stats">no men yet</span></div><div class="hint">He brings no men. Send him some in spring or it revolts.</div></div>` : ''}
+    ${ship.map(who).join('') || (sc.walked ? '' : '<div class="empty">The King cannot stay. Only another jarl can hold a shore.</div>')}`; }
   else if (sc.t === 'summary') h = `<h1>${esc(sc.title)}</h1>${sc.lines.map(l => `<p>${esc(l)}</p>`).join('')}<div class="actions">${btn('On', 'next(S)')}</div>`;
   else if (sc.t === 'market') { const p = has(S,'fairdealer') ? 2 : T.manPrice;
     h = `<h1>${ico('silver')}Winter market</h1><p>You have <b class="rich">${S.silver}</b> silver and ${S.men} men. A man costs ${p}. Every man at home eats 1 silver next winter.</p>
