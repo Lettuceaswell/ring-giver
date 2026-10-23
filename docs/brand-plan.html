@@ -1,0 +1,296 @@
+<title>Sea King in House Hansen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column on the oat ground; the Forge inversion is the dark theme. Tokens are House Hansen's own (tokens/palette.json, 2026-10-21). */
+:root{
+  --bg:#E8DFCC; --surface:#F0E9DA; --rule:#CDC3AE; --text:#3B3330; --muted:#5E4F42;
+  --primary:#3C7585; --on-primary:#F0E9DA; --fjord:#214C58; --on-fjord:#F0E9DA;
+  --accent:#A47159; --chestnut:#744A3D; --pine:#495F4E; --oxblood:#6D3739; --iron:#5A5F63;
+  --display:"Fraunces","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --strand:2px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#2B2E33; --surface:#353A40; --rule:#4A4F55; --text:#E8DFCC; --muted:#C9A58E;
+  --primary:#5A95A6; --on-primary:#2B2E33; --fjord:#214C58; --on-fjord:#E8DFCC;
+  --accent:#C9A58E; --chestnut:#A47159; --pine:#8FA793; --oxblood:#B07A7C; --iron:#8A9096; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#2B2E33; --surface:#353A40; --rule:#4A4F55; --text:#E8DFCC; --muted:#C9A58E;
+  --primary:#5A95A6; --on-primary:#2B2E33; --fjord:#214C58; --on-fjord:#E8DFCC;
+  --accent:#C9A58E; --chestnut:#A47159; --pine:#8FA793; --oxblood:#B07A7C; --iron:#8A9096; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 1.0625rem/1.6 var(--body);
+  padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:720px;margin:0 auto;display:grid;gap:40px}
+h1,h2,h3{font-family:var(--display);font-weight:400;font-optical-sizing:auto;text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(2.1rem,6vw,3rem);letter-spacing:-.012em}
+h2{font-size:1.6rem;margin-bottom:12px}
+h3{font-size:1.2rem;margin-bottom:6px}
+p{margin:0 0 12px;max-width:62ch}
+.label{font:500 .72rem/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.eyebrow{display:flex;align-items:center;gap:.75rem;margin-bottom:10px}
+.eyebrow::before{content:"";width:28px;height:var(--strand);background:var(--accent)}
+header{display:grid;gap:14px;padding-bottom:28px;border-bottom:1px solid var(--rule)}
+header p{font-size:1.15rem;max-width:56ch}
+.verdict{background:var(--fjord);color:var(--on-fjord);padding:22px 24px;border-radius:2px}
+.verdict p{color:inherit;margin:0;font-size:1.1rem}
+.verdict p+p{margin-top:10px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.95em}
+table{width:100%;border-collapse:collapse;font-size:.95rem}
+th{text-align:left;font:500 .72rem/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:6px 10px 8px;border-bottom:1px solid var(--rule)}
+td{padding:9px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+td:first-child{font-weight:500}
+.tw{overflow-x:auto}
+.pill{display:inline-block;font:500 .68rem/1 var(--body);letter-spacing:.12em;text-transform:uppercase;padding:4px 7px;border-radius:2px;border:1px solid currentColor;white-space:nowrap}
+.fail{color:var(--oxblood)} .pass{color:var(--pine)} .open{color:var(--iron)}
+.sw{display:inline-block;width:14px;height:14px;border-radius:2px;vertical-align:-2px;margin-right:6px;border:1px solid rgba(0,0,0,.15)}
+ol.phases{list-style:none;margin:0;padding:0;display:grid;gap:14px;counter-reset:ph -1}
+ol.phases>li{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:18px 0 0;border-top:1px solid var(--rule)}
+ol.phases>li::before{counter-increment:ph;content:counter(ph);font-family:var(--display);font-size:2rem;line-height:1;color:var(--accent)}
+.ph-meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-size:.9rem;margin:4px 0 10px}
+ul{margin:0 0 8px;padding-left:18px}
+li+li{margin-top:4px}
+.calls{display:grid;gap:12px}
+.call{background:var(--surface);border:1px solid var(--rule);border-radius:2px;padding:16px 18px}
+.call h3{display:flex;gap:10px;align-items:baseline}
+.call .rec{font:500 .68rem/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--on-primary);background:var(--primary);padding:4px 7px;border-radius:2px}
+.call p{margin-bottom:6px}
+
+/* the sketch: one man card, one bar, one button, in both themes */
+.sketch{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:560px){.sketch{grid-template-columns:1fr}}
+.phone{border-radius:2px;padding:14px;display:grid;gap:10px;font-family:var(--body)}
+.phone.oat{--pbg:#E8DFCC;--psurf:#F0E9DA;--prule:#CDC3AE;--ptext:#3B3330;--pmuted:#5E4F42;--pprim:#3C7585;--ponprim:#F0E9DA;--paccent:#A47159;--pchest:#744A3D;--ppine:#495F4E;--pox:#6D3739}
+.phone.forge{--pbg:#2B2E33;--psurf:#353A40;--prule:#4A4F55;--ptext:#E8DFCC;--pmuted:#C9A58E;--pprim:#5A95A6;--ponprim:#2B2E33;--paccent:#C9A58E;--pchest:#A47159;--ppine:#8FA793;--pox:#B07A7C}
+.phone{background:var(--pbg);color:var(--ptext);border:1px solid var(--prule)}
+.p-top{background:#214C58;color:#F0E9DA;margin:-14px -14px 0;padding:12px 14px;display:flex;justify-content:space-between;align-items:baseline}
+.p-top .yr{font-family:var(--display);font-size:1.7rem;line-height:1}
+.p-top .k{font-size:.8rem;opacity:.85}
+.p-top .r{text-align:right;font-family:var(--mono);font-size:.85rem;font-variant-numeric:tabular-nums}
+.p-lab{font:500 .66rem/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--pmuted);margin-top:4px}
+.p-card{background:var(--psurf);border:1px solid var(--prule);border-radius:2px;padding:10px 12px;display:grid;gap:8px}
+.p-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.p-name{font-family:var(--display);font-size:1.15rem}
+.p-tag{font:500 .6rem/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--ppine);border:1px solid var(--ppine);border-radius:2px;padding:3px 5px;margin-left:6px;vertical-align:middle}
+.p-stats{font-family:var(--mono);font-size:.78rem;font-variant-numeric:tabular-nums;color:var(--pmuted)}
+.p-stats b{color:var(--ptext);font-weight:500}
+.p-men{display:flex;align-items:center;gap:6px}
+.p-men span{font-family:var(--mono);font-size:1rem;min-width:44px;text-align:center}
+.p-men i{display:inline-grid;place-items:center;width:30px;height:30px;border:1px solid var(--prule);border-radius:2px;font-style:normal;background:var(--pbg)}
+.p-where{display:flex;gap:6px}
+.p-where i{font-style:normal;font-size:.8rem;padding:5px 9px;border:1px solid var(--prule);border-radius:2px}
+.p-where i.on{border-color:var(--pprim);color:var(--pprim)}
+.p-bar{height:6px;background:var(--prule);display:flex;border-radius:2px;overflow:hidden}
+.p-bar i{display:block;height:100%}
+.p-bar .s{background:var(--pprim)} .p-bar .d{background:var(--pchest)}
+.p-odds{font-family:var(--mono);font-size:.75rem;color:var(--pmuted);font-variant-numeric:tabular-nums}
+.p-btn{background:var(--pprim);color:var(--ponprim);text-align:center;padding:12px;border-radius:2px;font-weight:500;font-size:1rem}
+.p-res{font-family:var(--display);font-size:1.6rem;color:var(--paccent);line-height:1.1}
+.p-loss{color:var(--pox)}
+.note{font-size:.9rem;color:var(--muted)}
+a{color:var(--primary)}
+</style>
+
+<main>
+<header>
+  <div class="eyebrow"><span class="label">Sea King · brand plan · 2026-10-23</span></div>
+  <h1>Sea King in House Hansen</h1>
+  <p>The game works. It is dressed as a different brand. Every screen is black and gold, the two things the House Hansen rules exclude first. The fix is mostly a token swap, a type change and a shorter map, with one real design job: a child mark for the game.</p>
+</header>
+
+<section class="verdict">
+  <p>What I looked at: all thirteen screens at phone width, live from the published site. Setup, the main screen top to bottom, Landfall, the fight, Plunder or Stay, the land summary, the winter market, a birth card, the fork at 25, the Saga, the Heir, the Oath and the coronation.</p>
+  <p>What I read: the brand repo as of this morning. Palette and tokens, the decisions log through the G08 lock, the four look pieces, the site mockup, the backlog and the design landscape.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="label">Audit</span></div>
+  <h2>The brand's rules against the game as it stands</h2>
+  <p>Ordered by how much of the screen each one touches.</p>
+  <div class="tw"><table>
+    <thead><tr><th>Rule</th><th>Sea King now</th><th>Verdict</th><th>What changes</th></tr></thead>
+    <tbody>
+      <tr><td>No pure black, no optic white</td><td>Ground is <span class="num">#0e1116</span>, a blue-black at lightness 6. Dark only.</td><td><span class="pill fail">fails</span></td><td>Oat ground by default, fjord charcoal as the Forge dark mode. Follows the phone's setting.</td></tr>
+      <tr><td>One warm accent, auburn. Ember, rust and gold retired</td><td>Gold <span class="num">#d9a84a</span> is the primary everywhere: year, names, buttons, tags, bars, borders.</td><td><span class="pill fail">fails</span></td><td>Woad for actions and your side of every bar. Auburn only for the year numeral and the result line. Bronze stays out, it is hardware only.</td></tr>
+      <tr><td>Oxblood is the error state, red at the beard hue amplifies flush</td><td>Red <span class="num">#c8503e</span> on defenders, losses, death odds.</td><td><span class="pill fail">fails</span></td><td>Chestnut for the other side of a bar. Oxblood for losses and the death roll.</td></tr>
+      <tr><td>Balanced weighting for apps: oat 55, charcoal 20, deep fjord 12, woad 10, auburn 3</td><td>Black 70, gold 20, red 5.</td><td><span class="pill fail">fails</span></td><td>The sticky top band and the map become deep fjord panels. That is the 12 percent that gives an app structure.</td></tr>
+      <tr><td>Headline serif with character, workhorse grotesk, mono for data</td><td>Georgia for everything, including numbers.</td><td><span class="pill fail">fails</span></td><td>Fraunces for the year, names and card titles. Hanken Grotesk for body and controls. JetBrains Mono, tabular, for every number.</td></tr>
+      <tr><td>Pine for success, kin, calm</td><td>Green <span class="num">#6fae68</span> on kin and son tags.</td><td><span class="pill fail">fails</span></td><td>Pine.</td></tr>
+      <tr><td>Deep fjord as the dark complement</td><td>Map sea <span class="num">#1d3a52</span>, hue 210, close but off.</td><td><span class="pill fail">near</span></td><td>Deep fjord <span class="num">#214C58</span>.</td></tr>
+      <tr><td>Uppercase labels, letterspaced</td><td>Section heads are uppercase at .14em.</td><td><span class="pill pass">passes</span></td><td>Widen to .16em to match the site mock. Otherwise keep.</td></tr>
+      <tr><td>Swiss grid discipline, material honesty</td><td>One column, consistent cards, no ornament.</td><td><span class="pill pass">passes</span></td><td>Keep. Radius goes from 10 to 2 (see the calls).</td></tr>
+      <tr><td>No runes, Valknut, horned helmets, costume fonts</td><td>None present.</td><td><span class="pill pass">passes</span></td><td>Keep it that way through the icon work.</td></tr>
+      <tr><td>The mark is the H. Product logos are its children. "House" in the imprint line only</td><td>Icon is a gold ring on black. No imprint.</td><td><span class="pill fail">fails</span></td><td>A child mark built with the same spiral generator as G08. "House Hansen" once, small, on the setup screen.</td></tr>
+      <tr><td>Icon set at the thin strand weight, 6.4 on 240</td><td>No icons. Words do the work.</td><td><span class="pill open">open</span></td><td>Eight glyphs. This would be the brand's first icon set, which the backlog wants.</td></tr>
+      <tr><td>Motion: slow, heavy, no bounce</td><td>No transitions at all. Cards appear, bars are static.</td><td><span class="pill open">open</span></td><td>The fog lifts, the bar fills, the sheet rises. 400 to 600 ms, eased, none under reduced motion.</td></tr>
+      <tr><td>One grain texture, where allowed</td><td>Flat.</td><td><span class="pill open">open</span></td><td>Wool grain on the page ground only, never on cards.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="label">Sketch</span></div>
+  <h2>One screen in the tokens</h2>
+  <p>The top band, a man card and the fight bar, in Longhouse and in Forge. Drawn with the brand's own values so you can judge the feel before any code changes.</p>
+  <div class="sketch">
+    <div class="phone oat">
+      <div class="p-top"><div><div class="yr">794</div><div class="k">Ragnar, 25 · Ironside</div></div><div class="r">120 silver<br>39 unled / 90 men</div></div>
+      <div class="p-lab">Holdings</div>
+      <div class="p-card">
+        <div class="p-row"><span class="p-name">Agder</span><span class="p-stats">pays <b>34</b> · unrest <b>40</b></span></div>
+        <div class="p-bar"><i class="s" style="width:60%"></i><i class="d" style="width:40%"></i></div>
+        <div class="p-odds">Bjorn 60 vs Unrest 40 · sure</div>
+        <div class="p-row"><span class="p-name">Bjorn<span class="p-tag">kin</span></span><span class="p-men"><i>−</i><span>30</span><i>+</i></span></div>
+        <div class="p-row"><span class="p-stats">C <b>3</b> · R <b>2</b> · F <b>5</b> · age 31</span><span class="p-where"><i>Ship</i><i>Home</i><i class="on">Agder</i></span></div>
+      </div>
+      <div class="p-res">A narrow thing.</div>
+      <div class="p-stats">80 silver in loot. <span class="p-loss">12 men lost.</span></div>
+      <div class="p-btn">Sail for Lindisfarne</div>
+    </div>
+    <div class="phone forge">
+      <div class="p-top"><div><div class="yr">794</div><div class="k">Ragnar, 25 · Ironside</div></div><div class="r">120 silver<br>39 unled / 90 men</div></div>
+      <div class="p-lab">Holdings</div>
+      <div class="p-card">
+        <div class="p-row"><span class="p-name">Agder</span><span class="p-stats">pays <b>34</b> · unrest <b>40</b></span></div>
+        <div class="p-bar"><i class="s" style="width:60%"></i><i class="d" style="width:40%"></i></div>
+        <div class="p-odds">Bjorn 60 vs Unrest 40 · sure</div>
+        <div class="p-row"><span class="p-name">Bjorn<span class="p-tag">kin</span></span><span class="p-men"><i>−</i><span>30</span><i>+</i></span></div>
+        <div class="p-row"><span class="p-stats">C <b>3</b> · R <b>2</b> · F <b>5</b> · age 31</span><span class="p-where"><i>Ship</i><i>Home</i><i class="on">Agder</i></span></div>
+      </div>
+      <div class="p-res">A narrow thing.</div>
+      <div class="p-stats">80 silver in loot. <span class="p-loss">12 men lost.</span></div>
+      <div class="p-btn">Sail for Lindisfarne</div>
+    </div>
+  </div>
+  <p class="note" style="margin-top:10px">Left: Longhouse, the oat default. Right: Forge, the same tokens inverted. The band and the map stay deep fjord in both.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="label">Palette map</span></div>
+  <h2>Every colour in the game and where it goes</h2>
+  <div class="tw"><table>
+    <thead><tr><th>Now</th><th>Does</th><th>Longhouse</th><th>Forge</th></tr></thead>
+    <tbody>
+      <tr><td><i class="sw" style="background:#0e1116"></i><span class="num">#0e1116</span></td><td>page ground</td><td><i class="sw" style="background:#E8DFCC"></i>oat</td><td><i class="sw" style="background:#2B2E33"></i>fjord charcoal</td></tr>
+      <tr><td><i class="sw" style="background:#171c24"></i><span class="num">#171c24</span></td><td>cards, scenes</td><td><i class="sw" style="background:#F0E9DA"></i>oat light</td><td><i class="sw" style="background:#353A40"></i>raised charcoal</td></tr>
+      <tr><td><i class="sw" style="background:#2a3340"></i><span class="num">#2a3340</span></td><td>rules, borders</td><td><i class="sw" style="background:#CDC3AE"></i>oat line</td><td><i class="sw" style="background:#4A4F55"></i>dark rule</td></tr>
+      <tr><td><i class="sw" style="background:#e6dfd0"></i><span class="num">#e6dfd0</span></td><td>text</td><td><i class="sw" style="background:#3B3330"></i>warm charcoal</td><td><i class="sw" style="background:#E8DFCC"></i>oat</td></tr>
+      <tr><td><i class="sw" style="background:#8d94a0"></i><span class="num">#8d94a0</span></td><td>secondary text</td><td><i class="sw" style="background:#5E4F42"></i>muted</td><td><i class="sw" style="background:#C9A58E"></i>auburn light</td></tr>
+      <tr><td><i class="sw" style="background:#d9a84a"></i><span class="num">#d9a84a</span></td><td>buttons, your side of a bar, selected, tags, holdings on the map</td><td><i class="sw" style="background:#3C7585"></i>woad</td><td><i class="sw" style="background:#5A95A6"></i>woad lifted</td></tr>
+      <tr><td><i class="sw" style="background:#d9a84a"></i><span class="num">#d9a84a</span></td><td>the year, the result line, titles</td><td><i class="sw" style="background:#A47159"></i>auburn, large type only</td><td><i class="sw" style="background:#C9A58E"></i>auburn light</td></tr>
+      <tr><td><i class="sw" style="background:#c8503e"></i><span class="num">#c8503e</span></td><td>defenders, unrest</td><td><i class="sw" style="background:#744A3D"></i>chestnut</td><td><i class="sw" style="background:#A47159"></i>auburn</td></tr>
+      <tr><td><i class="sw" style="background:#c8503e"></i><span class="num">#c8503e</span></td><td>losses, death odds, revolt</td><td><i class="sw" style="background:#6D3739"></i>oxblood</td><td><i class="sw" style="background:#B07A7C"></i>oxblood lifted</td></tr>
+      <tr><td><i class="sw" style="background:#6fae68"></i><span class="num">#6fae68</span></td><td>kin, sons</td><td><i class="sw" style="background:#495F4E"></i>pine</td><td><i class="sw" style="background:#8FA793"></i>pine lifted</td></tr>
+      <tr><td><i class="sw" style="background:#1d3a52"></i><span class="num">#1d3a52</span></td><td>the sea, the top band</td><td><i class="sw" style="background:#214C58"></i>deep fjord</td><td><i class="sw" style="background:#214C58"></i>deep fjord</td></tr>
+      <tr><td><i class="sw" style="background:#8d94a0"></i><span class="num">#8d94a0</span></td><td>dark coasts on the map</td><td><i class="sw" style="background:#5A5F63"></i>iron at 50%</td><td><i class="sw" style="background:#5A5F63"></i>iron at 50%</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="label">Plan</span></div>
+  <h2>Six phases, ordered by what constrains the rest</h2>
+  <p>Each phase ships on its own and lands on your phone at the next open. Nothing in the GDD changes. One screen, three phases, press Sail.</p>
+  <ol class="phases">
+    <li><div>
+      <h3>Tokens and the two grounds</h3>
+      <div class="ph-meta"><span>one commit</span><span>what you see: the whole game in oat by day and Forge by night</span></div>
+      <ul>
+        <li>Copy the brand's token file into the game, dated, with the source path. The game must stay self-contained for offline play.</li>
+        <li>Replace every literal colour in the stylesheet with a token, using the palette map above. Light values on the root, dark values under the phone's dark setting and under a manual toggle.</li>
+        <li>Top band and map become deep fjord with oat type in both themes.</li>
+        <li>Three first-play fixes while I am in the file: the map is cropped to the known coasts and capped at under half the screen so Home is one swipe away; the odds label reads "sure, likely, even, narrow, long" instead of a percentage that said 100 and then bled; a holding taken this summer is not contested until next summer, since the jarl who stayed just won it.</li>
+      </ul>
+    </div></li>
+    <li><div>
+      <h3>Type</h3>
+      <div class="ph-meta"><span>one commit</span><span>what you see: the year in a real serif, numbers that line up</span></div>
+      <ul>
+        <li>Fraunces for the year, names, card titles and the result line. Hanken Grotesk for body, buttons and labels. JetBrains Mono with tabular figures for every stat, count and price.</li>
+        <li>Self-hosted woff2 subsets in the repo and in the service worker cache, about 120 KB. Google Fonts would break the first offline open.</li>
+        <li>A five-step scale and nothing outside it. Labels at .16em.</li>
+      </ul>
+    </div></li>
+    <li><div>
+      <h3>Components</h3>
+      <div class="ph-meta"><span>one commit</span><span>what you see: the sketch above, on every card</span></div>
+      <ul>
+        <li>Cards at 2 px radius with a one-pixel rule, no fill difference heavier than oat to oat light.</li>
+        <li>Buttons: woad fill with oat light type for the one action, rule-only for the rest. The Sail button keeps its full width.</li>
+        <li>The strength bar: woad against chestnut on an oat-line track, 6 px tall, the same bar on ship, land and Oath.</li>
+        <li>Tags: pine for kin and sons, muted for King and titles. The native select for destination and marriage styled to the same rule and radius.</li>
+        <li>Scene cards become a bottom sheet on the phone, rising from the Sail button, with the sticky band still visible above.</li>
+      </ul>
+    </div></li>
+    <li><div>
+      <h3>The map and motion</h3>
+      <div class="ph-meta"><span>one session</span><span>what you see: fog that actually lifts</span></div>
+      <ul>
+        <li>Sea in deep fjord. Known coasts as oat dots, holdings in woad lifted, the home hall in auburn light, dark coasts hinted in iron so the world has an edge before you reach it. Sea lanes at the thin strand weight.</li>
+        <li>Landfall: the three revealed coasts fade in over 600 ms. The fight: the bar fills to the result over 600 ms, then the line appears. The sheet rises over 300 ms. Easing out, never a bounce. All instant under reduced motion.</li>
+        <li>The year numeral in the band crossfades on Sail. Slow and heavy, as the brand guesses its motion should be.</li>
+      </ul>
+    </div></li>
+    <li><div>
+      <h3>Mark, icons, imprint</h3>
+      <div class="ph-meta"><span>design rounds at your pace</span><span>what you see: an app icon that belongs to the house</span></div>
+      <ul>
+        <li>A child mark for Sea King built from the same geometry as G08: the golden spiral generator, the thin strand at 6.4 on 240, the size rule below 48 and 24 px. Subject in the calls below. It goes on the approval board like the H did.</li>
+        <li>Eight icons at the strand weight: ship, hall, holding, silver, men, wanderer, death, fork. Used sparingly, next to the section labels and on the scene titles. The brand backlog has wanted this set; the game is the first place that needs it.</li>
+        <li>"House Hansen" once, small, under the setup screen. Nowhere else, per the naming rule.</li>
+        <li>New 192 and 512 icons, favicon and touch icon cut by the same export script the site mock uses.</li>
+      </ul>
+    </div></li>
+    <li><div>
+      <h3>Texture and the side-by-side</h3>
+      <div class="ph-meta"><span>half a session</span><span>what you see: wool, not plastic</span></div>
+      <ul>
+        <li>One SVG grain on the page ground at low opacity, never on cards or the map. If it reads as noise on your phone it comes out.</li>
+        <li>Screenshots of every scene at 375 and 430 wide next to the four look pieces. Anything that would not sit on the same wall gets fixed.</li>
+        <li>Record the radius, type and icon decisions back in the brand repo's decisions log, since the game is the first app and closes three open backlog items.</li>
+      </ul>
+    </div></li>
+  </ol>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="label">Your calls</span></div>
+  <h2>Four decisions that are taste, with my pick on each</h2>
+  <p>Say "go" and I take every recommendation. Overrule any one by name.</p>
+  <div class="calls">
+    <div class="call">
+      <h3>Serif <span class="rec">Fraunces</span></h3>
+      <p>All four look pieces you approved use Fraunces. The site mock switched to Newsreader two days later and nothing records why. Fraunces has more character at the sizes a phone uses for a year numeral. Switching later is one line.</p>
+    </div>
+    <div class="call">
+      <h3>Default ground <span class="rec">Follow the phone</span></h3>
+      <p>Oat by day, Forge at night, with a toggle in the Dynasty drawer. The alternative is Forge only, which fits a game played in bed but drops the Longhouse base the brand is built on.</p>
+    </div>
+    <div class="call">
+      <h3>Child mark subject <span class="rec">The arm ring</span></h3>
+      <p>The repo is ring-giver, the first title is Ring-giver, the game is about silver, and the silver arm ring is already in the brand's jewelry rules. A ring whose two terminals are the G08 spiral curls makes it a child of the H by construction. The other candidate is a ship stem with the same curl.</p>
+    </div>
+    <div class="call">
+      <h3>Radius <span class="rec">2 px</span></h3>
+      <p>The brand's open question is rounded Longhouse against square Northern. The site mock already went to 2 px and it reads as cut wood. Taking it here closes the question for apps.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><span class="label">Not changing</span></div>
+  <h2>What stays exactly as it is</h2>
+  <ul>
+    <li>Every rule in the GDD and every TODO recommendation already taken. This is dress, not mechanics.</li>
+    <li>The single screen, the section order, the map as a picture with no interaction.</li>
+    <li>The copy. Short declaratives are already the "well groomed" half of the thesis.</li>
+    <li>No runes, no interlace on screen. Urnes belongs to the mark and the cover, per card 2.</li>
+  </ul>
+  <p class="note" style="margin-top:14px">Source: the live game at lettuceaswell.github.io/ring-giver and the brand repo at Projects/modern-viking-brand. This page lives in the game repo at docs/brand-plan.html.</p>
+</section>
+</main>

@@ -13,6 +13,13 @@ function makeMan(name, c, r, f, extra = {}) {
 function fCap(s, m) { return (m.follow + (has(s,'ringgiver') ? 1 : 0)) * T.menPerF; }
 function strengthShip(s) { return s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.combat * m.men, 0); }
 function winOdds(S, D) { return clamp((S * 1.15 - D) / (S * 0.3), 0, 1); }
+// the odds in words: how likely, and how dear. A sure fight can still be a bloody one.
+function oddsWords(S, D) {
+  const p = winOdds(S, D), q = S > 0 ? D / S : 9;
+  const chance = p >= .97 ? 'sure' : p >= .7 ? 'likely' : p >= .4 ? 'even' : p > 0 ? 'long odds' : 'hopeless';
+  const cost = q < .4 ? 'clean' : q < .65 ? 'fair' : 'bloody';
+  return p > 0 ? `${chance} · ${cost}` : chance;
+}
 function placedMen(s) { return s.notables.reduce((a, m) => a + m.men, 0); }
 function unledMen(s) { return s.men - placedMen(s); }
 function dist(s, from, to) { // BFS distance in coast graph
@@ -144,7 +151,7 @@ function chooseStay(s, jarlId) {
   else j = s.notables.find(m => m.id === jarlId);
   sh.walked = null;
   const unrest = clamp(Math.round(sh.baseDef / 1.5) - (has(s,'landtaker') ? 20 : 0), 10, 100);
-  s.holdings.push({ id: sh.id, name: sh.name, pay: Math.max(10, Math.round(sh.baseLoot / 4)), unrest, quiet: 0, empty: 0 });
+  s.holdings.push({ id: sh.id, name: sh.name, pay: Math.max(10, Math.round(sh.baseLoot / 4)), unrest, quiet: 0, empty: 0, taken: s.year });
   j.place = sh.id; s.deeds.stays++;
   revealAround(s, sh.id);
   s.log.push(`${s.year}: ${j.name} stays at ${sh.name}. It is ours.`);
@@ -156,6 +163,7 @@ function resolveLand(s) {
   const r = rng(s.day + ':land:' + s.year), lines = [];
   for (const h of [...s.holdings]) {
     const j = s.notables.find(m => m.place === h.id);
+    if (h.taken === s.year) { lines.push(`${h.name} is newly ours. No contest this summer.`); continue; } // the jarl who stayed just won it
     if (!j) {
       h.empty++; h.quiet = 0; h.unrest = clamp(h.unrest + (has(s,'lawgiver') ? 5 : T.emptyUnrest), 0, 100);
       if (h.empty >= 2) { loseHolding(s, h, null); lines.push(`${h.name} stood empty two summers. It has revolted.`); }
