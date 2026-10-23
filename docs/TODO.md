@@ -65,3 +65,19 @@ Levi likes them and is open to more. Item 6 capped the deck at ten. **Recommend:
 
 ## 17. Unholdable shores
 Lindisfarne, Paris, Tours, Galicia, Lisbon cannot be held. It now says so before you sail. The question is whether that rule stays. **Recommend:** keep it, and let the world say why in one line each (a monastery, a walled city three turns upstream, too far). Famous shores that can never be owned are what keep raiding worth doing after the map is full.
+
+---
+
+## Decided 2026-10-23 (playtest-1 decision session)
+
+**D1. Other kings: named rulers with a stance.** Five or six named rulers own the famous anchors. They do not take turns. Each has one stance number toward the King, moved by deeds. Stance unlocks marriage into his house, tribute either way, a joint raid, and he can send the rival fleet. Overrides GDD §12 "no AI kings" in this limited form; full AI kings stay out.
+
+**D2. Everyone has a stance.** Every named man, jarl or foreign ruler, carries one stance number toward the King, shown in words on his card (devoted / loyal / cool / sour / hostile). One verb list moves it for both: gift of silver, a daughter in marriage, a share of loot, a feud, being sent somewhere deadly. Stance feeds the Oath; a hostile jarl can walk with his holding mid-reign. Overrides GDD §12 "no separate loyalty stat".
+
+**D3. The King holds the hall.** Vestfold is a holding row with the King as its jarl. King home: it pays its yield, his Rule grows as a jarl's does, everyone at home warms one step in stance. King away: none of that, and the rival fleet finds the hall thin. The hall cannot revolt. Being away costs nothing beyond the uncollected benefit. Closes items 4 and 12.
+
+**D4. Rulers' realms, with free land that runs out.** Each named ruler owns the coasts around his anchor, tinted on the map. Coasts between realms start unowned. Realms grow on a seeded clock: each ruler takes one adjacent unowned coast every few years (tune; ~8), never a coast the player holds. By the late game the map is full. Raiding in a realm sours its ruler, holding there sours him more, taking every coast of a realm breaks him: his anchor opens or he kneels. Levi: "there can be lands that are not under a king, but eventually they may be as all kings expand, not just the player."
+
+**D5. Verbs live on a Man card, in spring.** Tap any name, jarl or ruler: stats, stance in words with its reasons, his story, and every verb that applies now (gift silver, marry a daughter to him, promise the next holding, send him, demand or pay tribute, sail together). Verbs cost silver, a daughter, or a placement; never a new resource. Winter cards stay the world's moves. **Rulers under fog:** a ruler is discovered like a coast. Until one of his coasts is seen he has no card and his realm is dark. See one, and the realm tints and his card opens. When a realm grows to touch a known coast, the winter card is his envoy, and that is how you meet him. The Wanderer can sell a king's name. Levi: "the right pace is discovering the new characters at the same pace as uncovering the fog."
+
+**Build order (next session):** stance on every man + the Man card with the verbs that already exist (marry, send) → the King holds the hall → named rulers on the anchors with stance, realms tinted, fog discovery, realm growth on the clock → ruler verbs (tribute, marry out, sail together, envoy card) → break-a-realm bonus. Tune after.

@@ -141,11 +141,12 @@ A dynasty started today shares its world seed with every dynasty started today: 
 ## 12. What this game deliberately does not have
 
 - No real-time, no timers, no decay while away.
-- No map interaction. The map is a picture of the rows.
-- No AI kings. The world pushes back through walls, unrest, and jarls who walked.
-- No diplomacy screen, no council, no separate loyalty stat. The Oath is the only loyalty check.
-- No currency other than silver; no prestige, piety, renown, or score.
+- No AI kings that play turns. Named rulers exist (§15) but they hold a stance, not a strategy. The world pushes back through walls, unrest, realms that grow on a clock, and jarls who walked.
+- No council, no separate screens per system. The Man card (§15.4) is the one place a person is acted on.
+- No currency other than silver; no prestige, piety, renown, or score. Stance is a view of you, not a currency.
 - No accounts, no network. One dynasty per device, saved locally.
+
+Revised 2026-10-23 after playtest 1. Earlier versions also ruled out map interaction, AI kings of any kind, and any loyalty stat; the playtest overturned those (§15).
 
 ## 13. First-pass tuning (tune in play)
 
@@ -164,3 +165,31 @@ A dynasty started today shares its world seed with every dynasty started today: 
 ## 14. Open questions
 
 See TODO.md. Ordered by how much each one constrains the rest.
+
+## 15. People and kings (decided 2026-10-23, playtest 1)
+
+The CK3 itch, scratched with as few new nouns as possible: one number (stance), one roster (named rulers), one screen (the Man card).
+
+### 15.1 Stance
+Every named man, jarl or foreign ruler, carries one stance toward the King, shown in words on his card: devoted, loyal, cool, sour, hostile. Deeds move it, the same list for everyone: a gift of silver, a daughter in marriage, a share of loot, a feud, a promise kept or broken, being sent somewhere deadly, raids inside a ruler's realm, a hall the King winters in. Stance feeds the Oath (with kin and Followability vs Rule, as before). A hostile jarl can walk with his holding mid-reign, not only at a death. Stance is a view of the King, not a currency; it cannot be spent, only earned.
+
+**Why:** the player wants to read his people and work on them. One word on every card does that; a second loyalty number would not add anything the Oath could not already say.
+
+### 15.2 The King holds the hall
+Vestfold is a holding row with the King as its jarl. King home: it pays its yield, his Rule grows as a jarl's does, and everyone at home warms one step in stance. King away: none of that, and the rival fleet finds the hall thin. The hall cannot revolt. Being away costs nothing beyond what was not collected.
+
+**Why:** sailing with the King was always right, so it was not a choice. Now the King at home is doing the one thing only a King can do.
+
+### 15.3 Named rulers and realms
+Five or six named rulers own the famous anchors: a king at York, the Frankish king behind Paris, the king of Dublin, a rival sea king in Hordaland, and so on. They do not take turns. Each has a stance (§15.1) and a realm: the coasts around his anchor, tinted on the map. Coasts between realms start unowned. Realms grow on a seeded clock: each ruler takes one adjacent unowned coast every few years, never a coast the player holds, so free land runs out over the centuries and the late game is all kings.
+
+Raiding in a realm sours its ruler; holding one of his coasts sours him more. Take every coast of a realm and he breaks: his anchor opens to be held, or he kneels and his stance pins to loyal. That is the region bonus, and the path to it is drawn on the map.
+
+Rulers come out of the fog like coasts. Until one of his coasts is seen a ruler has no card and his realm is dark. See one and the realm tints and his card opens. When a realm grows to touch a coast the player knows, that winter's card is his envoy arriving. The Wanderer can sell a king's name the way he sells a rich coast.
+
+**Why not AI kings:** a ruler who plays turns doubles the game and never balances. A ruler with a stance and a clock gives the player someone to treat with, marry into, and break, at the cost of one number and a schedule.
+
+### 15.4 The Man card
+Tap any name, jarl or ruler, and a sheet opens: his stats, his stance in words with the reasons under it, his story (raids, held years, kin, what he did at the last Oath), and every verb that applies right now. Verbs: gift silver, marry a daughter to him, promise him the next holding, send him to the ship or a holding, demand or pay tribute, sail together. Every verb costs silver, a daughter, or a placement; none creates a new resource. Verbs happen in spring. Winter cards stay the world's moves against the player.
+
+**Why one card:** on a phone, one place to go to work on a person. The card is the diplomacy screen, the council, and the family tree at once.
