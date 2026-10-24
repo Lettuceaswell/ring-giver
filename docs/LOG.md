@@ -2,6 +2,27 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-23 (session 5, the shell)
+
+Levi's second phone playtest came back as two complaints: no way to start over, and the main screen is one long thread. Five decisions were drafted (TODO 18–22), all approved as recommended, then built in one pass, plus two asks from the same message: a frame of reference for buying men, and a real map.
+
+**Shipped**
+- **Panes** (TODO 19). `UI.pane` ∈ map / ship / hall. `render()` = `bandHTML() + paneHTML() + footHTML() + sheet`. `#app` is a fixed-height flex column (`100dvh`); the band and foot are `flex:none`, the pane scrolls (`UI.scroll[pane]` restored after each render). The foot holds the Sail bar and the tab bar; the Ship tab shows men aboard, the Hall tab the holdings count. `rulersHTML` and `shoresHTML` are gone: a king is tapped by his name under his seat on the map (`.kname`). The map is tappable in spring with no one aboard; the Sail button then reads "No one aboard" and jumps to the Ship pane.
+- **The Saga sheet and New dynasty** (TODO 18, 22). Tap the band. `sagaSheet()`: reign rows (current first), the chronicle by year with a reign heading where the king changes, New dynasty. Two-tap arm (`UI.armed`, 3 s, no `confirm()`). `archive(s, why)` writes `{at, seed, from, to, gens, why, rows}` to `seaking-sagas` (20 kept) and clears the save; the setup screen lists them as Past kings. The end card's Begin again archives too. **One live dynasty, no slots** (Levi's call on 18).
+- **A quiet turn** (TODO 20). `m.sailed` is set in `sail()`; `newYear()` puts those men back on the ship. The destination survives the winter (dropped in spring if it became ours or unknown); the button says "Sail for X again" when `s.lastDest === destination`. `sail()` calls `chooseTarget()` at once when the destination was already seen, so Landfall only shows for blind sailing and rumored coasts. One `winter` scene replaces the land summary, the hall-eats summary and the market: `resolveLand` pushes `{t:'winter', land, hall}`; `upkeep()` returns its lines; `closeWinter()` draws the winter card. `migrate()` finishes an old save caught mid-winter.
+- **The market's frame** (Levi's question). The Winter sheet states the price, the upkeep per man, silver and men, and `menRoom(s)`: how many more men the named men can lead (Σ fCap − men). Buy buttons show their cost and disable when unaffordable.
+- **Change shows once** (TODO 21). `act()` accumulates silver and men deltas in `UI.pend`; `bandHTML()` shows them (`.delta`, pine/oxblood, fades) when no scene covers the band, then clears. `moveStance` records `m.moved = {y, d}`; `stanceMoved()` gives the tag an arrow for this year and last. `markLost()` keeps `s.lost` rows (struck through on the Hall pane) until the following spring.
+- **The chronicle.** `s.log` entries are `{y, t}` via `log(s, t)` (cap 3000). Added: defeats, winter cards, the land's non-routine lines. The yearly "pays N" / "paid nothing" lines stay off the log. Old string logs are migrated (year prefix parsed out).
+- **The real map** (TODO 15, coastline). `coast.py` (job tmp) reads Natural Earth 10m land (public domain), clips to 12°W–34°E / 36°–64°N with Sutherland–Hodgman, projects with Mercator (`PROJ` in `world.js`, identical constants), simplifies with Douglas–Peucker (tol .55), drops islands under 6 units², and writes `coast.js` (`COAST_PATH`, 48 rings, 40 KB). `COASTS` now carries lon/lat and a label side (r/l/a/b); `proj()` gives x,y in `buildWorld` and `migrate()` re-projects every save. Land is `#363B41` with a faint strand stroke under the realm blobs and dots. Labels collide in a few places on the full map (Seine-mouth/Rouen, London/Wessex); pinch-zoom is the real fix.
+- Band tags no longer wrap mid-word. SW cache `seaking-v3`, `coast.js` in the file list.
+
+**Verified:** `smoke.js` (job tmp): fake DOM + localStorage, a scripted dynasty 793→1026 (the line broke) and another to 1066, every pane, the Saga, picker, every Man and ruler card rendered each spring, the Winter sheet, the end card → Past kings, the two-tap abandon, and the old-save migration; 7,200 renders, no `undefined`/`NaN`. Headless Chromium via CDP at 390×844 @2x: Map / Ship / Hall panes, Saga, Winter, setup with Past kings, ruler card, picker, Landfall with the coastline, the full map with every coast known, band deltas. Not on the phone yet.
+
+**Next**
+1. Levi plays it. Watch: is the Map pane the right home; does re-boarding ever surprise; is the chronicle worth reading; do the deltas register.
+2. Pinch-zoom and pan on the map (TODO 15), then tap a holding for its details.
+3. Ruler verbs (tribute, marry out, sail together) — step 4 of the session-4 build order, still open.
+
 ## 2026-10-23 (session 4, build phase: people and kings)
 
 Built the first three steps of the build order in TODO.md (decided after playtest 1), plus the realm-break detection because it was five lines. Two commits: `2a8f635` (stance, Man card, hall) and the rulers commit after it.

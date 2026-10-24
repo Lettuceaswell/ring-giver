@@ -106,3 +106,5 @@ Numbers change silently on re-render: silver drops, a jarl cools, a holding is g
 The story lives in six log lines at the foot of the page and in winter cards that vanish when dismissed. **Recommend:** a **Saga** tab in the Hall sheet (18): every year as one block of its lines, newest first, the king's reign as the heading, the dynasty rows at the top. It is the same `s.log` grouped by year, with the winter card's text pushed into it. The end-of-dynasty card already reads the dynasty rows; it reads this too. Cap it at the live dynasty; past kings keep rows only (18).
 
 **Build order:** 19 first (every other item hangs on where things sit) → 18 → 20 → 22 → 21. 19 and 18 are one session; 20 wants a playtest after.
+
+**Decided 2026-10-23 (Levi):** all five approved as recommended. One save at a time (18). **Built 2026-10-23 (session 5)**, plus the market's frame of reference on the Winter sheet and the real coastline from Natural Earth (closes the coastline-art line of TODO 15). Open from 15: pinch-zoom and pan, tap a holding for its details. See LOG.

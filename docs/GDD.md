@@ -199,3 +199,18 @@ Rulers come out of the fog like coasts. Until one of his coasts is seen a ruler 
 Tap any name, jarl or ruler, and a sheet opens: his stats, his stance in words with the reasons under it, his story (raids, held years, kin, what he did at the last Oath), and every verb that applies right now. Verbs: gift silver, marry a daughter to him, promise him the next holding, send him to the ship or a holding, demand or pay tribute, sail together. Every verb costs silver, a daughter, or a placement; none creates a new resource. Verbs happen in spring. Winter cards stay the world's moves against the player.
 
 **Why one card:** on a phone, one place to go to work on a person. The card is the diplomacy screen, the council, and the family tree at once.
+
+## 16. The shell (decided 2026-10-23, playtest 2)
+The frame the game sits in on a phone. Decisions 18–22 in TODO.md.
+
+**Panes.** The screen is a band, one pane, and a foot. Three panes behind the foot's tabs: **Map** (the map at full height, the destination row, the Wanderer), **Ship** (destination, Everyone aboard, the men aboard), **Hall** (men at home, the unled, the hall row and holdings, children). The Sail bar sits above the tabs. The page itself never scrolls; a pane does. Known shores and the Kings list are gone: a king is tapped by his name under his seat on the map.
+
+**The band.** Year, king, silver, men. Tapping it opens the **Saga** sheet: every reign as a row, the chronicle grouped by year with a heading where the king changes, and **New dynasty**. No dialog: the button arms for three seconds and reads "Tap again · this dynasty is lost". A dynasty that ends or is given up keeps only its reign rows, under **Past kings** on the setup screen (`seaking-sagas`, twenty at most). One live dynasty, no slots.
+
+**A quiet turn is two taps.** The crews who sailed board again in spring; the destination stands until the coast is ours or forgotten, and the button says "again". A coast already seen skips Landfall and goes straight to the fight. The land's lines, the hall's upkeep and the market are one **Winter** sheet. The market says what the choice is: price, upkeep, and how many more men the named men can lead before new men sit unled.
+
+**Change shows once.** Silver and men that moved since the band was last in view tick beside the number for one render. A stance that moved this year or last carries an arrow on its tag. A holding lost last summer stays on the Hall pane, struck through, until the next spring. No toasts, no sound.
+
+**The chronicle.** `s.log` is `{y, t}`: fights lost, plunder, stays, marriages, walks, revolts, realm growth, winter cards. The yearly rent roll stays on the Winter sheet.
+
+**The map.** Real coast: Natural Earth 10m land (public domain), clipped to 12°W–34°E, 36°–64°N, Mercator, simplified to a 40 KB path in `coast.js` by `coast.py`. Every coast is placed by longitude and latitude through the same projection; the crop still follows the known coasts, so the world opens outward as before, but Denmark is Denmark.

@@ -30,21 +30,50 @@
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 html,body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.5 var(--body)}
-body{padding:0 0 calc(84px + env(safe-area-inset-bottom));position:relative}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{position:relative}
 /* one wool grain on the ground only, never on cards */
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.055;mix-blend-mode:soft-light;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23g)'/></svg>")}
-#app{max-width:520px;margin:0 auto;padding:0 max(12px,env(safe-area-inset-left)) 0 max(12px,env(safe-area-inset-right));position:relative;z-index:1}
+/* the frame (TODO 19): band, one pane that scrolls, the foot. The page itself never scrolls */
+#app{max-width:520px;margin:0 auto;padding:0 max(12px,env(safe-area-inset-left)) 0 max(12px,env(safe-area-inset-right));position:relative;z-index:1;height:100vh;height:100dvh;display:flex;flex-direction:column}
+#app>.setup{overflow:auto;flex:1;min-height:0}
+.pane{flex:1;min-height:0;overflow:auto;padding-bottom:12px;-webkit-overflow-scrolling:touch}
+.pane.map{display:flex;flex-direction:column}
+.pane.map svg.map{flex:1 1 0;min-height:160px;max-height:none;height:auto}
+.pane.map .card{flex:none}
+.foot{flex:none;background:var(--bg);border-top:1px solid var(--rule);margin:0 calc(-1 * max(12px,env(safe-area-inset-left))) 0 calc(-1 * max(12px,env(safe-area-inset-right)));padding:0 0 env(safe-area-inset-bottom)}
+.tabs{display:flex;max-width:520px;margin:0 auto}
+.tabs button{flex:1;background:none;border:0;border-radius:0;padding:6px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font:500 10.5px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;box-shadow:inset 0 2px 0 transparent;transition:color .2s var(--ease),box-shadow .2s var(--ease)}
+.tabs button svg{width:20px;height:20px}
+.tabs button.on{color:var(--text);box-shadow:inset 0 2px 0 var(--primary)}
+.tabs button.on svg{color:var(--primary)}
 h1,h2,h3{font-weight:400;margin:0}
 h2{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px;display:flex;align-items:center;gap:8px}
 h2 svg{width:16px;height:16px;flex:none;color:var(--muted)}
 .ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 
 /* the band */
-.top{position:sticky;top:0;z-index:5;background:var(--fjord);color:var(--text);margin:0 calc(-1 * max(12px,env(safe-area-inset-left))) 0 calc(-1 * max(12px,env(safe-area-inset-right)));
-  padding:calc(10px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));display:flex;justify-content:space-between;align-items:flex-end;gap:8px;
+.top{flex:none;position:relative;z-index:5;background:var(--fjord);color:var(--text);margin:0 calc(-1 * max(12px,env(safe-area-inset-left))) 0 calc(-1 * max(12px,env(safe-area-inset-right)));
+  padding:calc(10px + env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 10px max(14px,env(safe-area-inset-left));display:flex;justify-content:space-between;align-items:flex-end;gap:8px;cursor:pointer;
   box-shadow:0 1px 0 var(--rule),0 10px 18px -10px rgba(0,0,0,.6)}
 .top .year{font-family:var(--display);font-size:30px;line-height:1;font-variant-numeric:tabular-nums;color:var(--text)}
+.top .year::after{content:" ▸";font-size:13px;color:var(--muted);vertical-align:3px}
+/* what changed since the band last showed it, for one render (TODO 21) */
+.delta{display:inline-block;margin-right:6px;font-weight:500;animation:delta 2.4s var(--ease) forwards}
+.delta.up{color:var(--pine)}.delta.down{color:var(--oxblood)}
+@keyframes delta{0%,55%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-6px)}}
+.tag .arr{font-style:normal;margin-left:3px;letter-spacing:0}.tag .arr.up{color:var(--pine)}.tag .arr.down{color:var(--oxblood)}
+.card.lost{opacity:.65;border-style:dashed}.card.lost .name{text-decoration:line-through;text-decoration-color:var(--oxblood);text-decoration-thickness:1px}
+button.armed{border-color:var(--oxblood);color:var(--oxblood)}
+/* the chronicle: years down the left, the lines beside them, a reign heading where the king changes (TODO 22) */
+.chron{font:12.5px/1.45 var(--mono);color:var(--muted)}
+.chron .reign{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--rule)}
+.chron .yr{display:grid;grid-template-columns:38px 1fr;gap:0 10px;padding:4px 0;border-top:1px solid var(--rule)}
+.chron .yr:first-child,.chron .reign+.yr{border-top:0}
+.chron .y{color:var(--text);font-variant-numeric:tabular-nums}
+.chron .yr div div{padding:1px 0}
+.card.wand>span{display:flex;align-items:center;gap:8px}.card.wand svg{width:16px;height:16px;flex:none;color:var(--muted)}
 .top .king{font-size:13px;color:var(--text);opacity:.8;margin-top:4px}
 .top .res{text-align:right;font:500 13px/1.45 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;opacity:.95}
 .top .res b{font-weight:500;color:var(--text)}
@@ -57,7 +86,7 @@ h2 svg{width:16px;height:16px;flex:none;color:var(--muted)}
 .name{font-family:var(--display);font-size:18px;line-height:1.2}
 .stats{font-family:var(--mono);color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
 .stats b{color:var(--text);font-weight:500}
-.tag{font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:var(--r);padding:3px 5px;margin-left:6px;vertical-align:2px}
+.tag{font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:var(--r);padding:3px 5px;margin-left:6px;vertical-align:2px;white-space:nowrap;display:inline-block}
 .tag.kin{color:var(--pine);border-color:var(--pine)}
 .tag.st-devoted,.tag.st-loyal{color:var(--pine);border-color:var(--pine)}
 .tag.st-sour{color:var(--chestnut);border-color:var(--chestnut)}
@@ -91,8 +120,8 @@ button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .odds b{font-weight:500}
 .odds .us{color:var(--primary)}.odds .them{color:var(--chestnut)}
 .empty{color:var(--muted);font-style:italic}
-.sail{position:fixed;left:0;right:0;bottom:0;padding:10px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:linear-gradient(transparent,var(--bg) 35%);z-index:6}
-.sail button{width:100%;max-width:496px;display:block;margin:0 auto;padding:14px;font-family:var(--display);font-size:19px}
+.sail{padding:8px max(12px,env(safe-area-inset-right)) 4px max(12px,env(safe-area-inset-left))}
+.sail button{width:100%;max-width:496px;display:block;margin:0 auto;padding:13px;font-family:var(--display);font-size:19px}
 
 /* scenes: a sheet that rises from the foot of the screen */
 .overlay{position:fixed;inset:0;background:rgba(43,46,51,.55);z-index:20;display:flex;flex-direction:column;justify-content:flex-end;animation:dim .3s var(--ease)}
@@ -118,7 +147,10 @@ button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .log div{padding:4px 0;border-top:1px solid var(--rule)}
 
 /* the map: a picture of the rows */
-svg.map{width:100%;height:auto;max-height:42vh;display:block;background:var(--sea);border-radius:var(--r);border:1px solid var(--rule);margin-top:10px}
+svg.map{width:100%;height:auto;max-height:42vh;display:block;background:var(--sea);border-radius:var(--r);border:1px solid var(--rule);margin:10px 0 8px}
+.map .kname{cursor:pointer}.map .kname:active .lbl{opacity:1}
+.land{fill:#363B41;stroke:rgba(232,223,204,.28);stroke-width:.7;fill-rule:evenodd;vector-effect:non-scaling-stroke}
+.lbl.l{text-anchor:end}.lbl.c{text-anchor:middle}
 .coast{fill:var(--iron)}.coast.seen{fill:var(--text)}.coast.hold{fill:var(--primary)}.coast.home{fill:var(--accent)}.coast.dark{fill:var(--iron);opacity:.45}
 .coast.nohold{fill:var(--sea);stroke:var(--text);stroke-width:1.2}
 .map .hit{fill:transparent}.map .tap{cursor:pointer}.map .tap:active .coast{fill:var(--primary)}
@@ -127,6 +159,7 @@ svg.map{width:100%;height:auto;max-height:42vh;display:block;background:var(--se
 @keyframes ring{0%{stroke-opacity:1;r:7}100%{stroke-opacity:.2;r:12}}
 .scene svg.map{max-height:30vh;margin:0 0 10px}
 .lbl{font:10px var(--body);fill:var(--text);opacity:.85;pointer-events:none}
+.kname .lbl{pointer-events:auto}
 .dest{fill:none;stroke:var(--primary);stroke-width:1.5}
 .edge{stroke:var(--text);stroke-opacity:.22;stroke-width:1}
 .edge.dark{stroke-opacity:.1}
@@ -182,6 +215,7 @@ details summary::after{content:' ▸'}details[open] summary::after{content:' ▾
 </head>
 <body>
 <div id="app"></div>
+<script src="coast.js"></script>
 <script src="world.js"></script>
 <script src="game.js"></script>
 <script src="ui.js"></script>

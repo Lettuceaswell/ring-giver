@@ -26,46 +26,50 @@ const FEMALE_NAMES = ['Astrid','Gudrun','Thyra','Ingrid','Sigrid','Ragnhild','Au
 const LOCAL_NAMES = {saxon:['Aelfric','Osric','Wulfstan','Cuthred','Eadric'], frank:['Rotbert','Hugo','Odo','Gerard','Walter'], gael:['Niall','Conall','Cormac','Donnchad','Aed'], norse:MALE_NAMES};
 
 // ---- The coast ----------------------------------------------------------------
-// [id, name, x, y, holdable, culture, famous{loot,def}]
+// Mercator, shared with coast.py (which builds coast.js from Natural Earth): x from longitude, y from latitude
+const PROJ = { lon0: -12, lat1: 63.5, k: 9.4 };
+const merc = lat => Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+function proj(lon, lat) { return { x: (lon - PROJ.lon0) * PROJ.k, y: (merc(PROJ.lat1) - merc(lat)) * PROJ.k * 180 / Math.PI }; }
+// [id, name, lon, lat, holdable, culture, famous{loot,def}, label side: r (default) l a b = right, left, above, below the dot]
 const COASTS = [
-  ['vestfold','Vestfold',232,72,true,'norse'],
-  ['agder','Agder',205,92,true,'norse'],
-  ['rogaland','Rogaland',183,76,true,'norse'],
-  ['hordaland','Hordaland',190,44,true,'norse'],
-  ['skane','Skåne',258,112,true,'norse'],
-  ['jutland','Hedeby',218,138,true,'norse'],
-  ['gotland','Gotland',292,100,true,'norse'],
-  ['birka','Birka',304,66,true,'norse'],
-  ['truso','Truso',305,152,true,'norse'],
-  ['ladoga','Ladoga',334,44,true,'norse'],
-  ['saxony','Elbe-mouth',214,186,true,'saxon'],
-  ['frisia','Dorestad',182,198,true,'frank'],
-  ['flanders','Flanders',152,222,true,'frank'],
-  ['seine','Seine-mouth',126,250,true,'frank'],
-  ['rouen','Rouen',150,266,true,'frank'],
-  ['paris','Paris',176,286,false,'frank',{loot:300,def:180}],
-  ['brittany','Brittany',84,266,true,'frank'],
-  ['loire','Nantes',96,302,true,'frank'],
-  ['tours','Tours',132,316,false,'frank'],
-  ['galicia','Galicia',50,362,false,'frank'],
-  ['lisbon','Lisbon',40,402,false,'frank'],
-  ['kent','Kent',132,216,true,'saxon'],
-  ['london','London',106,202,true,'saxon'],
-  ['eastanglia','East Anglia',126,180,true,'saxon'],
-  ['humber','Humber',126,150,true,'saxon'],
-  ['york','York',104,160,true,'saxon',{loot:220,def:120}],
-  ['lindisfarne','Lindisfarne',116,110,false,'saxon',{loot:180,def:30}],
-  ['pictland','Pictland',96,86,true,'gael'],
-  ['orkney','Orkney',102,46,true,'norse'],
-  ['shetland','Shetland',118,20,true,'norse'],
-  ['hebrides','Hebrides',60,80,true,'gael'],
-  ['ulster','Ulster',44,120,true,'gael'],
-  ['dublin','Dublin',40,166,true,'gael',{loot:160,def:80}],
-  ['munster','Munster',26,212,true,'gael'],
-  ['man','Man',70,150,true,'gael'],
-  ['wales','Wales',70,196,true,'gael'],
-  ['cornwall','Cornwall',60,246,true,'saxon'],
-  ['wessex','Wessex',96,236,true,'saxon'],
+  ['vestfold','Vestfold',10.2,59.2,true,'norse'],
+  ['agder','Agder',8.0,58.1,true,'norse'],
+  ['rogaland','Rogaland',5.7,58.9,true,'norse',null,'l'],
+  ['hordaland','Hordaland',5.3,60.4,true,'norse',null],
+  ['skane','Skåne',13.0,55.6,true,'norse'],
+  ['jutland','Hedeby',9.6,54.5,true,'norse',null,'l'],
+  ['gotland','Gotland',18.3,57.6,true,'norse'],
+  ['birka','Birka',17.5,59.3,true,'norse'],
+  ['truso','Truso',19.4,54.3,true,'norse'],
+  ['ladoga','Ladoga',32.3,60.0,true,'norse',null,'l'],
+  ['saxony','Elbe-mouth',8.9,53.9,true,'saxon'],
+  ['frisia','Dorestad',5.3,52.0,true,'frank',null],
+  ['flanders','Flanders',3.2,51.2,true,'frank',null,'b'],
+  ['seine','Seine-mouth',0.2,49.45,true,'frank',null,'l'],
+  ['rouen','Rouen',1.1,49.3,true,'frank',null,'b'],
+  ['paris','Paris',2.35,48.86,false,'frank',{loot:300,def:180}],
+  ['brittany','Brittany',-3.5,48.6,true,'frank',null,'l'],
+  ['loire','Nantes',-1.6,47.2,true,'frank',null,'l'],
+  ['tours','Tours',0.7,47.4,false,'frank'],
+  ['galicia','Galicia',-8.4,43.4,false,'frank'],
+  ['lisbon','Lisbon',-9.1,38.7,false,'frank'],
+  ['kent','Kent',1.1,51.3,true,'saxon',null,'a'],
+  ['london','London',-0.1,51.5,true,'saxon',null,'l'],
+  ['eastanglia','East Anglia',1.3,52.4,true,'saxon'],
+  ['humber','Humber',-0.3,53.65,true,'saxon',null],
+  ['york','York',-1.1,53.96,true,'saxon',{loot:220,def:120},'a'],
+  ['lindisfarne','Lindisfarne',-1.8,55.67,false,'saxon',{loot:180,def:30}],
+  ['pictland','Pictland',-3.0,56.4,true,'gael',null,'l'],
+  ['orkney','Orkney',-3.0,59.0,true,'norse',null,'l'],
+  ['shetland','Shetland',-1.3,60.3,true,'norse'],
+  ['hebrides','Hebrides',-6.5,57.3,true,'gael',null,'l'],
+  ['ulster','Ulster',-5.9,54.6,true,'gael',null,'l'],
+  ['dublin','Dublin',-6.26,53.35,true,'gael',{loot:160,def:80},'l'],
+  ['munster','Munster',-8.5,51.9,true,'gael',null,'l'],
+  ['man','Man',-4.5,54.2,true,'gael',null,'a'],
+  ['wales','Wales',-4.3,53.3,true,'gael',null],
+  ['cornwall','Cornwall',-5.0,50.3,true,'saxon',null,'l'],
+  ['wessex','Wessex',-1.4,50.9,true,'saxon',null,'b'],
 ];
 const EDGES = [
   ['vestfold','agder'],['vestfold','skane'],['vestfold','hordaland'],['agder','rogaland'],['rogaland','hordaland'],
@@ -85,11 +89,12 @@ function buildWorld(seed) {
   const nb = {};
   for (const [a, b] of EDGES) { (nb[a] = nb[a] || []).push(b); (nb[b] = nb[b] || []).push(a); }
   const shores = {};
-  for (const [id, name, x, y, holdable, culture, famous] of COASTS) {
+  for (const [id, name, lon, lat, holdable, culture, famous, side] of COASTS) {
+    const { x, y } = proj(lon, lat);
     let loot, def;
     if (famous) { loot = famous.loot; def = famous.def; }
     else { loot = r.int(20, 140); def = Math.max(20, Math.min(150, Math.round(loot * (0.4 + r() * 0.6)) + 10)); }
-    shores[id] = { id, name, x, y, holdable, culture, famous: !!famous, baseLoot: loot, baseDef: def, loot, def,
+    shores[id] = { id, name, x: +x.toFixed(1), y: +y.toFixed(1), side: side || 'r', holdable, culture, famous: !!famous, baseLoot: loot, baseDef: def, loot, def,
       known: id === HOME_ID, seen: id === HOME_ID, rumored: false, neighbors: nb[id] || [], walked: null };
   }
   return shores;

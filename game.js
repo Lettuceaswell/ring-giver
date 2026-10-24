@@ -18,11 +18,18 @@ function stanceWord(v) { return STANCE.find(([lo]) => (v || 0) >= lo)[1]; }
 function moveStance(s, m, d, why) {
   if (!m || !d || m.isKing) return;
   m.stance = clamp((m.stance || 0) + d, -100, 100);
+  if (m.moved && m.moved.y === s.year) m.moved.d += d; else m.moved = { y: s.year, d };
   const w = m.why = m.why || [], last = w[w.length - 1];
   if (last && last.t === why && Math.sign(last.d) === Math.sign(d)) { last.d += d; last.y = s.year; } // the same deed, year on year, is one line
   else { w.push({ y: s.year, t: why, d }); if (w.length > 6) w.shift(); }
 }
 function hallPay(s) { return holdPay(s.shores[HOME_ID]); }
+// the chronicle: one line, stamped with its year (GDD §16); the Saga sheet groups them
+function log(s, t) { s.log.push({ y: s.year, t }); if (s.log.length > 3000) s.log.splice(0, s.log.length - 3000); }
+// a man's stance moved this year or last: the card carries an arrow for one turn (TODO 21)
+function stanceMoved(s, m) { return m.moved && m.moved.y >= s.year - 1 && m.moved.d ? Math.sign(m.moved.d) : 0; }
+// how many more men the named men could lead; past that, bought men sit unled (TODO 20, the market's frame)
+function menRoom(s) { return Math.max(0, s.notables.reduce((a, m) => a + fCap(s, m), 0) - s.men); }
 
 // ---- Rulers and realms (GDD §15.3) -----------------------------------------------
 function ownerOf(s, id) { return Object.values(s.rulers).find(k => k.coasts.includes(id)) || null; }
@@ -55,7 +62,7 @@ function checkBreak(s, k) {
   k.broken = true; k.stance = 40; k.why = [{ y: s.year, t: 'his realm is yours; he kneels', d: 0 }];
   const a = s.shores[k.anchor]; a.holdable = true;
   s.queue.push({ t:'summary', title: `${k.name} breaks`, lines: [`Every coast of his realm answers to you. ${k.name} kneels, and ${a.name} lies open to be held.`] });
-  s.log.push(`${s.year}: ${k.name} kneels. His realm is yours.`);
+  log(s, `${k.name} kneels. His realm is yours.`);
 }
 function fCap(s, m) { return (m.follow + (has(s,'ringgiver') ? 1 : 0)) * T.menPerF; }
 function strengthShip(s) { return s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.combat * m.men, 0); }
@@ -109,8 +116,7 @@ function place(s, id, where) {
     const h = s.holdings.find(h => h.id === where); if (!h || m.isKing) return;
     const prev = s.notables.find(x => x.place === where); if (prev) prev.place = 'home';
   }
-  m.place = where;
-  if (m.place !== 'ship' && !s.notables.some(x => x.place === 'ship')) s.destination = null;
+  m.place = where; m.sailed = false;
 }
 function addMen(s, id, d) {
   const m = s.notables.find(x => x.id === id);
@@ -122,13 +128,13 @@ function boardAll(s) {
   const ship = s.notables.filter(m => m.place === 'ship').sort((a, b) => (b.isKing ? 1 : 0) - (a.isKing ? 1 : 0) || b.combat - a.combat);
   for (const m of ship) m.men = Math.min(fCap(s, m), m.men + unledMen(s));
 }
-function setDestination(s, id) { if (s.phase === 'spring' && s.notables.some(m => m.place === 'ship')) s.destination = id; }
+function setDestination(s, id) { if (s.phase === 'spring') s.destination = id; } // the ship may be empty yet; Sail is what needs men
 function marry(s, childId, jarlId) {
   const d = s.children.find(c => c.id === childId), j = s.notables.find(m => m.id === jarlId);
   if (!d || !j || d.sex !== 'f' || d.age < 16 || j.isKing || j.kin) return;
   j.kin = true; d.married = j.name; s.deeds.marriages++;
   moveStance(s, j, 30, `married ${d.name}`);
-  s.log.push(`${d.name} married to ${j.name}. He is kin now.`);
+  log(s, `${d.name} married to ${j.name}. He is kin now.`);
 }
 // a gift of silver warms a man once a year; a king costs three times a jarl
 function giftPrice(m) { return m.anchor ? T.gift * 3 : T.gift; }
@@ -137,7 +143,7 @@ function gift(s, id) {
   if (!m || m.isKing || s.phase !== 'spring') return;
   const cost = giftPrice(m); if (s.silver < cost || m.gifted === s.year) return;
   s.silver -= cost; m.gifted = s.year; moveStance(s, m, T.giftWarm, 'a gift of silver');
-  s.log.push(`${m.name} takes ${cost} silver from the King's hand.`);
+  log(s, `${m.name} takes ${cost} silver from the King's hand.`);
 }
 function rumorPrice(s) { return has(s,'silvertongue') ? 0 : (s.flags.wanderer ? T.rumor / 2 : T.rumor); }
 function buyRumor(s) {
@@ -147,10 +153,10 @@ function buyRumor(s) {
   if (!cands.length) { s.rumorOffer = 'none'; return; }
   const pick = r.pick(cands); pick.known = true; pick.rumored = true;
   s.silver -= price; s.deeds.rumors++; s.rumorOffer = pick.id;
-  s.log.push(`The Wanderer speaks of ${pick.name}. Rich, he says.`);
-  for (const k of discoverRulers(s)) s.log.push(`He names its king too: ${k.name}, ${k.title}.`);
+  log(s, `The Wanderer speaks of ${pick.name}. Rich, he says.`);
+  for (const k of discoverRulers(s)) log(s, `He names its king too: ${k.name}, ${k.title}.`);
 }
-function takeTitle(s, key) { s.king.titles.push(key); s.reign.title = TITLES[key].name; s.log.push(`${s.king.name} is called ${TITLES[key].name}.`); next(s); }
+function takeTitle(s, key) { s.king.titles.push(key); s.reign.title = TITLES[key].name; log(s, `${s.king.name} is called ${TITLES[key].name}.`); next(s); }
 
 // ---- Summer -----------------------------------------------------------------------
 function sail(s) {
@@ -173,9 +179,13 @@ function sail(s) {
       const t = s.shores[s.destination];
       targets = [t.id, ...t.neighbors.filter(n => n !== HOME_ID && !isHolding(s, n)).slice(0, 2)];
     }
+    const knownCoast = s.destination !== 'blind' && s.shores[s.destination].seen; // a coast already seen: no Landfall, straight to the fight (TODO 20)
     for (const id of targets) { const x = s.shores[id]; x.known = x.seen = true; x.rumored = false; }
+    s.lastDest = s.destination;
+    for (const m of ship) m.sailed = true; // they board again next spring
     s.queue.push({ t:'arrive', targets });
     rulerCards(s, discoverRulers(s));
+    if (knownCoast) chooseTarget(s, s.destination);
   } else {
     s.queue.push({ t:'noSail' });
   }
@@ -196,7 +206,7 @@ function chooseTarget(s, id) {
     sh.loot = Math.round(sh.loot * 0.6); sh.def = Math.min(200, Math.round(sh.def * 1.2));
     for (const m of ship) { m.raids++; if (m.raids % 3 === 0) m.combat = clamp(m.combat + 1, 1, 5); if (margin > 1) m.follow = clamp(m.follow + 1, 1, 5); moveStance(s, m, margin > 1 ? 10 : 5, `shared the loot of ${sh.name}`); }
     if (margin > 1) s.deeds.bigWins++;
-  } else { sh.def = Math.min(200, Math.round(sh.def * 1.1)); for (const m of ship) moveStance(s, m, -5, `bled at ${sh.name} for nothing`); }
+  } else { sh.def = Math.min(200, Math.round(sh.def * 1.1)); for (const m of ship) moveStance(s, m, -5, `bled at ${sh.name} for nothing`); log(s, `Driven back at ${sh.name}. ${losses} men lost.`); }
   // distribute losses across the ship's men
   let left = losses; for (const m of ship) { const l = Math.min(m.men, Math.round(losses * m.men / Math.max(1, menAboard))); m.men -= l; left -= l; }
   if (left > 0) { const m = ship[0]; const l = Math.min(m.men, left); m.men -= l; }
@@ -213,8 +223,10 @@ function chooseTarget(s, id) {
 function plunder(s, loot, id) {
   s.silver += loot;
   if (!s.reign.bestRaid || loot > s.reign.bestRaid.loot) s.reign.bestRaid = { loot, shore: s.shores[id].name, year: s.year };
-  s.log.push(`${s.year}: ${s.shores[id].name} plundered for ${loot} silver.`);
+  log(s, `${s.shores[id].name} plundered for ${loot} silver.`);
 }
+// a holding gone, however it went: the Hall pane shows the row struck through until the next spring (TODO 21)
+function markLost(s, h, why) { (s.lost = s.lost || []).push({ name: h.name, y: s.year, why }); }
 function choosePlunder(s) { const sc = s.queue[0]; plunder(s, sc.loot, sc.shore); next(s); }
 function chooseStay(s, jarlId) {
   const sc = s.queue[0], sh = s.shores[sc.shore];
@@ -226,7 +238,7 @@ function chooseStay(s, jarlId) {
   s.holdings.push({ id: sh.id, name: sh.name, pay: holdPay(sh), unrest, quiet: 0, empty: 0, taken: s.year });
   j.place = sh.id; s.deeds.stays++; moveStance(s, j, 10, `given ${sh.name}`);
   revealAround(s, sh.id);
-  s.log.push(`${s.year}: ${j.name} stays at ${sh.name}. It is ours.`);
+  log(s, `${j.name} stays at ${sh.name}. It is ours.`);
   const owner = ownerOf(s, sh.id); if (owner) { moveStance(s, owner, -T.takeSour, `you hold ${sh.name}, which was his`); checkBreak(s, owner); }
   rulerCards(s, discoverRulers(s));
   next(s);
@@ -249,7 +261,7 @@ function resolveLand(s) {
     if (j && stanceWord(j.stance) === 'hostile' && r() < T.walkChance) { walkAway(s, j, h); lines.push(`${j.name} has had enough of the King. He walks, and ${h.name} is his now.`); continue; }
     if (!j) {
       h.empty++; h.quiet = 0; h.unrest = clamp(h.unrest + (has(s,'lawgiver') ? 5 : T.emptyUnrest), 0, 100);
-      if (h.empty >= 2) { loseHolding(s, h, null); lines.push(`${h.name} stood empty two summers. It has revolted.`); }
+      if (h.empty >= 2) { loseHolding(s, h, null, 'stood empty and revolted'); lines.push(`${h.name} stood empty two summers. It has revolted.`); }
       else lines.push(`${h.name} stood empty. Unrest ${h.unrest}.`);
       continue;
     }
@@ -267,7 +279,7 @@ function resolveLand(s) {
       }
     } else {
       const lost = Math.round(j.men * 0.3); j.men -= lost; s.men -= lost; j.heldRun = 0; moveStance(s, j, -10, `lost ${h.name} and ${lost} men`);
-      loseHolding(s, h, j); lines.push(`${h.name} rose against ${j.name}. ${lost} men dead. The holding is lost.`);
+      loseHolding(s, h, j, `rose against ${j.name}`); lines.push(`${h.name} rose against ${j.name}. ${lost} men dead. The holding is lost.`);
     }
   }
   s.deeds.jarlYears += s.notables.filter(m => !m.isKing && m.place !== 'home').length;
@@ -275,26 +287,26 @@ function resolveLand(s) {
   for (const sh of Object.values(s.shores)) { if (sh.loot < sh.baseLoot) sh.loot = Math.min(sh.baseLoot, Math.round(sh.loot * 1.1) + 1); if (sh.def > sh.baseDef) sh.def = Math.max(sh.baseDef, Math.round(sh.def * 0.95)); }
   growRealms(s, lines);
   s.reign.bestHoldings = Math.max(s.reign.bestHoldings, s.holdings.length);
-  // everyone home for winter
+  // everyone home for winter; those who sailed board again in spring, and the destination stands (TODO 20)
   for (const m of s.notables) if (m.place === 'ship') m.place = 'home';
-  s.destination = null;
-  if (lines.length) s.queue.push({ t:'summary', title: 'The land', lines });
+  for (const l of lines) if (!/ pays \d+\. | paid nothing\.$|No contest this summer/.test(l) || / Rule is /.test(l)) log(s, l); // the rent roll stays on the Winter sheet
   s.phase = 'winter';
-  upkeep(s);
-  s.queue.push({ t:'market' });
+  s.queue.push({ t:'winter', land: lines, hall: upkeep(s) });
 }
-function loseHolding(s, h, j) {
+function loseHolding(s, h, j, why) {
   s.holdings = s.holdings.filter(x => x !== h);
-  if (j) j.place = 'home';
+  markLost(s, h, why || 'revolted');
+  if (j) { j.place = 'home'; j.sailed = false; }
   const sh = s.shores[h.id]; sh.loot = Math.round(sh.baseLoot * 0.8); sh.def = Math.round(sh.baseDef * 1.1);
 }
 // a jarl leaves with his holding and his men; the shore is his, with his stats as its defenders
 function walkAway(s, j, h) {
   const sh = s.shores[h.id];
   s.holdings = s.holdings.filter(x => x !== h);
-  sh.walked = { name: j.name, combat: j.combat, rule: j.rule, follow: j.follow }; sh.def = clamp(j.rule * j.men + 20, 20, 200); sh.loot = Math.round(h.pay * 3);
+  markLost(s, h, `${j.name} walked with it`);
+  sh.walked ={ name: j.name, combat: j.combat, rule: j.rule, follow: j.follow }; sh.def = clamp(j.rule * j.men + 20, 20, 200); sh.loot = Math.round(h.pay * 3);
   s.notables = s.notables.filter(m => m !== j); s.men -= j.men;
-  s.log.push(`${j.name} walks. ${h.name} is his now.`);
+  log(s, `${j.name} walks. ${h.name} is his now.`);
 }
 
 // ---- Winter ---------------------------------------------------------------------------
@@ -310,10 +322,11 @@ function upkeep(s) {
   const lines = [];
   if (cost > s.silver) { const starve = Math.min(home, Math.ceil((cost - s.silver) / 2)); cost = s.silver; s.men -= starve; trimMen(s); lines.push(`The hall could not feed everyone. ${starve} men left.`); }
   s.silver -= cost; lines.push(`${home} men at home ate ${cost} silver.`);
+  if (lines.length > 1) log(s, lines[0]);
   s.flags = {};
-  s.queue.push({ t:'summary', title: 'The hall eats', lines });
+  return lines;
 }
-function closeMarket(s) { winterCard(s); next(s); }
+function closeWinter(s) { winterCard(s); next(s); }
 function trimMen(s) { let over = placedMen(s) - s.men; for (const m of s.notables) { if (over <= 0) break; const d = Math.min(m.men, over); m.men -= d; over -= d; } }
 
 function winterCard(s) {
@@ -367,6 +380,7 @@ function winterCard(s) {
     const js = s.notables.filter(m => !m.isKing), a = r.pick(js), b = r.pick(js.filter(x => x !== a));
     b.follow = clamp(b.follow - 1, 1, 5); moveStance(s, b, -10, `shamed at the King's table by ${a.name}`); sc.title = 'A feud in the hall'; sc.lines.push(`${a.name} shamed ${b.name} at the table. Men drift from ${b.name}.`);
   } else { sc.title = 'A quiet winter'; sc.lines.push('Snow on the roof. Nothing stirs.'); }
+  log(s, ev === 'quiet' ? 'A quiet winter.' : `${sc.title}. ${sc.lines[0]}`);
   s.queue.push(sc);
 }
 function acceptSuitor(s, yes) { const sc = s.queue[0]; if (yes) marry(s, sc.choice.d, sc.choice.j); next(s); }
@@ -384,6 +398,10 @@ function newYear(s) {
   for (const c of s.children) { c.age++; if (c.sex === 'm' && c.age === 16) comeOfAge(s, c); }
   if (s.year >= T.endYear) { s.dynasty.push(reignCard(s)); s.queue.push({ t:'end', reason: '1066' }); return; }
   s.phase = 'spring'; s.rumorOffer = null;
+  // the crews who sailed last summer gather at the ship; a destination that is now ours or gone is forgotten (TODO 20)
+  for (const m of s.notables) if (m.sailed && m.place === 'home') m.place = 'ship';
+  if (s.destination && s.destination !== 'blind' && (isHolding(s, s.destination) || !s.shores[s.destination].known)) s.destination = null;
+  if (s.lost) s.lost = s.lost.filter(l => l.y >= s.year - 1);
   const k = s.king;
   if (T.forkAges.includes(k.age)) {
     const scored = Object.keys(TITLES).filter(t => !k.titles.includes(t)).map(t => [t, TITLES[t].score(s) + rng(s.day + t + s.year)() * 0.5]).sort((a, b) => b[1] - a[1]);
@@ -397,7 +415,7 @@ function comeOfAge(s, c) {
   const r = rng(s.day + c.id), k = s.king;
   const m = makeMan(c.name, clamp(k.combat - 1 + r.int(0, 2), 1, 5), clamp(k.rule - 1 + r.int(0, 2), 1, 5), clamp(2 + r.int(0, 2), 1, 5), { age: 16, son: true, kin: true });
   s.notables.push(m); c.ofAge = true;
-  s.log.push(`${c.name} is sixteen and takes a seat in the hall.`);
+  log(s, `${c.name} is sixteen and takes a seat in the hall.`);
 }
 
 // ---- The reign ends -------------------------------------------------------------------------
@@ -417,7 +435,7 @@ function chooseHeir(s, id) { crown(s, s.notables.find(m => m.id === id)); next(s
 function crown(s, heir) {
   const old = s.king;
   s.notables = s.notables.filter(m => m !== old);
-  heir.isKing = true; heir.son = false; heir.kin = false; heir.titles = []; heir.offeredPairs = []; heir.place = 'home';
+  heir.isKing = true; heir.son = false; heir.kin = false; heir.titles = []; heir.offeredPairs = []; heir.place = 'home'; heir.sailed = false;
   s.king = heir; s.gen++;
   s.reign = { bestRaid: null, bestHoldings: s.holdings.length, title: null, start: s.year };
   s.deeds = Object.fromEntries(Object.keys(s.deeds).map(k => [k, 0]));
@@ -435,7 +453,7 @@ function crown(s, heir) {
 }
 function oathPay(s, pay) {
   const sc = s.queue[0], j = s.notables.find(m => m.id === sc.jarl);
-  if (sc.kneels || (pay && s.silver >= sc.price)) { if (!sc.kneels) { s.silver -= sc.price; moveStance(s, j, 10, 'paid for his knee'); } j.kin = true; s.log.push(`${j.name} kneels.`); }
+  if (sc.kneels || (pay && s.silver >= sc.price)) { if (!sc.kneels) { s.silver -= sc.price; moveStance(s, j, 10, 'paid for his knee'); } j.kin = true; log(s, `${j.name} kneels.`); }
   else walkAway(s, j, s.holdings.find(h => h.id === j.place)); // he walks with his holding
   next(s);
 }
@@ -448,7 +466,7 @@ function next(s) {
     if (s.phase === 'summer') resolveLand(s);
     else if (s.phase === 'winter' && !s.flags.winterDone) { s.flags.winterDone = true; endWinter(s); }
   }
-  if (s.queue.length && s.queue[0].t === 'market') s.flags.winterDone = false;
+  if (s.queue.length && s.queue[0].t === 'winter') s.flags.winterDone = false;
   save(s);
 }
 // saves from before stance and the hall: fill what is missing, change nothing that is there
@@ -457,7 +475,23 @@ function migrate(s) {
   for (const m of s.notables) { if (m.stance === undefined) m.stance = m.kin ? 20 : 0; if (!m.why) m.why = []; }
   if (s.guard === undefined) s.guard = null;
   if (!s.rulers) { s.rulers = buildRulers(s.day); s.envoy = null; for (const k of Object.values(s.rulers)) k.coasts = k.coasts.filter(c => !isHolding(s, c)); discoverRulers(s); }
+  s.log = s.log.map(l => typeof l === 'string' ? { y: +(l.match(/^(\d{3,4}): /) || [])[1] || null, t: l.replace(/^\d{3,4}: /, '') } : l);
+  if (!s.lost) s.lost = [];
+  // where a coast sits on the map is presentation, not state: re-project every save from the table (the real coast came in session 5)
+  for (const [id, , lon, lat, , , , side] of COASTS) { const sh = s.shores[id]; if (!sh) continue; const { x, y } = proj(lon, lat); sh.x = +x.toFixed(1); sh.y = +y.toFixed(1); sh.side = side || 'r'; }
+  // a save caught between the old market card and this build: finish its winter the new way
+  s.queue = s.queue.filter(sc => sc.t !== 'market' && !(sc.t === 'summary' && (sc.title === 'The land' || sc.title === 'The hall eats')));
+  if (s.phase === 'winter' && !s.queue.length && !s.flags.winterDone) s.queue.push({ t:'winter', land: [], hall: [] });
   return s;
 }
 function save(s) { try { localStorage.setItem('seaking', JSON.stringify(s)); } catch (e) {} }
 function load() { try { const j = localStorage.getItem('seaking'); return j ? JSON.parse(j) : null; } catch (e) { return null; } }
+// a dynasty that ended, or was given up: its rows live on as Past kings on the setup screen (TODO 18)
+function archive(s, why) {
+  const rows = [...s.dynasty]; if (!rows.length || rows[rows.length - 1].to !== s.year || rows[rows.length - 1].king !== s.king.name) rows.push(reignCard(s));
+  const past = loadPast();
+  past.unshift({ at: new Date().toISOString().slice(0, 10), seed: s.day, from: T.startYear, to: s.year, gens: s.gen, why, rows });
+  try { localStorage.setItem('seaking-sagas', JSON.stringify(past.slice(0, 20))); } catch (e) {}
+  try { localStorage.removeItem('seaking'); } catch (e) {}
+}
+function loadPast() { try { return JSON.parse(localStorage.getItem('seaking-sagas')) || []; } catch (e) { return []; } }
