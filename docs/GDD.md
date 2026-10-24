@@ -81,7 +81,7 @@ Every contest in the game is **Strength vs Strength**, shown as a bar before the
 - Strength = stat × men.
 - Ship: (Combat × men) vs shore defenders. Margin sets loot share and losses. Win big, loot big. Win narrow, bleed.
 - Land: (Rule × men) vs holding unrest. Win: it pays. Lose: revolt.
-- One seeded roll, small swing. The odds are always visible; the result never is until the ships come home.
+- Up to three seeded exchanges (the landing, the shield wall, the press), each a roll of the ship's strength on the day (0.82 to 1.18); the mean of the exchanges fought must beat the defenders, and a side breaks early once the rest could not save it (the coast at twice its number, the ship at half). Luck is in play in about 6% of fights. The odds are always visible; the result never is until the battle is fought on screen.
 
 **Why one rule:** combat, revolt, conquest, and reconquering a walked jarl are the same math. One bar to learn.
 
@@ -91,8 +91,11 @@ The year's spine. Information arrives one beat at a time.
 
 1. **Commit.** Jarls on the ship, destination chosen. Men already counted.
 2. **Arrive.** Fog lifts on three provinces: the target and its two coastal neighbors, true numbers shown. Pick one.
-3. **Fight.** The bar moves.
-4. **Plunder or Stay.** On a win, if the shore is holdable: take the loot and come home, or forfeit the loot, keep the land, and leave that jarl standing. The holding appears as a new row.
+3. **Fight.** The battle is played on the night (screen audit 4, built 2026-10-24): the ranks as marks, the King's in accent, each named man a chip with his chance to fall; each exchange shows its real roll, the ranks close, men fall at scattered moments, a named man's fall is called on the field (and the phone buzzes where it can); the verdict stamps; then the reckoning: loot, men and their worth in silver, the net, the coast arming, a ruler's stance, and the crew, man by man. A tap skips it.
+   **Turn for home.** At Landfall, the ship may turn for home instead: the summer is spent, no loot, no blood.
+4. **Plunder or Stay.** On a win, if the shore is holdable: take the loot and come home, or forfeit the loot, keep the land, and leave that jarl standing. The holding appears as a new row. The sheet is a trade: the loot now against the rent a year and the summers to earn it back, the unrest, the ruler's price, and each jarl's chance to hold next summer with his men and with his full following.
+
+**The King's risk.** Every named man aboard may fall; the chance is the same for each and is shown where the choice is made (the spring commit sheet, Landfall) and on the battle. Board all leaves home a man with no one to lead.
 
 Fog and discovery:
 - The whole map starts dark. Fog lifts by arriving, or for free around a holding.
@@ -164,7 +167,8 @@ Revised 2026-10-23 after playtest 1. Earlier versions also ruled out map interac
 | Winter upkeep per man at home | 1 silver; a man leaves for each silver short |
 | Rumor | 20 silver |
 | Mortality past 50 | 5% per year, +5% per year |
-| Named man falls aboard | lost fight loss share × 0.25; bloody win (loss share − 0.2) × 0.25 |
+| Named man falls aboard | lost fight loss share × 0.25; bloody win (loss share − 0.2) × 0.25; in the exchange that cost the most, by lot |
+| The battle | up to 3 exchanges, each roll × 0.82–1.18; mean of the exchanges fought vs defenders; a side breaks at 2× / 0.5× |
 | Old age past 60 | 4% × (age − 60) a winter |
 | Quiet years to raise a local | 5 |
 | Stance bands | devoted ≥60 · loyal ≥20 · cool · sour ≤−20 · hostile ≤−60 |

@@ -60,7 +60,7 @@ if (FIGHTS) { const ct = G.chooseTarget; G.chooseTarget = (s, id) => { // what t
 function fightKind(s, sc) {
   const q = s.queue, after = q.slice(1).map(x => x.t), own = id => Object.values(s.rulers).find(k => k.coasts.includes(id));
   if (sc.t === 'arrive') return 'land-' + (s.lastDest === 'blind' ? 'blind' + sc.targets.length : 'aimed') + (sc.targets.some(id => s.shores[id].walked) ? '-walked' : '') + (sc.targets.some(own) ? '-owned' : '');
-  if (sc.t === 'fight') return (sc.win ? 'win-' + (sc.margin > 1 ? 'rout' : sc.margin > 0.3 ? 'victory' : 'narrow') : 'lose') + (after.includes('death') ? '-kingfell' : after.includes('summary') && q.slice(1).some(x => x.t === 'summary' && / went down /.test(x.lines.join(' '))) ? '-fell' : '') + (after[0] === 'stay' ? '-stay' : '');
+  if (sc.t === 'fight') return (sc.win ? 'win-' + (sc.margin > 1 ? 'rout' : sc.margin > 0.3 ? 'victory' : 'narrow') : 'lose') + (after.includes('death') ? '-kingfell' : (sc.crew ? sc.crew.some(c => c.fell) : after.includes('summary') && q.slice(1).some(x => x.t === 'summary' && / went down /.test(x.lines.join(' ')))) ? '-fell' : '') + (after[0] === 'stay' ? '-stay' : '');
   if (sc.t === 'stay') return 'stay' + (sc.walked ? '-walked' : '') + (own(sc.shore) ? '-owned' : '') + (s.notables.filter(m => m.place === 'ship' && !m.isKing).length > 2 ? '-many' : '');
   if (sc.t === 'summary' && s.phase === 'summer') return / went down /.test(sc.lines.join(' ')) ? (/on his shield/.test(sc.lines.join(' ')) ? 'fallen-king' : 'fallen') : / breaks$/.test(sc.title) ? 'breaks' : 'summary';
   if (sc.t === 'ruler' && s.phase === 'summer') return 'ruler-met';
@@ -82,7 +82,7 @@ function newMetrics() {
   return { fights: 0, lost: 0, menLostFights: 0, lootTotal: 0, starveYears: 0, starveHard: 0, starveNewKing: 0, starveMen: 0, hallFell: 0, rivalSails: 0, rivalSilver: 0, rivalMen: 0,
     holdGained: 0, holdLost: 0, holdWalked: 0, holdEmpty: 0, holdRevolt: 0, holdTaken: 0, realmsBroken: 0,
     firstHostile: {}, breakWinters: [],
-    kingFell: 0, kingSlain: 0, jarlFell: 0, hallSlain: 0, starveWalk: 0, stirs: 0, strikes: 0, strikesHeld: 0, firstBreakYear: null, kingDeaths: 0, jarlDeaths: 0, titles: 0, menBought: 0,
+    kingFell: 0, luck: 0, phases: 0, turnedHome: 0, kingSlain: 0, jarlFell: 0, hallSlain: 0, starveWalk: 0, stirs: 0, strikes: 0, strikesHeld: 0, firstBreakYear: null, kingDeaths: 0, jarlDeaths: 0, titles: 0, menBought: 0,
     hostileEpisodes: 0, hostileResolved: 0, hostileWinters: [], hostileOpen: 0, hostileJarlYears: 0,
     holdByDecade: {}, chestSum: 0, chestYears: 0, chestMin: Infinity, menSum: 0, years: 0, eventsBy: {} };
 }
@@ -173,13 +173,12 @@ function runOne(name, seed) {
     const sc = s.queue[0]; if (!sc) return false;
     if (FIGHTS) fightShot(s, sc, name, seed);
     switch (sc.t) {
-      case 'arrive': G.chooseTarget(s, P.target(s, sc)); break;
-      case 'fight': M.fights++; if (!sc.win) M.lost++; M.menLostFights += sc.losses; M.lootTotal += sc.loot; G.next(s); break;
+      case 'arrive': { const t = P.target(s, sc); if (t === 'home') { M.turnedHome++; G.turnHome(s); } else G.chooseTarget(s, t); break; }
+      case 'fight': M.fights++; if (!sc.win) M.lost++; M.menLostFights += sc.losses; M.lootTotal += sc.loot; if (sc.odds > 0.03 && sc.odds < 0.97) M.luck++; if (sc.phases) M.phases += sc.phases.length; if (sc.crew) M.jarlFell += sc.crew.filter(c => c.fell && !c.isKing).length; G.next(s); break;
       case 'stay': {
         const c = P.stay(s, sc);
         if (c === 'plunder') G.choosePlunder(s); else { G.chooseStay(s, c); M.holdGained++; s.pt.lastStay = s.year; }
         break; }
-      case 'summary': if (s.phase === 'summer' && sc.lines.some(l => / went down /.test(l))) M.jarlFell += sc.lines.filter(l => / went down at /.test(l)).length; G.next(s); break;
       case 'winter': {
         trackRulers(s, run, M);
         for (const e of sc.events || []) { if (/will not starve/.test(e.t)) M.starveWalk++; if (/ stirs\.$/.test(e.t)) M.stirs++; if (/ came for /.test(e.t)) { M.strikes++; M.strikesHeld++; } if (/ took /.test(e.t)) M.strikes++; }
@@ -225,7 +224,7 @@ function runOne(name, seed) {
   const hy = Object.values(holdSeries).reduce((a, h) => a + h[0], 0), hn = Object.values(holdSeries).reduce((a, h) => a + h[1], 0);
   const out = {
     persona: name, seed, endYear: s.year, broke, survived: !broke, gens: s.gen, reason: endReason,
-    fights: M.fights, fightsLost: M.lost, lossPct: M.fights ? 100 * M.lost / M.fights : 0, menLostFights: M.menLostFights, lootTotal: M.lootTotal,
+    fights: M.fights, fightsLost: M.lost, lossPct: M.fights ? 100 * M.lost / M.fights : 0, luckPct: M.fights ? 100 * M.luck / M.fights : 0, phasesAvg: M.fights ? M.phases / M.fights : 0, turnedHome: M.turnedHome, menLostFights: M.menLostFights, lootTotal: M.lootTotal,
     starveYears: M.starveYears, starveHard: M.starveHard, starveMen: M.starveMen, rivalSails: M.rivalSails, hallFell: M.hallFell, rivalSilver: M.rivalSilver, rivalMen: M.rivalMen,
     holdAvg: hn ? hy / hn : 0, holdMax: Math.max(0, ...Object.values(holdSeries).map(h => h[0] / h[1])), holdGained: M.holdGained, holdLost: M.holdLost,
     holdWalked: M.holdWalked, holdEmpty: M.holdEmpty, holdRevolt: M.holdRevolt, holdTaken: M.holdTaken, holdByDecade,
@@ -264,6 +263,7 @@ const S = (f) => rs => cell(stat(rs, f));
 console.log(`Ring Giver persona playtest  ·  ${SEEDS} seeds (pt-0000001..${String(SEEDS).padStart(7, '0')}) · king ${KING} · cells are mean (min-max) over seeds`);
 table('THE LINE', [['broke/runs', rs => `${rs.filter(r => r.broke).length}/${rs.length}`], ['end year', S(r => r.endYear)], ['kings', S(r => r.gens)], ['king deaths', S(r => r.kingDeaths)], ['jarl deaths', S(r => r.jarlDeaths)], ['titles', S(r => r.titles)]]);
 table('WAR AND HALL', [['fights', S(r => r.fights)], ['lost', S(r => r.fightsLost)], ['lost %', S(r => r.lossPct)], ['starve yrs', S(r => r.starveYears)], ['starve men', S(r => r.starveMen)], ['hall fell', S(r => r.hallFell)], ['men bought', S(r => r.menBought)]]);
+table('THE BATTLE (audit 4)', [['luck in play %', S(r => r.luckPct)], ['exchanges a fight', S(r => r.phasesAvg)], ['turned home', S(r => r.turnedHome)], ['king fell', S(r => r.kingFell)]]);
 table('LAND', [['hold avg/yr', S(r => r.holdAvg)], ['hold peak', S(r => r.holdMax)], ['gained', S(r => r.holdGained)], ['lost', S(r => r.holdLost)], ['jarl walked', S(r => r.holdWalked)], ['hostile jarl-yrs', S(r => r.hostileJarlYears)]]);
 table('NEW TEETH (TODO 25)', [['king fell', S(r => r.kingFell)], ['king slain', S(r => r.kingSlain)], ['jarls fell', S(r => r.jarlFell)], ['hall slain', S(r => r.hallSlain)], ['starve walk', S(r => r.starveWalk)], ['stirs', S(r => r.stirs)], ['strikes', S(r => r.strikes)], ['struck held', S(r => r.strikesHeld)], ['revolt', S(r => r.holdRevolt)], ['taken', S(r => r.holdTaken)], ['hold@843-852', S(r => r.holdAt850)]]);
 table('RULERS', [['went hostile', S(r => r.hostileEpisodes)], ['calmed', S(r => r.hostileResolved)], ['winters to calm', S(r => r.hostileWinters)], ['still hostile', S(r => r.hostileOpen)], ['realms broken', S(r => r.realmsBroken)], ['hostile→kneels yrs', S(r => r.breakWinters)]]);

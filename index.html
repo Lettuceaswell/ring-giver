@@ -359,6 +359,83 @@ details summary::after{content:' ▸'}details[open] summary::after{content:' ▾
 .cardfoot button.grave{background:var(--oxblood);border-color:var(--oxblood);color:var(--on-primary)}
 .cardfoot.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .cardfoot.two button{justify-content:center;font-size:17px}
+/* the battle (audit 4): ranks of marks, up to three exchanges, the reckoning */
+.cardfoot button.ghost{background:transparent;color:var(--muted);border:1px dashed var(--rule)}
+.overlay.battle{background:var(--sea);animation:none}
+.battle .cardfoot{background:linear-gradient(to top,var(--sea) 75%,rgba(27,60,70,0))}
+.battle .stage{justify-content:flex-start;padding-top:calc(84px + env(safe-area-inset-top))}
+.bcard{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--chestnut);border-radius:6px;padding:14px 16px 16px;box-shadow:0 18px 40px -16px rgba(0,0,0,.7)}
+.bcard.shake{animation:shake .38s var(--ease)}
+@keyframes shake{20%{transform:translateX(-4px)}45%{transform:translateX(4px)}70%{transform:translateX(-2px)}}
+.bhead{display:flex;gap:10px;align-items:flex-start;color:var(--chestnut)}.bhead .ico{width:22px;height:22px;margin-top:4px;flex:none}
+.bhead h3{font:400 26px/1.15 var(--display);color:var(--text);margin:0}.bhead.grave h3,.bhead.grave{color:var(--oxblood)}
+.bhead small{display:block;font:400 12px/1.4 var(--mono);color:var(--muted);margin-top:3px}.bhead small b{color:var(--text);font-weight:500}
+.bfield{position:relative;margin-top:10px}
+.bphase{display:flex;justify-content:space-between;align-items:baseline;min-height:26px;gap:8px}
+.bphase .pn{font:400 21px/1.2 var(--display);color:var(--accent)}.bphase .pn.in{animation:rise .4s var(--ease) both}
+.bphase .pd{font:400 13px/1 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}.bphase .pd.set{color:var(--text);animation:land .3s var(--ease)}
+@keyframes land{from{transform:scale(1.25)}}
+.field{display:block;width:100%;height:auto;margin-top:4px}
+.field rect{transition:fill .25s,opacity .6s,transform .6s var(--ease);transform-box:fill-box;transform-origin:center}
+.field .us{fill:var(--primary)}.field .us.k{fill:var(--accent)}.field .them{fill:var(--chestnut)}
+.field rect.hit{fill:var(--oxblood);opacity:.22;transform:translateY(3px) scale(.7)}
+.field .ours,.field .theirs{transition:transform .35s cubic-bezier(.5,0,.2,1)}
+.field.close .ours{transform:translateX(6px)}.field.close .theirs{transform:translateX(-6px)}
+.field .front{stroke:var(--text);stroke-width:1;stroke-dasharray:2 3;opacity:.5;transition:all .6s var(--ease)}
+.field text{font:400 10.5px var(--mono);fill:var(--muted)}.field text .b{fill:var(--text)}.field text.u{fill:var(--iron);font-size:9.5px}
+.bfall{position:absolute;left:0;right:0;top:46%;text-align:center;font:400 22px/1 var(--display);color:var(--oxblood);text-shadow:0 2px 12px rgba(0,0,0,.8);pointer-events:none;animation:bfall 1.8s var(--ease) both}
+.bfall.king{font-size:28px}
+@keyframes bfall{0%{opacity:0;transform:translateY(8px)}15%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+.bchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.bchip{font:400 12px/1 var(--body);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:5px 7px;background:var(--bg);transition:all .3s}
+.bchip.king{border-color:var(--accent)}.bchip b{font:500 11.5px/1 var(--mono);color:var(--accent)}
+.bchip.fell{color:var(--oxblood);border-color:var(--oxblood);text-decoration:line-through;text-decoration-thickness:1px}
+.brisk{font:400 11.5px/1.4 var(--mono);color:var(--muted);margin-top:6px}.brisk b{color:var(--text);font-weight:500}
+.xrows{display:grid;gap:6px;margin-top:10px}
+.xrow{display:grid;grid-template-columns:1fr auto;gap:1px 10px;border-top:1px solid var(--rule);padding-top:6px}
+.xrow.in{animation:rise .4s var(--ease) both}
+.xrow .xn{font:400 15px/1.3 var(--display)}.xrow .xd{font:400 12px/1.3 var(--mono);color:var(--muted)}.xrow .xd b{color:var(--text);font-weight:500}
+.xrow .xs{grid-column:1/-1;font:400 11.5px/1.45 var(--mono);color:var(--muted)}.xrow .xs b{color:var(--text);font-weight:500}.xrow em{font-style:normal;color:var(--oxblood)}
+.bverdict{margin-top:12px}.bverdict.wait{visibility:hidden}
+.bverdict .w{display:block;font:400 42px/1.05 var(--display);color:var(--t)}.bverdict .l{display:block;font:400 13px/1.4 var(--mono);color:var(--muted);margin-top:2px}
+.bverdict.stamp .w{animation:stamp .5s var(--ease) both}
+@keyframes stamp{from{opacity:0;transform:scale(1.2);letter-spacing:.04em}}
+.bverdict.tone-boon{--t:var(--pine)}.bverdict.tone-win{--t:var(--primary)}.bverdict.tone-omen{--t:var(--chestnut)}.bverdict.tone-blood{--t:var(--oxblood)}
+.reckon{width:100%;max-width:400px}.reckon.wait{display:none}
+.reckon h2{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.acct{display:grid;grid-template-columns:1fr auto;gap:3px 12px;padding:10px 12px;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);font:400 12.5px/1.45 var(--mono);font-variant-numeric:tabular-nums}
+.acct span:nth-child(2n){text-align:right;color:var(--text)}.acct span:nth-child(2n+1){color:var(--muted)}
+.acct .up{color:var(--pine)!important}.acct .down{color:var(--oxblood)!important}.acct .net{border-top:1px solid var(--rule);padding-top:5px;margin-top:2px}.acct s{color:var(--iron)}
+.bcrew{display:grid;gap:7px}
+.bcrew .cm{display:grid;grid-template-columns:3px 1fr auto;gap:0 10px}.bcrew .cm>i{border-radius:1px;background:var(--rule)}
+.bcrew .cm.up>i{background:var(--pine)}.bcrew .cm.fell>i{background:var(--oxblood)}
+.bcrew .n{font:400 16px/1.25 var(--display)}.bcrew .n small{font:400 11px/1 var(--mono);color:var(--muted);margin-left:6px}.bcrew .cm.fell .n{color:var(--oxblood)}
+.bcrew .g{font:400 12px/1.5 var(--mono);color:var(--muted)}.bcrew .g b{color:var(--pine);font-weight:500}.bcrew .g em{font-style:normal;color:var(--oxblood)}
+.bcrew .m{font:400 12.5px/1.3 var(--mono);color:var(--muted);text-align:right;white-space:nowrap}.bcrew .m b{color:var(--text);font-weight:500}
+.reckon .cnote{font:400 12px/1.45 var(--mono);color:var(--iron);margin-top:6px}
+@media (prefers-reduced-motion:reduce){.bcard.shake,.bfall{animation:none}.bfall{display:none}}
+/* the King's risk on the commit sheet; Landfall with each coast's odds; Plunder or stay as a trade (audit 4) */
+.krisk{font:400 12px/1.45 var(--mono);color:var(--muted);margin:6px 0 0}.krisk b{color:var(--text);font-weight:500}.krisk.high b{color:var(--oxblood)}
+.pick.lf .row{align-items:baseline}.pick.lf .pc{font:400 22px/1 var(--display)}
+.pc.t-sure{color:var(--pine)}.pc.t-likely{color:var(--primary)}.pc.t-even{color:var(--chestnut)}.pc.t-long{color:var(--oxblood)}
+.pick.lf .stats{display:block;margin-top:3px}.stats .best{color:var(--pine);font-weight:500}
+button.home{width:100%;margin-top:10px;background:transparent;border:1px dashed var(--muted);color:var(--text);padding:11px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;font:400 17px/1.2 var(--display)}
+button.home small{font:400 11.5px/1 var(--mono);color:var(--muted)}button.home.call{border-style:solid;border-color:var(--accent)}
+.scene h1 .sub{margin-left:auto;font:400 12px/1.2 var(--mono);color:var(--muted);white-space:nowrap}
+.trade{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.trade>div{background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px}.trade .pl{border-color:var(--primary)}
+.trade .k{font:500 10.5px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.trade .v{font:400 28px/1.1 var(--display);margin-top:6px;font-variant-numeric:tabular-nums}.trade .v small{font:400 13px/1 var(--mono);color:var(--muted);margin-left:4px}
+.trade .s{font:400 12px/1.45 var(--mono);color:var(--muted);margin-top:4px}
+button.pbtn{width:100%;margin-top:8px;padding:12px;font:500 17px/1.1 var(--display)}
+.rule1{font:400 12.5px/1.5 var(--mono);color:var(--muted);margin:8px 0 0}.rule1 b{color:var(--text);font-weight:500}
+button.jr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;text-align:left;background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:9px 12px;margin-top:6px;color:var(--text);font:inherit}
+button.jr:hover{border-color:var(--primary)}
+.jr .nm{font:400 16px/1.2 var(--display)}.jr .st{font:400 11.5px/1.4 var(--mono);color:var(--muted)}
+.jr .ok{font:500 10px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;border:1px solid currentColor;border-radius:var(--r);padding:4px 5px;align-self:start;white-space:nowrap}
+.jr .ok.sure{color:var(--pine)}.jr .ok.fill{color:var(--chestnut)}.jr .ok.no{color:var(--oxblood)}
+.jr .jwhy{grid-column:1/-1;font:400 12px/1.45 var(--mono);color:var(--muted)}.jr .jwhy b{color:var(--text);font-weight:500}
+button.more{background:none;border:0;padding:8px 0;font:400 12px/1.4 var(--mono);color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>

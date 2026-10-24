@@ -87,7 +87,42 @@ function checkBreak(s, k) {
 function benchRoom(s) { return s.notables.filter(m => !m.isKing && !s.holdings.some(h => h.id === m.place)).length < T.benches; }
 function fCap(s, m) { return (m.follow + (has(s,'ringgiver') ? 1 : 0)) * T.menPerF; }
 function strengthShip(s) { return s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.combat * m.men, 0); }
-function winOdds(S, D) { return clamp((S * 1.15 - D) / (S * 0.3), 0, 1); }
+// ---- The battle (audit 4): up to three exchanges, the landing, the shield wall and the press, each a genuine roll of the ship's strength on the day ----
+// Each exchange the ship fights at ROLL[0]..ROLL[1] of its strength; the mean of the exchanges fought must beat the defenders. A battle stops as soon as
+// one side breaks (the coast when the ship stands at twice its number, the ship at half); a side can only break when the rolls still to come could not save it. Three rolls on 0.75..1.25 average to about the spread of the
+// old single roll on 0.85..1.15 (6.5% of the levi persona's fights against 5.9%).
+const ROLL = [0.82, 1.18], PHASES = ['landing', 'wall', 'press'];
+// the chance the mean of three rolls beats D / S: Irwin-Hall, n = 3
+function winOdds(S, D) {
+  if (S <= 0) return 0;
+  const x = (D / S - ROLL[0]) / (ROLL[1] - ROLL[0]) * 3;
+  const F = x <= 0 ? 0 : x >= 3 ? 1 : x <= 1 ? x * x * x / 6 : x <= 2 ? (-2 * x * x * x + 9 * x * x - 9 * x + 3) / 6 : 1 - Math.pow(3 - x, 3) / 6;
+  return clamp(1 - F, 0, 1);
+}
+// fight it out with the rolls given: how many exchanges, won or not, the margin, and what share of the men aboard die (losses are shared out by how hard each exchange went)
+function battle(S, D, rolls, iron) {
+  const [lo, hi] = ROLL; let sum = 0, n = 0;
+  for (n = 1; n <= 3; n++) { sum += rolls[n - 1]; const m = S * sum / n; if (n === 3 || m > 2 * D || m < 0.5 * D) break; } // a side breaks: the coast at twice its number, the ship at half
+  const mean = sum / n, win = S * (sum + (3 - n) * lo) / 3 > D, margin = (S * mean - D) / Math.max(1, D);
+  let lossFrac = win ? clamp(0.35 * D / (S * mean), 0.02, 0.4) : clamp(0.5 * D / (S * mean), 0.2, 0.6);
+  if (iron) lossFrac /= 2;
+  const w = rolls.slice(0, n).map(r => D / (S * r)), wt = w.reduce((a, b) => a + b, 0);
+  return { n, rolls: rolls.slice(0, n), mean, win, margin, lossFrac, share: w.map(x => x / wt) };
+}
+// a holding's summer is one roll, as it always was: the jarl's Rule x men x 0.85..1.15 must beat the unrest
+function holdOdds(R, U) { return R <= 0 ? 0 : clamp((R * 1.15 - U) / (R * 0.3), 0, 1); }
+function holdWords(R, U) { const p = holdOdds(R, U); return p >= .97 ? 'holds' : p >= .7 ? 'likely holds' : p >= .4 ? 'even' : p > 0 ? 'long odds' : 'cannot hold'; }
+// a named man's chance to fall aboard: the losses decide it (a lost fight lossFrac x fallLoss, a bloody win (lossFrac - 0.2) x fallWin)
+const fallChance = b => b.win ? Math.max(0, b.lossFrac - 0.2) * T.fallWin : b.lossFrac * T.fallLoss;
+// before the ship sails: the chance of a win and of each named man aboard falling, over every day the rolls could bring (a fixed grid, so the number is steady)
+const riskCache = new Map();
+function fightRisk(S, D, iron) {
+  const key = S + ':' + D + ':' + (iron ? 1 : 0); if (riskCache.has(key)) return riskCache.get(key);
+  const g = 10, [lo, hi] = ROLL, at = i => lo + (hi - lo) * (i + 0.5) / g; let fall = 0, win = 0;
+  for (let a = 0; a < g; a++) for (let b = 0; b < g; b++) for (let c = 0; c < g; c++) { const f = battle(S, D, [at(a), at(b), at(c)], iron); fall += fallChance(f); win += f.win ? 1 : 0; }
+  const out = { win: win / g ** 3, fall: fall / g ** 3 }; if (riskCache.size > 500) riskCache.clear(); riskCache.set(key, out); return out;
+}
+const shipRisk = (s, D) => fightRisk(strengthShip(s), D, has(s, 'ironside'));
 // the odds in words: how likely, and how dear. A sure fight can still be a bloody one.
 function oddsWords(S, D) {
   const p = winOdds(S, D), q = S > 0 ? D / S : 9;
@@ -150,6 +185,7 @@ function boardAll(s) {
   for (const m of s.notables) if (m.place === 'home') m.place = 'ship';
   const ship = s.notables.filter(m => m.place === 'ship').sort((a, b) => (b.isKing ? 1 : 0) - (a.isKing ? 1 : 0) || b.combat - a.combat);
   for (const m of ship) m.men = Math.min(fCap(s, m), m.men + unledMen(s));
+  for (const m of ship) if (!m.isKing && !m.men) m.place = 'home'; // a man with no one to lead adds nothing aboard, and he can fall (TODO 32)
 }
 function setDestination(s, id) { if (s.phase === 'spring') s.destination = id; } // the ship may be empty yet; Sail is what needs men
 function marry(s, childId, jarlId) {
@@ -217,12 +253,14 @@ function sail(s) {
 function chooseTarget(s, id) {
   const sh = s.shores[id], r = rng(s.day + ':fight:' + s.year + id);
   const ship = s.notables.filter(m => m.place === 'ship');
-  const S = strengthShip(s), D = sh.def, roll = 0.85 + r() * 0.3;
-  const win = S * roll > D, margin = (S * roll - D) / D;
+  const S = strengthShip(s), D = sh.def, [lo, hi] = ROLL;
+  const rolls = [lo + r() * (hi - lo), lo + r() * (hi - lo), lo + r() * (hi - lo)];
+  const b = battle(S, D, rolls, has(s,'ironside')), win = b.win, margin = b.margin;
   const menAboard = ship.reduce((a, m) => a + m.men, 0);
-  let lossFrac = win ? clamp(0.35 * D / (S * roll), 0.02, 0.4) : clamp(0.5 * D / (S * roll), 0.2, 0.6);
-  if (has(s,'ironside')) lossFrac /= 2;
-  const losses = Math.round(menAboard * lossFrac);
+  const losses = Math.round(menAboard * b.lossFrac);
+  // the crew before the fight, so the sheet can show what each man lost and gained (audit 4)
+  const own0 = ownerOf(s, id), before = ship.map(m => ({ m, men: m.men, c: m.combat, f: m.follow, stance: m.stance || 0 }));
+  const def0 = sh.def, loot0 = sh.loot;
   let loot = 0;
   if (win) {
     loot = Math.round(sh.loot * clamp(0.5 + margin / 2, 0.3, 1) * (has(s,'seawolf') ? 1.25 : 1));
@@ -235,23 +273,36 @@ function chooseTarget(s, id) {
   if (left > 0) { const m = ship[0]; const l = Math.min(m.men, left); m.men -= l; }
   s.men -= losses; s.deeds.raids++;
   const owner = ownerOf(s, id); if (owner) moveStance(s, owner, -T.raidSour, `you raided ${sh.name}`);
-  // named men are not safe aboard: each may fall, the likelier the bloodier the day (TODO 25). The win odds stay the true odds of the fight
-  const fr = rng(s.day + ':fall:' + s.year + id), fallP = win ? Math.max(0, lossFrac - 0.2) * T.fallWin : lossFrac * T.fallLoss;
+  // named men are not safe aboard: each may fall, the likelier the bloodier the day (TODO 25); he falls in the exchange that cost the most, by lot
+  const fr = rng(s.day + ':fall:' + s.year + id), fallP = fallChance(b);
   const fallen = fallP > 0 ? ship.filter(() => fr() < fallP) : [];
-  const res = { t:'fight', shore: id, S: Math.round(S * roll), D, win, margin, loot, losses, odds: winOdds(S, D) };
+  const phaseOf = () => { let x = fr(), i = 0; while (i < b.n - 1 && x > b.share[i]) { x -= b.share[i]; i++; } return i; };
+  const fellAt = new Map(fallen.map(m => [m, phaseOf()]));
+  // the exchanges as the sheet plays them: the day's roll, the men lost, the share of the defenders broken, who fell
+  const dTot = win ? (margin > 1 ? 1 : margin > 0.3 ? 0.7 : 0.45) : clamp(S * b.mean / D, 0, 1) * 0.35, rs = b.rolls.reduce((a, x) => a + x, 0);
+  let mLeft = losses;
+  const phases = b.rolls.map((roll, i) => { const men = i === b.n - 1 ? mLeft : Math.round(losses * b.share[i]); mLeft -= men;
+    return { k: PHASES[i], roll: +roll.toFixed(3), men, dl: +(dTot * roll / rs).toFixed(3), fell: fallen.filter(m => fellAt.get(m) === i).map(m => m.name) }; });
+  const crew = before.map(x => { const m = x.m, fell = fallen.includes(m);
+    return { name: m.name, isKing: !!m.isKing, kin: !!m.kin, son: !!m.son, men0: x.men, men1: m.men, c0: x.c, c1: m.combat, f0: x.f, f1: m.follow, st0: stanceWord(x.stance), st1: stanceWord(m.stance), d: (m.stance || 0) - x.stance, raids: m.raids, fell, at: fell ? fellAt.get(m) : null, unled: fell && !m.isKing ? m.men : 0 }; });
+  const res = { t:'fight', shore: id, S, D, Sr: Math.round(S * b.mean), mean: +b.mean.toFixed(3), win, margin, loot, loot0, losses, odds: winOdds(S, D), fallP: +fallP.toFixed(4), risk: +fightRisk(S, D, has(s,'ironside')).fall.toFixed(4),
+    phases, crew, def0, def1: sh.def, owner: own0 ? { name: own0.name, st0: stanceWord(own0.stance + T.raidSour), st1: stanceWord(own0.stance) } : null, wolf: has(s,'seawolf') };
   s.queue.shift(); // the arrive card
   s.queue.unshift(res);
   const canStay = win && sh.holdable && (sh.walked || ship.some(m => !m.isKing && !fallen.includes(m)));
   if (canStay) s.queue.splice(1, 0, { t:'stay', shore: id, loot, walked: !!sh.walked });
   else if (win) { plunder(s, loot, id); }
-  if (fallen.length) {
-    const lines = fallen.map(m => m.isKing ? `${m.name} went down in the shield wall at ${sh.name}. The ship brings him home on his shield.` : `${m.name} went down at ${sh.name}.${unled(m.men)}`);
-    for (const m of fallen) if (!m.isKing) { s.notables = s.notables.filter(x => x !== m); log(s, `${m.name} fell at ${sh.name}.`); }
-    const king = fallen.find(m => m.isKing), at = canStay ? 2 : 1;
-    s.queue.splice(at, 0, { t:'summary', title: fallen.length > 1 ? `The fallen of ${sh.name}` : `${fallen[0].name} falls`, lines });
-    if (king) { log(s, `${king.name} fell at ${sh.name}.`); s.queue.splice(at + 1, 0, { t:'death', cause: 'fell', at: sh.name }); }
-  }
+  // the fallen are on the fight sheet itself (audit 4); the King's fall brings the death card after the summer's choice
+  for (const m of fallen) if (!m.isKing) { s.notables = s.notables.filter(x => x !== m); log(s, `${m.name} fell at ${sh.name}.`); }
+  const king = fallen.find(m => m.isKing);
+  if (king) { log(s, `${king.name} fell at ${sh.name}.`); s.queue.splice(canStay ? 2 : 1, 0, { t:'death', cause: 'fell', at: sh.name }); }
   save(s);
+}
+// Landfall shows nothing worth the men: the ship turns for home and the summer is spent (TODO 31)
+function turnHome(s) {
+  const sc = s.queue[0]; if (!sc || sc.t !== 'arrive') return;
+  log(s, 'The ship turned for home. Nothing on those coasts was worth the men.');
+  next(s);
 }
 function plunder(s, loot, id) {
   s.silver += loot; if (s.yr) { s.yr.loot += loot; s.yr.from = s.shores[id].name; }

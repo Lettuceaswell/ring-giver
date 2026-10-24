@@ -57,6 +57,7 @@ module.exports = function (G) {
     target(s, sc) { // landfall pick
       const S = strengthShip(s), t = sc.targets.map(id => s.shores[id]).map(x => ({ x, p: winOdds(S, x.def), ev: x.loot * winOdds(S, x.def) }));
       const ok = t.filter(o => o.p >= 0.5).sort((a, b) => b.ev - a.ev)[0];
+      if (!ok && Math.max(...t.map(o => o.p)) < 0.2) return 'home'; // nothing worth the men: turn for home (TODO 31)
       return (ok || t.sort((a, b) => a.x.def - b.x.def)[0]).x.id;
     },
     stay(s, sc) { // -> 'plunder' | jarl id | 'walked'
@@ -134,7 +135,7 @@ module.exports = function (G) {
       }
     },
     dest(s, S) { const c = seenCands(s, S).filter(o => o.p >= 0.97).sort((a, b) => b.ev - a.ev)[0]; return c ? c.x.id : null; }, // only sure fights, otherwise the fleet stays home
-    target(s, sc) { const S = strengthShip(s); return sc.targets.map(id => s.shores[id]).sort((a, b) => winOdds(S, b.def) - winOdds(S, a.def) || b.loot - a.loot)[0].id; },
+    target(s, sc) { const S = strengthShip(s), best = sc.targets.map(id => s.shores[id]).sort((a, b) => winOdds(S, b.def) - winOdds(S, a.def) || b.loot - a.loot)[0]; return winOdds(S, best.def) < 0.5 ? 'home' : best.id; },
     titles: prio(['beloved', 'ringgiver', 'lawgiver', 'landtaker', 'deepchest']),
   };
   P.levi = { ...base,

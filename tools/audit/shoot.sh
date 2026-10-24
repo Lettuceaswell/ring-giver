@@ -40,5 +40,5 @@ PY
   exit 0
 fi
 mkdir -p "$OUT"
-chromium --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=1500 --force-device-scale-factor=2 --window-size=390,844 --screenshot="$OUT/$1.png" "http://127.0.0.1:8766/index.html#$2" >/dev/null 2>&1
+chromium --headless=new --disable-gpu --hide-scrollbars --virtual-time-budget=${VT:-1500} --force-device-scale-factor=2 --window-size=390,844 --screenshot="$OUT/$1.png" "http://127.0.0.1:8766/index.html#$2" >/dev/null 2>&1
 echo "$1 -> tools/audit/out/$1.png"

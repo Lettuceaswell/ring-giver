@@ -11,7 +11,7 @@ breakYears 3 (**10**); strike 0.3, strikeBase 40, strikePer 20, strikeSated 20 (
 
 ## 1. Defender strength and recovery
 - EXISTS. Base def per coast: `world.js:96`, unchanged (20-150; Paris 300/180, York 220/120, Lindisfarne 180/30, Dublin 160/80).
-- EXISTS. Win odds `winOdds` **83**, unchanged and still the true probability: the ship rolls x0.85..1.15 (`chooseTarget` **210**).
+- CHANGED (audit 4, session 12). The battle: `battle()` fights up to three exchanges, each a roll x`ROLL` 0.82..1.18; the mean of the exchanges fought must beat the defenders; a side breaks early at 2x / 0.5x. `winOdds` is the exact chance (Irwin-Hall, n = 3). `fightRisk` gives each named man's chance to fall over a 10x10x10 grid of days. The range was tuned so luck is in play (odds 3-97%) in 6.5% of the levi persona's fights, against 5.9% with the old single roll x0.85..1.15. Turn for home (`turnHome`) and Board all leaving men with no men at home (TODO 31, 32) cut the levi persona's lost fights from 14% to about 3%, and its King's falls from 6.3 to 1.4 a dynasty: the hopeless forced fights are gone.
 - CHANGED. After a win: def x`T.defWin` 1.3, cap `T.defCap` 1000 (was x1.2, cap 200; **222**). After a loss x1.1, same cap. Recovery each autumn def x`T.defMend` 0.965 toward baseDef (was 0.95; **345**).
   A coast farmed by a strong raider now arms toward the raider's own strength, so the richest coasts sit at the edge of whatever odds he accepts.
 - Observed: levi loses 7.6% of fights (0 before), the hall-sitter 6.6%, the settler 16% (it fights holdables at even odds), the courtier (sure fights only) 0%.
