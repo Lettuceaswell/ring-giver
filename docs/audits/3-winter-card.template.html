@@ -1,0 +1,580 @@
+<title>Winter Card</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a reading column for the audit, then three phones side by side on a dark bench. Single theme by choice: the game's own Forge palette (House Hansen), so the mock-ups sit in their real colors. */
+:root{
+  --bg:#2B2E33; --surface:#353A40; --raised:#3D434A; --rule:#4A4F55; --deep:#24272C;
+  --text:#E8DFCC; --muted:#C9A58E; --iron:#8A9096;
+  --primary:#5A95A6; --on-primary:#2B2E33; --fjord:#214C58; --sea:#1B3C46; --sea-dark:#152E36;
+  --accent:#C9A58E; --chestnut:#A47159; --pine:#8FA793; --oxblood:#B07A7C;
+  --display:"Fraunces","Iowan Old Style",Georgia,serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:2px; --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 80px}
+.col{max-width:720px}
+h1,h2,h3,h4{font-weight:400;margin:0;text-wrap:balance}
+.eyebrow{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:28px;height:1.5px;background:var(--accent)}
+h1{font:400 44px/1.05 var(--display);margin:14px 0 12px}
+h2{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:48px 0 14px;padding-top:14px;border-top:1px solid var(--rule)}
+h3{font:400 24px/1.2 var(--display)}
+p{margin:8px 0}
+.lede{font-size:18px;color:var(--text);max-width:62ch}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+b{font-weight:600}
+a{color:var(--primary)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th{text-align:left;font:500 10.5px/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:6px 10px 6px 0;border-bottom:1px solid var(--rule)}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td:first-child{font-family:var(--display);font-size:16px;white-space:nowrap}
+.tbl{overflow-x:auto}
+.tag{display:inline-block;font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:var(--r);padding:3px 5px;margin:0 3px 3px 0;white-space:nowrap;vertical-align:1px}
+.five{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:16px 0 0}
+.five div{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;font-size:13.5px;line-height:1.4}
+.five .k{font-family:var(--display);font-size:17px;display:block;color:var(--text)}
+.five .n{font-family:var(--mono);color:var(--muted);font-size:12px;display:block;margin-top:4px}
+.five .here{border-color:var(--primary)}
+.five .done{opacity:.6}
+/* the original, with callouts */
+.now{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:24px;align-items:start;margin-top:14px}
+@media (max-width:760px){.now{grid-template-columns:1fr}}
+.now img{width:100%;border:1px solid var(--rule);border-radius:var(--r);display:block}
+.shots{display:grid;gap:12px}
+.shots figcaption{font:400 12px/1.4 var(--mono);color:var(--muted);margin-top:6px}
+.calls{counter-reset:c;display:grid;gap:10px;align-content:start}
+.calls div{display:grid;grid-template-columns:26px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
+.calls div::before{counter-increment:c;content:counter(c);width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--bg);font:600 12px/22px var(--mono);text-align:center}
+.calls i{font-style:normal;color:var(--muted);font-family:var(--mono);font-size:12px}
+/* verdict and fixes */
+.verdict{font-family:var(--display);font-size:21px;line-height:1.4;color:var(--text);max-width:60ch}
+.fixes{display:grid;gap:12px;margin-top:14px}
+.fix{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 16px}
+.fix h4{font:400 20px/1.25 var(--display);color:var(--text);margin-bottom:6px}
+.fix p{font-size:14.5px;margin:4px 0}
+.fix .m{margin-top:8px}
+ul{padding-left:18px;margin:8px 0}li{margin:4px 0;font-size:15px}
+/* the bench */
+.bench{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:18px;align-items:start}
+@media (max-width:980px){.bench{grid-template-columns:1fr;max-width:460px}}
+.opt{display:grid;gap:10px}
+.opt header{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.opt .letter{font:400 13px/1 var(--mono);color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+.opt .pick{font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--pine);border:1px solid var(--pine);border-radius:var(--r);padding:4px 6px}
+.ctrl{display:flex;gap:6px;flex-wrap:wrap}
+.ctrl button{font:500 12px/1 var(--body);background:var(--raised);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:8px 10px;cursor:pointer;letter-spacing:.04em}
+.ctrl button.on{border-color:var(--primary);color:var(--primary)}
+.ctrl button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.frame{width:100%;position:relative;background:var(--deep);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.ph{width:390px;height:844px;transform-origin:top left;position:absolute;left:0;top:0;background:var(--bg);color:var(--text);font:400 16px/1.5 var(--body);overflow:hidden;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none}
+.notes{font-size:14px;color:var(--text)}
+.notes p{margin:6px 0}
+.notes .t{font-family:var(--display);font-size:19px;color:var(--accent);margin-bottom:4px}
+.notes ul{padding-left:16px}.notes li{font-size:13.5px;margin:3px 0}
+.notes .risk{color:var(--muted);font-size:13px;border-top:1px solid var(--rule);padding-top:8px;margin-top:8px}
+
+/* ===== inside the phones: shared ===== */
+.ph *{-webkit-tap-highlight-color:transparent}
+.ph button{font:500 15px/1.2 var(--body);background:var(--raised);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:9px 12px;cursor:pointer}
+.ph button:disabled{opacity:.35}
+.ph .ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+/* the map behind, dimmed by the sheet */
+.ph .mapwrap{position:absolute;inset:0;background:var(--sea-dark)}
+.ph svg.map{display:block;width:100%;height:100%}
+.ph .land{fill:#2E3238;stroke:rgba(232,223,204,.12);stroke-width:.7;fill-rule:evenodd;vector-effect:non-scaling-stroke}
+/* the band */
+.ph .band{position:relative;z-index:3;flex:none;background:rgba(33,76,88,.84);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:12px 14px 10px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;box-shadow:0 1px 0 var(--rule),0 10px 18px -10px rgba(0,0,0,.6)}
+.ph .year{font:400 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.ph .year::after{content:" ▸";font-size:13px;color:var(--muted);vertical-align:3px}
+.ph .res{text-align:right;font:500 13px/1.5 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;align-self:end}
+.ph .res b{font-weight:500}
+.ph .king{grid-column:1/-1;font-size:13px;opacity:.9;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px}
+.ph .king .tag{margin:0;border-color:rgba(232,223,204,.5);color:var(--text)}
+.ph .king .fork{color:var(--muted)}
+/* the sheet */
+.ph .overlay{position:absolute;inset:0;z-index:10;background:rgba(43,46,51,.55);display:flex;flex-direction:column;justify-content:flex-end}
+.ph .scene{position:relative;background:var(--surface);border-top:1px solid var(--rule);border-radius:var(--r) var(--r) 0 0;padding:0 16px 0;max-height:88%;overflow:auto;display:flex;flex-direction:column;animation:rise .32s var(--ease)}
+@keyframes rise{from{transform:translateY(24px);opacity:0}}
+.ph .scene h1{font:400 26px/1.15 var(--display);color:var(--accent);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:2;background:var(--surface);margin:0 -16px 10px;padding:18px 16px 8px}
+.ph .scene h1 svg{width:22px;height:22px;color:var(--accent)}
+.ph .scene h1 small{margin-left:auto;font:400 12px/1.2 var(--mono);color:var(--muted);letter-spacing:.04em}
+.ph .scene h2{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.ph .scene p{margin:6px 0}
+.ph .exit{position:sticky;bottom:0;z-index:2;background:linear-gradient(to top,var(--surface) 70%,rgba(53,58,64,0));margin:auto -16px 0;padding:14px 16px 20px}
+.ph .exit button{width:100%;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--primary);color:var(--on-primary);border-color:var(--primary);font:500 19px/1.1 var(--display)}
+.ph .exit button small{font:500 11px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.ph .cap{position:absolute;left:0;right:0;bottom:130px;z-index:20;text-align:center;font:400 12.5px/1.4 var(--mono);color:var(--text);pointer-events:none;opacity:0;transition:opacity .3s}
+.ph .cap.show{opacity:1}
+.ph .cap span{background:rgba(43,46,51,.9);padding:6px 10px;border-radius:var(--r);border:1px solid var(--rule)}
+/* rows that arrive one after another */
+.ph .in{animation:linein .45s var(--ease) both}
+@keyframes linein{from{opacity:0;transform:translateY(5px)}}
+.five .k + span{display:block}
+.shots3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:760px){.shots3{grid-template-columns:1fr 1fr}}
+.now3{display:grid;gap:18px;margin-top:14px}
+.freq{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;font:400 13px/1.3 var(--mono);max-width:520px;margin-top:10px}
+.freq i{display:block;height:8px;background:var(--iron);border-radius:1px}
+.freq .b i{background:var(--pine)}.freq .o i{background:var(--chestnut)}.freq .x i{background:var(--oxblood)}
+.freq span:first-child{font-family:var(--body);font-size:13.5px}
+.freq .n{color:var(--muted);text-align:right}
+.ctrl button small{display:block;font:400 10px/1.3 var(--mono);color:var(--muted);letter-spacing:0;margin-top:3px}
+
+/* ===== shared pieces of the card ===== */
+.ph .glyph{width:30px;height:30px}
+.ph .tone-blood{--t:var(--oxblood)}.ph .tone-boon{--t:var(--pine)}.ph .tone-omen{--t:var(--chestnut)}.ph .tone-quiet{--t:var(--iron)}.ph .tone-held{--t:var(--pine)}
+.ph .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ph .chip{font:400 12.5px/1.2 var(--mono);color:var(--text);background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:5px 7px;font-variant-numeric:tabular-nums}
+.ph .chip s{color:var(--iron)}.ph .chip b{font-weight:500;color:var(--accent)}
+.ph .chip.down{color:var(--oxblood);border-color:rgba(176,122,124,.5)}.ph .chip.up{color:var(--pine);border-color:rgba(143,167,147,.5)}
+.ph .vs{margin-top:12px}
+.ph .vs .lab{display:flex;justify-content:space-between;font:400 12px/1.3 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.ph .vs .lab b{color:var(--text);font-weight:500}
+.ph .vs .track{height:8px;background:var(--rule);border-radius:var(--r);overflow:hidden;display:flex;margin-top:4px}
+.ph .vs .h{background:var(--pine);animation:grow .6s var(--ease) both}.ph .vs .f{background:var(--oxblood);margin-left:auto;transform-origin:right;animation:grow .6s var(--ease) both}
+.ph .vs.fell .h{background:var(--iron)}.ph .vs.held .f{background:var(--iron)}
+@keyframes grow{from{transform:scaleX(0)}}
+.ph .vs .h{transform-origin:left}
+.ph .also{display:grid;gap:8px}
+.ph .row{display:grid;grid-template-columns:3px 1fr;gap:0 10px}
+.ph .row i{display:block;border-radius:1px;background:var(--t,var(--rule))}
+.ph .row .t{font:400 15px/1.3 var(--body);color:var(--text)}
+.ph .row .s{font:400 12.5px/1.45 var(--mono);color:var(--muted)}
+.ph .row.tone-blood .t{color:var(--oxblood)}.ph .row.tone-omen .t{color:var(--chestnut)}.ph .row.tone-boon .t{color:var(--pine)}
+.ph .suitor{background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;margin-top:10px;display:grid;grid-template-columns:1fr auto;gap:2px 10px}
+.ph .suitor .nm{font:400 17px/1.2 var(--display)}
+.ph .suitor .st{font:400 12.5px/1.4 var(--mono);color:var(--muted)}
+.ph .suitor .w{font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--pine);border:1px solid var(--pine);border-radius:var(--r);padding:3px 5px;align-self:start}
+.ph .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ph .two button{padding:13px 10px;font:500 17px/1.1 var(--display)}
+.ph .two .yes{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.ph .exit button.grave{background:var(--oxblood);border-color:var(--oxblood);color:var(--on-primary)}
+.ph .exit button.roll{background:var(--raised);color:var(--text);border-color:var(--accent)}
+/* the death card that follows a slain or old King (TODO 29) */
+.ph .dead h1{color:var(--oxblood)}
+.ph .dead .cause{font:400 20px/1.3 var(--display);color:var(--text);margin:2px 0 10px}
+.ph .dead .meta{font:400 13px/1.5 var(--mono);color:var(--muted)}
+.ph .dead .heir{margin-top:12px;padding:10px 12px;border:1px solid var(--rule);border-radius:var(--r);background:var(--bg);font-size:15px}
+.ph .dead .heir.broken{border-color:var(--oxblood);color:var(--oxblood);font:400 18px/1.3 var(--display)}
+
+/* ===== Option A: the turn ===== */
+.A .overlay{background:rgba(21,46,54,.8);justify-content:flex-start}
+.A .stage{flex:1;overflow:auto;padding:96px 20px 0;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:safe center}
+.A .tc{width:100%;max-width:330px;perspective:1100px}
+.A .flip{position:relative;transform-style:preserve-3d;transition:transform .52s cubic-bezier(.3,.1,.2,1)}
+.A .flip.down{transform:rotateY(180deg)}
+.A .face,.A .back{backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px}
+.A .face{background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--t);padding:16px 18px 18px;box-shadow:0 18px 40px -16px rgba(0,0,0,.7)}
+.A .back{position:absolute;inset:0;transform:rotateY(180deg);background:var(--fjord);border:1px solid rgba(232,223,204,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  background-image:repeating-linear-gradient(45deg,rgba(232,223,204,.05) 0 2px,transparent 2px 12px),repeating-linear-gradient(-45deg,rgba(232,223,204,.05) 0 2px,transparent 2px 12px)}
+.A .back .yr{font:400 44px/1 var(--display);color:var(--text)}
+.A .back small{font:500 10.5px/1 var(--body);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.A .face .top{display:flex;align-items:center;justify-content:space-between;color:var(--t)}
+.A .face .top small{font:400 11.5px/1 var(--mono);color:var(--muted);letter-spacing:.06em}
+.A .face h3{font:400 27px/1.12 var(--display);color:var(--text);margin:10px 0 6px}
+.A .face.tone-blood h3{color:var(--oxblood)}
+.A .face .lead{font-size:16px;line-height:1.45}
+.A .also{width:100%;max-width:330px}
+.A .rollc{width:100%;max-width:330px;perspective:900px}
+.A .rollc .face{border-top-width:1px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 10px;box-shadow:none}
+.A .rollc .back{flex-direction:row;justify-content:space-between;padding:0 14px}
+.A .rollc .back .who{font:400 17px/1.2 var(--display);color:var(--text)}
+.A .rollc .back .p{font:400 22px/1 var(--display);color:var(--accent)}
+.A .rollc .face .who{font:400 18px/1.2 var(--display)}
+.A .rollc .face .p{font:400 12px/1 var(--mono);color:var(--muted)}
+.A .rollc .face.tone-blood .who{color:var(--oxblood)}.A .rollc .face.tone-boon .who{color:var(--pine)}
+.A .rollc .strand{grid-column:1/-1;height:2px;background:var(--rule);border-radius:1px;overflow:hidden}
+.A .rollc .strand i{display:block;height:100%;background:var(--accent)}
+.A .scene{background:transparent;border:0;padding:0 16px;flex:none;overflow:visible;animation:none;margin-top:auto}
+.A .exit{margin:0 -16px;background:linear-gradient(to top,rgba(21,46,54,1) 70%,rgba(21,46,54,0))}
+.A .dead{background:var(--surface);border-radius:6px;padding:16px 18px;width:100%;max-width:330px;border-top:4px solid var(--oxblood)}
+
+/* ===== Option B: the hall at night ===== */
+.B .pic{display:block;width:calc(100% + 32px);margin:0 -16px 4px;height:auto;background:linear-gradient(var(--sea-dark),var(--deep))}
+.B .pic text{font-family:var(--mono);font-size:9px;fill:var(--muted)}
+.B .pic .nm{font-family:var(--body);font-size:9.5px;fill:var(--text)}
+.B .pic .sea{fill:var(--sea);stroke:none}
+.B .pic .shore{fill:none;stroke:rgba(232,223,204,.18);stroke-width:1}
+.B .pic .hz{stroke:rgba(232,223,204,.22);stroke-width:1}
+.B .pic .hallg path{fill:var(--raised);stroke:var(--text);stroke-width:1.2;stroke-linejoin:round}
+.B .pic .hallg.fell path{animation:burn 1.4s .9s var(--ease) both}
+@keyframes burn{30%{fill:var(--oxblood)}to{fill:#4a3a3b}}
+.B .pic .hallg.held path{animation:holdg 1.2s .9s var(--ease) both}
+@keyframes holdg{40%{stroke:var(--pine)}}
+.B .pic .frost{fill:none;stroke:var(--text);stroke-width:2.5;stroke-linecap:round;opacity:.0;animation:frost 1s .3s var(--ease) both}
+@keyframes frost{to{opacity:.8}}
+.B .pic .seat{fill:var(--primary);stroke:none}
+.B .pic .seat.empty{fill:none;stroke:var(--rule);stroke-dasharray:2 2}
+.B .pic .seat.away{fill:var(--iron)}
+.B .pic .seat.high{fill:var(--accent)}
+.B .pic .seat.gone{animation:gone 1.4s 1.1s var(--ease) both}
+@keyframes gone{30%{fill:var(--oxblood)}to{fill:transparent;stroke:var(--oxblood);stroke-dasharray:2 2}}
+.B .pic .seat.new{animation:newp 1.2s .4s var(--ease) both}
+@keyframes newp{from{fill:var(--pine);transform:scale(1.6)}to{fill:var(--primary)}}
+.B .pic .seat.mark{stroke:var(--pine);stroke-width:1.5}
+.B .pic .kid{fill:var(--text)}.B .pic .kid.f{fill:none;stroke:var(--text);stroke-width:1.2}
+.B .pic .kid.new{animation:kidn 1.4s .4s var(--ease) both;transform-box:fill-box;transform-origin:center}
+@keyframes kidn{from{transform:scale(3);opacity:0}50%{opacity:1;stroke:var(--pine);fill:var(--pine)}}
+.B .pic .sail path{fill:var(--oxblood)}.B .pic .sail.gather path{fill:none;stroke:var(--chestnut);stroke-dasharray:2 1.5;animation:pulse 1.6s ease-in-out infinite}
+.B .pic .sail.strange path{fill:var(--iron)}
+@keyframes pulse{50%{opacity:.35}}
+.B .pic .run{animation:runin 1s .15s cubic-bezier(.4,.1,.3,1) both}
+.B .pic .run.back{animation:runback 1.9s .15s cubic-bezier(.4,.1,.3,1) both}
+@keyframes runin{from{transform:translate(0,-92px);opacity:.2}}
+@keyframes runback{0%{transform:translate(0,-92px);opacity:.2}50%{transform:translate(0,0);opacity:1}100%{transform:translate(0,-92px);opacity:0}}
+.B .pic .full{fill:var(--chestnut)}
+.B .pic .wand{fill:var(--muted);animation:linein .8s .5s var(--ease) both}
+.B .scene{max-height:94%}
+.B .scene h1{padding-top:10px}
+.B .scene .lead{font-size:16px}
+.B .rollline{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-top:1px solid var(--rule);margin-top:12px;padding-top:10px;font:400 13px/1.4 var(--mono);color:var(--muted)}
+.B .rollline b{font:400 17px/1.2 var(--display);color:var(--text)}
+.B .rollline b.tone-blood{color:var(--oxblood)}.B .rollline b.tone-boon{color:var(--pine)}
+.B .rollline .wait{animation:pulse .5s ease-in-out 3}
+
+/* ===== Option C: the saga page ===== */
+.C .scene{max-height:92%}
+.C .scene h1{font:400 13px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding-top:16px}
+.C .saga{font:400 23px/1.32 var(--display);color:var(--text);margin:2px 0 4px;text-wrap:pretty}
+.C .saga .w{display:inline;animation:wordin .4s var(--ease) both}
+@keyframes wordin{from{opacity:0;filter:blur(3px)}}
+.C .saga .x{color:var(--oxblood)}.C .saga .g{color:var(--pine)}
+.C .notes2{display:grid;gap:4px;margin-top:10px;font:400 12.5px/1.45 var(--mono);color:var(--muted)}
+.C .notes2 b{color:var(--text);font-weight:500}.C .notes2 s{color:var(--iron)}
+.C .notes2 .dn{color:var(--oxblood)}
+.C .strip{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+.C .strip i{width:9px;height:14px;border-radius:1px;background:var(--rule)}
+.C .strip .boon{background:var(--pine)}.C .strip .omen{background:var(--chestnut)}.C .strip .blood{background:var(--oxblood)}.C .strip .quiet{background:#5a6067}
+.C .strip .cur{outline:1.5px solid var(--text);outline-offset:1px;animation:linein .5s 1.1s var(--ease) both}
+.C .stripcap{display:flex;justify-content:space-between;font:400 11.5px/1.4 var(--mono);color:var(--muted);margin-top:5px}
+.C .ahead{border:1px solid var(--rule);border-radius:var(--r);background:var(--bg);padding:10px 12px;display:grid;gap:7px}
+.C .ahead .row .t{font-size:14.5px}
+.C .rollline{font:400 15px/1.4 var(--body);color:var(--muted);margin-top:10px}
+.C .rollline b{font:400 18px/1.2 var(--display)}
+.C .rollline b.tone-blood{color:var(--oxblood)}.C .rollline b.tone-boon{color:var(--pine)}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+<div class="col">
+<div class="eyebrow">Ring Giver · screen audit · 3 of 5</div>
+<h1>The winter card</h1>
+<p class="lede">One card turns every winter, about 270 times in a dynasty. It is where sons are born, old men die, kings' fleets come up the fjord and, sometimes, the King dies in his own door. Below is what it does to the player now, read against the dopamine mechanisms, then three live alternatives to tap through. Each is better than the original; they differ in what they make the hero.</p>
+
+<div class="five">
+  <div class="done"><span class="k">1 · Spring Map</span><span>every year, the home screen</span><span class="n">done · A, The Chart</span></div>
+  <div class="done"><span class="k">2 · Winter sheet</span><span>every year: land, upkeep, market</span><span class="n">done · A, The Ledger</span></div>
+  <div class="here"><span class="k">3 · Winter card</span><span>every year: one event</span><span class="n">this page</span></div>
+  <div><span class="k">4 · Fight</span><span>most years, after Sail</span><span class="n">next</span></div>
+  <div><span class="k">5 · Hall pane</span><span>most springs: men, holdings, children</span><span class="n">then</span></div>
+</div>
+
+<h2>What turns, and how often</h2>
+<p style="font-size:15px">Cards drawn across eight whole dynasties of your own line (the <span class="mono">levi</span> persona from the playtests, 2,175 winters). Births and fleets are two cards in five. The Wanderer turns about 32 times a dynasty, every time with the same sentence. A king's or a stranger's fleet comes about 48 times; the hall falls in about 6 of them.</p>
+<div class="freq">
+  <span>A child is born</span><i style="width:100%"></i><span class="n">20.6%</span>
+  <span>A sail sighted</span><i style="width:85%" class="o"></i><span class="n">17.5%</span>
+  <span>The Wanderer</span><i style="width:57%"></i><span class="n">11.8%</span>
+  <span>Good harvest</span><i style="width:56%"></i><span class="n">11.5%</span>
+  <span>A jarl is dead</span><i style="width:55%"></i><span class="n">11.3%</span>
+  <span>A suitor asks</span><i style="width:49%"></i><span class="n">10.1%</span>
+  <span>A feud</span><i style="width:30%"></i><span class="n">6.1%</span>
+  <span>A quiet winter</span><i style="width:27%"></i><span class="n">5.5%</span>
+  <span>Hard winter</span><i style="width:20%"></i><span class="n">4.1%</span>
+  <span>A man from the sea</span><i style="width:8%"></i><span class="n">1.6%</span>
+</div>
+</div>
+
+<h2>What it is now</h2>
+<div class="now3">
+  <div class="shots3">
+    <figure style="margin:0"><img alt="The winter card in 852: six paragraphs of equal weight" src="data:image/png;base64,%%SHOT852%%"><figcaption>852 · the hall falls, a man dies in the door, three die in bed</figcaption></figure>
+    <figure style="margin:0"><img alt="The winter card in 808: the King dies in his door, as body text" src="data:image/png;base64,%%SHOT808%%"><figcaption>808 · the King is slain; the line ends</figcaption></figure>
+    <figure style="margin:0"><img alt="The death card that follows in 808" src="data:image/png;base64,%%SHOTDEAD%%"><figcaption>808 · the death card that follows</figcaption></figure>
+  </div>
+  <div class="calls col">
+    <div><span><b>The card never turns.</b> The Autumn sheet's button promises "Into winter · one card turns", and the intro says it too. What arrives is the same grey sheet as every other notice: a title, a sentence, and On. There is no face-down moment and no turn, so nothing builds before the result. <i>anticipation · prediction error</i></span></div>
+    <div><span><b>Every card weighs the same.</b> "A son is born" and "Ragnar died in the door of his hall." use the same face, size, color and button. In 808 that second line ends the dynasty. Ragnar is 35, has no son of age and no kin. The next tap reads "The heir", and the one after that reads "The line is broken". <i>proportion</i></span></div>
+    <div><span><b>The worst news sits in line order.</b> In 852 the card has six paragraphs. The hall fell; Osric died in the door; "Gudrød is hostile. This is what that costs."; then three old men died in their beds, one after another. Two of them are called Odo, and two Osrics sit on the benches. Lines read "His 0 men walk home unled" and "His 1 men". <i>pruning · proportion</i></span></div>
+    <div><span><b>The fight is a code.</b> "(0 vs 101)" and "(200 vs 45)" are two numbers in brackets with no labels. Nothing says the first is the guard you left at home, which is the one part you control. "This is what that costs." also prints on winters when the hall held and nothing was lost. <i>competence · agency</i></span></div>
+    <div><span><b>Effects come without numbers.</b> "Upkeep is doubled next winter." "Holdings pay double next summer." "Rumors are half price in spring." The numbers already exist: 98 men at home means the bill goes from 98 to 196. The Wanderer's sentence turns, word for word, about 32 times a dynasty. <i>visible progress · earned, not given</i></span></div>
+    <div><span><b>The warnings never come.</b> A hostile king's fleet takes a year to gather (TODO 27). In the winter it starts, the card says nothing, so the fleet's first sign is the fleet. The benches fill at eight and new men stop coming (TODO 26), and nothing says so. <i>the open loop · agency</i></span></div>
+    <div><span><b>The King's roll happens offstage.</b> Past fifty, after the card closes, the game rolls the King's death: 10% at 52, 25% at 55. If he lives, the next screen is spring and nothing is said. The band's "death 10%" is the only trace. The game's most suspenseful moment happens where no one can see it. <i>anticipation · peak and end</i></span></div>
+    <div><span><b>The death card doesn't say how he died.</b> "Ragnar is dead. 35 winters." reads the same whether he fell in his door or died in his bed. It also says "At most 0 holdings answered to him." and offers "The heir" to a line that has none (TODO 29). <i>peak and end</i></span></div>
+  </div>
+</div>
+
+<div class="col">
+<h2>Verdict</h2>
+<p class="verdict">The winter card is a notice where the game promised a draw. Its outcomes are some of the best and worst in the game, from a son for the line to a fleet that kills the King, and it delivers them all in one voice behind one button. The suspense is real; the game has just put it out of sight. Its warnings never reach the player, and its consequences are told as words where numbers exist.</p>
+
+<h2>Top three fixes</h2>
+<div class="fixes">
+  <div class="fix"><h4>1. Turn the card, and let its kind set its weight</h4>
+    <p>The card arrives face down for about 350 ms, showing the year, then turns over 520 ms. A tap skips it, and reduced motion shows the face at once. Four tones set the edge, glyph and title color: grave in oxblood (the hall fell, a death), good in pine (a birth, a man from the sea, a harvest, a held hall), warning in chestnut (a hard winter, a hostile king, a feud), and routine in iron. When the King is slain, his death becomes the title: "Ragnar is slain".</p>
+    <p class="m"><span class="tag">anticipation</span><span class="tag">prediction error</span><span class="tag">proportion</span> <span class="mono muted" style="font-size:12px">motion · color · nothing new in state</span></p></div>
+  <div class="fix"><h4>2. Say what it cost and what is coming</h4>
+    <p>The fight becomes a labeled bar, Guard 200 against Fleet 45, with "the hall held" or "the hall fell" between. Every effect gets its number: "Next autumn's bill <s>98</s> 196", "Rumor in spring <s>20</s> 10 silver", "−18 silver · −11 men". Other news becomes short weighted rows under "also this winter". Old men who died in bed are grouped into one row with the men left unled. Two new rows close TODOs 26 and 27: "Gudrød's fleet is gathering. It sails on the hall next winter if he is still hostile.", and "The benches are full. No new man comes until one is given a holding."</p>
+    <p class="m"><span class="tag">visible progress</span><span class="tag">pruning</span><span class="tag">the open loop</span> <span class="mono muted" style="font-size:12px">information · language · the warnings need one flag each</span></p></div>
+  <div class="fix"><h4>3. Bring the King's roll onstage, and end on what follows</h4>
+    <p>Past fifty, the card carries the King's own winter: "Ragnar, 52 · his winter · 10%". It resolves on screen as "He sees the spring" in pine or "He dies in his sleep" in oxblood. The button at the foot names what comes next: "Spring · 826", or "Ragnar is dead" in oxblood. The death card then names the cause ("Slain in the door of his hall.", or "Died in his bed, the winter Solveig was born.") and shows the heir, or "No son of age. No kin to take the hall. The line is broken."</p>
+    <p class="m"><span class="tag">anticipation</span><span class="tag">peak and end</span><span class="tag">agency</span> <span class="mono muted" style="font-size:12px">the roll moves from endWinter onto the card, with the same odds and seed</span></p></div>
+</div>
+
+<h2>Moment by moment</h2>
+<div class="tbl"><table>
+<tr><th>Moment</th><th>Now</th><th>At stake</th><th>Fix</th></tr>
+<tr><td>Into winter</td><td>The Autumn sheet closes and a sheet rises at once.</td><td>anticipation</td><td>The card arrives face down, then turns (fix 1).</td></tr>
+<tr><td>A child is born</td><td>"Asmund, child of Ragnar." One in five winters.</td><td>visible progress, goal gradient</td><td>"Asmund, son of Ragnar." Under it, the line: "3 sons · 1 of age". The line's safety is the dynasty's real goal.</td></tr>
+<tr><td>A fleet</td><td>"(200 vs 45)". "This is what that costs." even when it cost nothing.</td><td>competence, agency</td><td>Guard against Fleet as a bar; losses as chips; "is hostile" only on a king's fleet, with what to do about it.</td></tr>
+<tr><td>The King slain</td><td>Line two, in body text.</td><td>proportion</td><td>The title and the oxblood card. The death card names the cause and whether the line holds.</td></tr>
+<tr><td>Old men die</td><td>One paragraph each, after the event. "His 0 men."</td><td>pruning</td><td>One grouped row with ages and the men left unled.</td></tr>
+<tr><td>A suitor asks</td><td>"Gunnar asks for Gyda" and two buttons. Nothing about Gunnar.</td><td>agency</td><td>Gunnar's stats, men and stance on the card; after the choice, what it means: "He kneels to your heir without a price."</td></tr>
+<tr><td>Hard winter, harvest, the Wanderer</td><td>The effect in words.</td><td>visible progress</td><td>The effect in numbers, struck figure and new figure.</td></tr>
+<tr><td>A king turns hostile</td><td>Nothing until his fleet arrives a year later.</td><td>the open loop</td><td>"Gudrød's fleet is gathering", on the winter it starts.</td></tr>
+<tr><td>The King past fifty</td><td>The roll happens after the card, unseen.</td><td>anticipation, peak</td><td>The roll on the card (fix 3).</td></tr>
+<tr><td>Leaving</td><td>"On", every time.</td><td>the open loop</td><td>"Spring · 826", or "Ragnar is dead", or "The line is broken".</td></tr>
+</table></div>
+
+<h2>Missing moments</h2>
+<ul>
+  <li><b>The King's winter.</b> Every winter past fifty is a roll against the dynasty. It is the strongest suspense the game has, and today it is never shown.</li>
+  <li><b>The warning.</b> A year passes between a king turning hostile and his fleet arriving. That year is a chance to act (gift silver, leave a guard), and the player is never told it has started.</li>
+  <li><b>The full hall.</b> The day the eighth man sits down without land is the day the hall stops growing. Nothing marks it.</li>
+  <li><b>The line's count.</b> Births are a fifth of all cards, and none says what the birth does for the line.</li>
+  <li><b>The cause of death.</b> A king who fell in his door and one who died in his bed get the same card.</li>
+</ul>
+
+<h2>Needs a human</h2>
+<ul>
+  <li>The turn's timing. A 350 ms back plus a 520 ms turn, 270 times a dynasty, must feel like a breath, not a wait. A tap skips it.</li>
+  <li>Option A asks you to turn the King's card yourself. Decide whether that tap is suspense or a chore by the fifth winter past fifty.</li>
+  <li>Whether the King's roll should move onto the card at all, or stay a surprise you only see when it kills him. The mocks show it; the odds don't change.</li>
+  <li>Whether grouping old men's deaths into one row hides someone you cared about. A named man with a holding may deserve his own row.</li>
+  <li>The duplicate names (two Odos, two Osrics). That's a naming fix in the game, not on this card; it is logged either way.</li>
+</ul>
+</div>
+
+<h2 id="options">Three alternatives</h2>
+<p class="col" style="font-size:15px">Each phone is live, and every state is a real save from the playtests. Press the button at the foot to see where the card hands off: in 846 and 808 it goes to the new death card. In 820, choose. Replay runs the opening again. All three share fixes 2 and 3 (the numbers, the warnings, the roll, the death card); they differ in what carries the moment.</p>
+
+<div class="bench">
+  <div class="opt" id="optA">
+    <header><div><span class="letter">Option A</span> <h3>The Turn</h3></div><span class="pick">my pick</span></header>
+    <div class="ctrl"></div>
+    <div class="frame"><div class="ph A"></div></div>
+    <div class="notes"><p class="t">A real card, turned.</p>
+      <p>The winter night fills the screen and one card sits in the middle, face down, showing the year. It turns. Its edge, glyph and title take the tone of what it says. Under it, the other news of the winter arrives as short rows. Past fifty, a second, smaller card lies face down with the King's odds on its back, and the button at the foot reads "Turn his card". You turn it.</p>
+      <ul><li>The copy has promised "one card turns" since session 2. This keeps the promise.</li><li>The reliable baseline (a routine card turns) makes the rare grave card land.</li><li>The King's card is the only tap that adds suspense rather than reading.</li></ul>
+      <p class="risk">Risk: the most motion of the three. The turn must stay under a second and skip on tap.</p></div>
+  </div>
+  <div class="opt" id="optB">
+    <header><div><span class="letter">Option B</span> <h3>The Hall at Night</h3></div></header>
+    <div class="ctrl"></div>
+    <div class="frame"><div class="ph B"></div></div>
+    <div class="notes"><p class="t">The hall is the picture; the event happens to it.</p>
+      <p>Above the text, a small drawing of the hall: the fjord running to the horizon, the King's high seat, eight bench seats, the children in a row. Hostile kings' sails stand on the horizon, solid when their fleet is out, dashed while it gathers. The card acts on the drawing: a fleet runs down the fjord and breaks or burns the hall, a seat empties in oxblood, a child appears in pine.</p>
+      <ul><li>The full bench and the gathering fleet are always visible, not only on the winter they change.</li><li>The King's roll resolves on its own after a beat.</li></ul>
+      <p class="risk">Risk: the most to build, and it overlaps screen 5, the Hall pane. The drawing is small on a phone.</p></div>
+  </div>
+  <div class="opt" id="optC">
+    <header><div><span class="letter">Option C</span> <h3>The Saga Page</h3></div></header>
+    <div class="ctrl"></div>
+    <div class="frame"><div class="ph C"></div></div>
+    <div class="notes"><p class="t">Each winter is a line in the reign's saga.</p>
+      <p>The winter is written as one saga sentence, word by word, in the display face: "Gudrød's fleet came up the fjord and the hall fell. Osric died in its door." Numbers sit under it as footnotes. An Ahead box carries what is coming. At the foot, a strip of every winter of this reign, one tile each and colored by tone, so a reign takes a visible shape over the years.</p>
+      <ul><li>The cheapest to build: text, a strip, and the chronicle the game already keeps.</li><li>Ahead adds the King's odds for next winter, not only this one.</li></ul>
+      <p class="risk">Risk: still mostly reading. The least surprise; the word-by-word reveal is the only build-up.</p></div>
+  </div>
+</div>
+
+<p class="col muted" style="margin-top:36px;font-size:14px">Tell me A, B or C, or point at one and say what to borrow from the others. I will build the winner into the game and move to screen 4, the Fight sheet.</p>
+</div>
+
+<script>
+%%COAST%%
+// Real saved states (tools/audit/states/card-*.json, from the persona playtests), trimmed by tools/audit/card-states.js.
+// follows: what the card's button leads to in the game (spring, the fork, the old-age death, the King slain); succ: who takes the hall.
+const STATES = %%STATES%%;
+const ORDER=[['birth-son','first card'],['wanderer','routine'],['gathering','a fleet gathers'],['rival-strange-fell-kingslain','King slain'],['rival-king-fell-slain','the fleet sails'],['suitor','a choice'],['rival-strange-held','old, full hall'],['agedeath-late','the roll'],['rival-king-fell-slain-aged','all at once']];
+const TITLE={ironside:'Ironside',farsailor:'Far-sailor',lawgiver:'Lawgiver',ringgiver:'Ring-giver',seawolf:'Sea-wolf',hallward:'Hall-ward',silvertongue:'Silver-tongue',fairdealer:'Fair-dealer',landtaker:'Land-taker',deepchest:'Deep-chest',beloved:'Beloved',oldwise:'Old-wise'};
+const ICONS={ // the game's own icon set (ui.js), plus a cradle and a sail for the card's kinds
+  hall:'<path d="M3 10l7-6 7 6 M5 9v8h10V9 M9 17v-4h2v4"/>',
+  men:'<circle cx="7" cy="7" r="2.5"/><circle cx="14" cy="8" r="2"/><path d="M2.5 17c0-3 2-5 4.5-5s4.5 2 4.5 5 M11.5 16c.3-2.3 1.4-3.8 3-4 1.6.2 2.8 1.7 3 4"/>',
+  wanderer:'<path d="M8 17V5a2 2 0 0 1 4 0v1 M8 9h3 M12 17l1-6"/>',
+  death:'<path d="M4 17h12 M6 17l1-7h6l1 7 M10 10V4 M8 6h4"/>',
+  oath:'<path d="M10 3a7 7 0 1 0 0 14 M10 3a7 7 0 0 1 6 3.5 M10 17a7 7 0 0 0 6-3.5 M16 6.5l-1 1 M16 13.5l-1-1"/>',
+  crown:'<path d="M4 15h12 M4 15L3 7l4 3 3-5 3 5 4-3-1 8"/>',
+  babe:'<path d="M3 11h14 M4 11c0 3.5 2.7 6 6 6s6-2.5 6-6 M12.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>',
+  sail:'<path d="M10 3v12 M10 4c3 2 5 5 5 9h-5 M3 15c2 2 4 2.5 7 2.5s5-.5 7-2.5"/>',
+  snow:'<path d="M10 2v16 M3 6l14 8 M3 14l14-8 M8 3l2 2 2-2 M8 17l2-2 2 2"/>'};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ico=(k,c='ico')=>`<svg class="${c}" viewBox="0 0 20 20" aria-hidden="true">${ICONS[k]}</svg>`;
+const menW=n=>n===1?'1 man':`${n} men`, pl=(n,w)=>`${n} ${w}${n===1?'':'s'}`, pct=p=>Math.round(p*100)+'%';
+
+// ---- read a card once into what every option draws: tone, title, lead, the fight, what it costs, what else happened, the King's roll ----
+function read(st){
+  const c=st.card,k=st.king,L=c.lines||[],y=st.year;
+  const o={tone:'quiet',glyph:'hall',title:c.title,lead:L[0]||'',fight:null,chips:[],also:[],saga:[],ahead:[],roll:null,kid:null};
+  const aged=[];let slain=null,kingSlain=false;
+  for(const l of L){let m;
+    if((m=l.match(/^(\S+) died in his bed, (\d+) winters old\.(?: His (\d+) men walk home unled\.)?/)))aged.push({n:m[1],a:+m[2],m:+(m[3]||0)});
+    else if((m=l.match(/^(\S+) died in the door of the hall\.(?: His (\d+) men are unled\.)?/)))slain={n:m[1],m:+(m[2]||0)};
+    else if(/died in the door of his hall/.test(l))kingSlain=true;}
+  const boys=st.kids.filter(x=>x.sex==='m').length,girls=st.kids.filter(x=>x.sex==='f').length;
+  const hostileFoes=[];
+  if(c.ev==='birth'){const kid=st.kids[st.kids.length-1],son=/son/.test(c.title);o.kid=kid;o.tone='boon';o.glyph='babe';
+    o.lead=`${kid.name}, ${son?'son':'daughter'} of ${k.name}.`;
+    o.chips.push(son?{h:`The line · <b>${pl(st.sons.length+boys,'son')}</b> · ${st.sons.length||'none'} of age`}:{h:`<b>${pl(girls,'daughter')}</b> · at sixteen a jarl may ask`});
+    o.saga.push([kid.name,'g'],[` was born, a ${son?'son':'daughter'} to ${k.name}.`,'']);}
+  else if(c.ev==='wanderer'){o.glyph='wanderer';o.lead='He winters in the hall and talks of far coasts.';
+    o.chips.push({h:`Rumor in spring <s>20</s> <b>${st.rumor}</b> silver`});
+    o.saga.push(['The Wanderer came to the door and wintered in the hall, talking of far coasts.','']);}
+  else if(c.ev==='hardWinter'){o.tone='omen';o.glyph='snow';o.lead='The ice came early and lies long.';const base=st.deep?Math.round(st.homeMen/2):st.homeMen;
+    o.chips.push({h:`Next autumn's bill <s>${base}</s> <b>${base*2}</b> silver`,cls:'down'});o.chipNote=`at today's ${st.homeMen} men at home`;
+    o.saga.push(['The ice came early and lay long.','']);}
+  else if(c.ev==='harvest'){o.tone='boon';o.glyph='hall';o.lead='The land is kind.';o.chips.push({h:`Rents next autumn <s>${st.rent}</s> <b>${st.rent*2}</b>`,cls:'up'});o.saga.push(['The land was kind.','']);}
+  else if(c.ev==='suitor'){const j=c.choice.j;o.tone='boon';o.glyph='oath';o.lead=`Give her, and he is kin. Kin kneel to your heir without a price.`;o.choice=c.choice;
+    o.saga.push([`${j.name} asked for ${c.choice.d}.`,'']);}
+  else if(c.ev==='rival'){const fm=(L[0]||'').match(/\((\d+) vs (\d+)\)/),foe=(c.title.match(/^(.+)'s sail sighted/)||[])[1]||null,fell=/hall fell/.test(L[0]);
+    const whose=foe?`${foe}'s fleet`:'A strange fleet';o.foe=foe;o.glyph='sail';
+    o.fight={h:+fm[1],f:+fm[2],fell,whose};o.title=foe?`${foe}'s fleet`:'A strange sail';
+    o.lead=`${whose} came up the fjord. The hall ${fell?'fell':'held'}.`;o.tone=fell?'blood':foe?'omen':'held';
+    const lm=(L[0]||'').match(/(\d+) silver and (\d+) men gone/);
+    if(lm){if(+lm[1])o.chips.push({h:`−${lm[1]} silver`,cls:'down'});if(+lm[2])o.chips.push({h:`−${menW(+lm[2])}`,cls:'down'});}
+    o.saga.push([`${whose} came up the fjord`,''],[fell?' and the hall fell.':' and broke on the hall.',fell?'x':'g']);
+    if(foe)hostileFoes.push(foe);
+    if(kingSlain){o.title=`${k.name} is slain`;o.glyph='death';o.lead=`${whose} came up the fjord. The hall fell, and ${k.name} died in its door.`;o.saga.push([` ${k.name} died in its door.`,'x']);}}
+  else if(c.ev==='quiet'){o.lead='Snow on the roof. Nothing stirs.';o.saga.push(['Snow lay on the roof, and nothing stirred.','']);}
+  else {o.saga.push([o.lead,'']);}
+  // what else this winter did, weighted
+  if(slain){o.also.push({tone:'blood',t:`${slain.n} died in the door.`,s:slain.m?`${menW(slain.m)} unled`:''});o.saga.push([` ${slain.n} died in its door.`,'x']);}
+  if(aged.length===1){const a=aged[0];o.also.push({tone:'quiet',t:`${a.n}, ${a.a}, died in his bed.`,s:a.m?`${menW(a.m)} walk home unled`:''});o.saga.push([` ${a.n} died in his bed, ${a.a} winters old.`,'']);}
+  else if(aged.length>1){const sum=aged.reduce((x,a)=>x+a.m,0);o.also.push({tone:'quiet',t:`${aged.length} old men died in their beds.`,s:aged.map(a=>`${a.n} ${a.a}`).join(' · ')+(sum?` · ${menW(sum)} unled`:'')});
+    o.saga.push([` ${aged.slice(0,-1).map(a=>a.n).join(', ')} and ${aged[aged.length-1].n} died in their beds.`,'']);}
+  for(const f of hostileFoes){const r={tone:'omen',t:`${f} is hostile.`,s:'His fleets keep coming while he stays hostile. Gift silver in spring to warm him.'};o.also.push(r);o.ahead.push(r);}
+  for(const r of st.rulers.filter(r=>r.wroth===y&&!hostileFoes.includes(r.name))){const x={tone:'omen',t:`${r.name}'s fleet is gathering.`,s:`It sails on the hall next winter if he is still hostile. Warm him with silver in spring, or leave men home.`,gather:r.name};o.also.push(x);o.ahead.push(x);}
+  if(st.benchFull){const x={tone:'quiet',t:'The benches are full.',s:`${st.bench.length} of ${st.benchMax} named men sit without land. No new man comes until one is given a holding.`};o.also.push(x);o.ahead.push(x);}
+  if(st.deathP>0)o.roll={p:st.deathP,dies:st.follows==='age'};
+  o.kingSlain=kingSlain;o.slain=slain;o.aged=aged;
+  return o;
+}
+// the button at the foot: what comes next
+function nextOf(st,o,v){const k=st.king;
+  if(v.stage==='dead')return st.succ&&st.succ.t==='end'?{l:'The line is broken',s:'the dynasty saga',cls:'grave'}:{l:'The heir',s:'the jarls weigh him'};
+  if(o.roll&&!v.rolled)return {l:'Turn his card',s:`${pct(o.roll.p)} · ${k.name}, ${k.age}`,cls:'roll'};
+  if(st.follows==='slain'||(st.follows==='age'))return {l:`${k.name} is dead`,s:'his saga',cls:'grave'};
+  return {l:'Spring',s:String(st.year+1)};}
+const exitHTML=n=>`<div class="exit"><button data-act="exit" class="${n.cls||''}"><span>${esc(n.l)}</span><small>${esc(n.s)}</small></button></div>`;
+const chipsHTML=o=>o.chips.length?`<div class="chips">${o.chips.map(c=>`<span class="chip ${c.cls||''}">${c.h}</span>`).join('')}</div>${o.chipNote?`<div class="row" style="margin-top:4px"><span></span><span class="s">${esc(o.chipNote)}</span></div>`:''}`:'';
+const vsHTML=f=>{if(!f)return '';const t=f.h+f.f||1;return `<div class="vs ${f.fell?'fell':'held'}"><div class="lab"><span>Guard <b>${f.h}</b></span><span>${f.fell?'the hall fell':'the hall held'}</span><span>Fleet <b>${f.f}</b></span></div><div class="track"><i class="h" style="width:${100*f.h/t}%"></i><i class="f" style="width:${100*f.f/t}%"></i></div></div>`};
+const rowsHTML=(rows,d0,beat)=>rows.map((r,i)=>`<div class="row tone-${r.tone} ${beat?'in':''}" style="animation-delay:${d0+120*i}ms"><i></i><div><div class="t">${esc(r.t)}</div>${r.s?`<div class="s">${esc(r.s)}</div>`:''}</div></div>`).join('');
+const suitorHTML=(o,v)=>{if(!o.choice)return '';const j=o.choice.j;return `<div class="suitor"><span class="nm">${esc(j.name)}, ${j.age}</span><span class="w">${esc(j.st)}</span><span class="st">Combat ${j.c} · Rule ${j.r} · Follow ${j.f} · ${j.men} of ${j.cap} men</span></div>${v.chosen?rowsHTML([v.chosen==='yes'?{tone:'boon',t:`${j.name} is kin.`,s:`He kneels to your heir without a price.`}:{tone:'quiet',t:`${o.choice.d} stays in the hall.`,s:`${j.name} says nothing at the table.`}],0,true):''}`};
+function choiceOrExit(st,o,v){return o.choice&&!v.chosen?`<div class="exit"><div class="two"><button class="yes" data-act="give">Give her</button><button data-act="refuse">Refuse</button></div></div>`:exitHTML(nextOf(st,o,v))}
+function deadHTML(st){const k=st.king,c=st.card,kid=c.ev==='birth'?st.kids[st.kids.length-1]:null,s=st.succ||{};
+  const cause=st.follows==='slain'?'Slain in the door of his hall.':kid?`Died in his bed, the winter ${kid.name} was born.`:'Died in his bed.';
+  const heir=s.t==='end'?`<div class="heir broken">No son of age. No kin to take the hall. The line is broken.</div>`:s.t==='heir'?`<div class="heir">His heir: <b>${esc(s.sons.join(', '))}</b></div>`:s.lines?`<div class="heir">${esc(s.lines[0])}</div>`:'';
+  const boys=st.kids.filter(x=>x.sex==='m');
+  return `<div class="dead"><h1>${ico('death')}${esc(k.name)} is dead</h1><div class="cause">${cause}</div><div class="meta">${k.age} winters · king ${st.reign}–${st.year}${boys.length&&s.t==='end'?` · ${boys.map(b=>`${b.name} is ${b.age}`).join(', ')}`:''}</div>${heir}</div>`}
+// band and map: as in the game
+function bandHTML(st){const k=st.king,tags=k.titles.map(t=>`<span class="tag">${TITLE[t]||t}</span>`).join('');const f=[25,35,45,55].find(a=>a>k.age);
+  return `<div class="band"><div class="year">${st.year}</div><div class="res">${st.silver} silver<br>${st.men} men · ${Math.max(0,st.unled)} unled</div><div class="king">${esc(k.name)}, ${k.age}${tags}<span class="fork">${st.deathP?`· death ${pct(st.deathP)}`:f?`· fork at ${f}`:''}</span></div></div>`}
+const mapHTML=()=>`<div class="mapwrap"><svg class="map" viewBox="40 -30 330 714" preserveAspectRatio="xMidYMid slice"><path class="land" d="${COAST_PATH}"/></svg></div>`;
+
+// ===== A: the turn =====
+function renderA(ph,st,v){const o=read(st),k=st.king,beat=v.beat&&!reduced;
+  let stage;
+  if(v.stage==='dead')stage=`<div class="in" style="width:100%;max-width:330px">${deadHTML(st)}</div>`;
+  else{const r=o.roll;
+    stage=`<div class="tc"><div class="flip ${beat?'down':''}"><div class="face tone-${o.tone}"><div class="top">${ico(o.glyph,'ico glyph')}<small>WINTER ${st.year}</small></div>
+      <h3>${esc(o.title)}</h3><p class="lead">${esc(o.lead)}</p>${suitorHTML(o,v)}${vsHTML(o.fight)}${chipsHTML(o)}</div>
+      <div class="back"><span class="yr">${st.year}</span><small>one card turns</small></div></div></div>
+    ${o.also.length?`<div class="also">${rowsHTML(o.also,beat?950:0,beat)}</div>`:''}
+    ${r?`<div class="rollc ${beat?'in':''}" style="animation-delay:${beat?950+120*o.also.length:0}ms"><div class="flip ${v.rolled?'':'down'}"><div class="face tone-${r.dies?'blood':'boon'}"><span class="who">${r.dies?`${esc(k.name)} dies in his sleep.`:`${esc(k.name)} sees the spring.`}</span><span class="p">${pct(r.p)}</span><div class="strand"><i style="width:${100-100*r.p}%"></i></div></div>
+      <div class="back"><span class="who">${esc(k.name)}, ${k.age} · his winter</span><span class="p">${pct(r.p)}</span></div></div></div>`:''}`;}
+  ph.innerHTML=bandHTML(st)+mapHTML()+`<div class="overlay"><div class="stage">${stage}</div><div class="scene">${v.stage==='dead'?exitHTML(nextOf(st,o,v)):choiceOrExit(st,o,v)}</div></div><div class="cap"><span></span></div>`;
+  if(beat&&v.stage!=='dead'){const f=ph.querySelector('.tc .flip');setTimeout(()=>f.classList.remove('down'),380)}
+}
+// A turns the King's card in place, then the button becomes what follows
+function turnA(ph,st,v){v.rolled=true;const f=ph.querySelector('.rollc .flip');if(f)f.classList.remove('down');const o=read(st);const b=ph.querySelector('.exit button');if(b)b.disabled=true;
+  setTimeout(()=>{const ex=ph.querySelector('.exit');if(ex)ex.outerHTML=exitHTML(nextOf(st,o,v))},reduced?0:600)}
+
+// ===== B: the hall at night =====
+function hallPic(st,o,v){const y=st.year,W=390,cx=195,beat=v.beat&&!reduced;
+  const hostile=st.rulers.filter(r=>r.wroth!=null&&!r.broken),slots=[70,320,115,275,30,360];
+  let svg=`<line class="hz" x1="0" y1="30" x2="${W}" y2="30"/>`;
+  svg+=`<path class="sea" d="M${cx-14} 30 L${cx+14} 30 L${cx+44} 120 L${cx-44} 120 Z"/><path class="shore" d="M${cx-14} 30 L${cx-44} 120 M${cx+14} 30 L${cx+44} 120"/>`;
+  hostile.forEach((r,i)=>{const x=slots[i%slots.length],g=r.wroth===y;svg+=`<g class="sail ${g?'gather':''}" transform="translate(${x-8} 12)"><path d="M8 0v14 M8 1c4 3 6 7 6 12H8z M1 15c3 2 5 2 7 2s5 0 7-2"/></g><text x="${x}" y="44" text-anchor="middle">${esc(r.name)}${g?' · gathering':''}</text>`});
+  if(o.fight){const run=o.fight.fell?'run':'run back',cls=o.foe?'':'strange';svg+=`<g class="sail ${cls}"><g class="${beat?run:''}" ${!beat&&!o.fight.fell?'style="opacity:0"':''}><g transform="translate(${cx-8} 96)"><path d="M8 0v14 M8 1c4 3 6 7 6 12H8z M1 15c3 2 5 2 7 2s5 0 7-2"/></g></g></g>`}
+  const hcls=o.fight?(o.fight.fell?'fell':'held'):'';
+  svg+=`<g class="hallg ${beat?hcls:''}"><path d="M${cx-32} 130 L${cx} 113 L${cx+32} 130 Z"/><path d="M${cx-27} 130 h54 v15 h-54 Z"/></g>`;
+  if(o.glyph==='snow')svg+=`<path class="frost" d="M${cx-30} 128 L${cx} 112 L${cx+30} 128"/>`;
+  if(st.card.ev==='wanderer')svg+=`<g class="wand"><circle cx="${cx-44}" cy="134" r="3"/><rect x="${cx-46}" y="137" width="4" height="8"/></g>`;
+  svg+=`<text x="${cx+40}" y="141">guard ${o.fight?o.fight.h:(st.guard??st.homeMen)}</text>`;
+  // the King's high seat, then the benches: the living, then the dead of this winter
+  svg+=`<rect class="seat high ${o.kingSlain&&beat?'gone':''}" x="${cx-8}" y="150" width="16" height="9" rx="1"/><text x="${cx+14}" y="158">${esc(st.king.name)}</text>`;
+  const dead=[...(o.slain?[o.slain.n]:[]),...o.aged.map(a=>a.n)],n=Math.max(st.benchMax,st.bench.length+dead.length),x0=60,x1=330,step=(x1-x0)/n,w=Math.min(20,step-4);
+  const seats=[...st.bench.map(m=>({m,cls:''})),...dead.map(nm=>({dead:nm,cls:beat?'gone':'empty'}))];
+  for(let i=0;i<n;i++){const s=seats[i],x=x0+i*step;let cls=s?s.cls:'empty';
+    if(s&&s.m&&st.card.ev==='seaman'&&i===st.bench.length-1)cls='new';
+    if(s&&s.m&&o.choice&&s.m.name===o.choice.j.name)cls+=' mark';
+    svg+=`<rect class="seat ${cls}" x="${x.toFixed(1)}" y="170" width="${w.toFixed(1)}" height="8" rx="1"/>`;}
+  svg+=`<text x="${x0}" y="191">benches ${st.bench.length}/${st.benchMax}</text>${st.benchFull?`<text class="full" x="${x0+86}" y="191" style="fill:var(--chestnut)">full · no one new comes</text>`:''}`;
+  st.kids.forEach((c,i)=>{const x=x0+4+i*11,isNew=o.kid&&i===st.kids.length-1&&beat;svg+=c.sex==='m'?`<circle class="kid ${isNew?'new':''}" cx="${x}" cy="203" r="3"/>`:`<circle class="kid f ${isNew?'new':''}" cx="${x}" cy="203" r="2.6"/>`});
+  svg+=`<text x="${x0+8+st.kids.length*11}" y="206">children ${st.kids.length}${st.sons.length?` · ${st.sons.length} sons on the benches`:''}</text>`;
+  return `<svg class="pic" viewBox="0 0 ${W} 214" aria-label="The hall at night">${svg}</svg>`}
+function renderB(ph,st,v){const o=read(st),k=st.king,beat=v.beat&&!reduced,r=o.roll;
+  let body;
+  if(v.stage==='dead')body=deadHTML(st);
+  else body=`${hallPic(st,o,v)}<h1 class="tone-${o.tone}" style="color:var(--t)">${ico(o.glyph)}${esc(o.title)}</h1><p class="lead">${esc(o.lead)}</p>${suitorHTML(o,v)}${vsHTML(o.fight)}${chipsHTML(o)}
+    ${o.also.length?`<div class="also" style="margin-top:12px">${rowsHTML(o.also,beat?900:0,beat)}</div>`:''}
+    ${r?`<div class="rollline"><span>${esc(k.name)}, ${k.age} · his winter · ${pct(r.p)}</span><b class="tone-${r.dies?'blood':'boon'} ${beat?'in':''}" style="animation-delay:${beat?1700:0}ms">${r.dies?'He dies in his sleep':'He sees the spring'}</b></div>`:''}`;
+  ph.innerHTML=bandHTML(st)+mapHTML()+`<div class="overlay"><div class="scene">${body}${v.stage==='dead'?exitHTML(nextOf(st,o,v)):choiceOrExit(st,o,v)}</div></div><div class="cap"><span></span></div>`;}
+
+// ===== C: the saga page =====
+function sagaHTML(o,beat){let i=0;return o.saga.map(([t,c])=>t.split(/(\s+)/).map(w=>/^\s+$/.test(w)||!w?w:`<span class="w ${c}" style="animation-delay:${beat?60*i++:0}ms">${esc(w)}</span>`).join('')).join('')}
+function renderC(ph,st,v){const o=read(st),k=st.king,beat=v.beat&&!reduced,r=o.roll;
+  let body;
+  if(v.stage==='dead')body=deadHTML(st);
+  else{const words=o.saga.reduce((a,[t])=>a+t.split(/\s+/).filter(Boolean).length,0),after=beat?60*words+300:0;
+    const nextP=k.age+1>50?0.05*(k.age+1-50)*(k.titles.includes('oldwise')?.5:1):0;
+    const ahead=[...o.ahead];if(nextP&&!(r&&r.dies))ahead.push({tone:'quiet',t:`${k.name} turns ${k.age+1}.`,s:`Next winter's roll: ${pct(nextP)}`});
+    const notes=[...o.chips.map(c=>`<span class="${c.cls==='down'?'dn':''}">· ${c.h}</span>`)];
+    const ws=st.winters,cnt=t=>ws.filter(w=>w.tone===t).length+(o.tone===t?1:0);
+    body=`<h1>Winter · ${st.year}</h1><p class="saga">${sagaHTML(o,beat)}</p>${suitorHTML(o,v)}${o.fight?vsHTML(o.fight):''}
+      ${notes.length?`<div class="notes2 ${beat?'in':''}" style="animation-delay:${after}ms">${notes.join('')}</div>`:''}
+      ${r?`<div class="rollline ${beat?'in':''}" style="animation-delay:${after+500}ms">${esc(k.name)}, ${k.age}, <b class="tone-${r.dies?'blood':'boon'}">${r.dies?'died in his sleep':'saw the spring'}</b> · the winter's roll was ${pct(r.p)}</div>`:''}
+      ${ahead.length?`<h2>Ahead</h2><div class="ahead ${beat?'in':''}" style="animation-delay:${after+200}ms">${rowsHTML(ahead,0,false)}</div>`:''}
+      <h2>${esc(k.name)}'s winters</h2><div class="strip">${ws.map(w=>`<i class="${w.tone}" title="${w.y} · ${esc(w.t)}"></i>`).join('')}<i class="cur ${o.tone==='held'?'quiet':o.tone}"></i></div>
+      <div class="stripcap"><span>${st.reign}</span><span>${pl(ws.length+1,'winter')} · ${cnt('boon')} good · ${cnt('blood')} grave</span><span>${st.year}</span></div>`;}
+  ph.innerHTML=bandHTML(st)+mapHTML()+`<div class="overlay"><div class="scene">${body}${v.stage==='dead'?exitHTML(nextOf(st,o,v)):choiceOrExit(st,o,v)}</div></div><div class="cap"><span></span></div>`;}
+
+// ---- wire the three phones ----
+const OPTS=[{el:'#optA',r:renderA,turn:true},{el:'#optB',r:renderB},{el:'#optC',r:renderC}];
+for(const O of OPTS){
+  const opt=document.querySelector(O.el),ph=opt.querySelector('.ph'),ctrl=opt.querySelector('.ctrl');
+  ctrl.innerHTML=`<button data-act="beat">Replay</button>`+ORDER.map(([key,lab],i)=>`<button data-act="year" data-k="${key}" class="${i===0?'on':''}">${STATES[key].year}<small>${lab}</small></button>`).join('');
+  let key=ORDER[0][0],v;const fresh=()=>{v={stage:'card',rolled:!O.turn,chosen:null,beat:true}};fresh();
+  const draw=()=>{O.r(ph,STATES[key],v);v.beat=false};
+  const say=t=>{const cap=ph.querySelector('.cap');cap.querySelector('span').textContent=t;cap.classList.add('show');setTimeout(()=>cap.classList.remove('show'),1500)};
+  ctrl.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.act==='year'){key=b.dataset.k;ctrl.querySelectorAll('[data-act=year]').forEach(x=>x.classList.toggle('on',x===b))}fresh();draw()});
+  ph.addEventListener('click',e=>{const a=e.target.closest('[data-act]');if(!a)return;const st=STATES[key],o=read(st);
+    if(a.dataset.act==='give'||a.dataset.act==='refuse'){v.chosen=a.dataset.act==='give'?'yes':'no';draw();return}
+    if(a.dataset.act!=='exit')return;
+    if(o.roll&&!v.rolled){turnA(ph,st,v);return}
+    if(v.stage==='card'&&(st.follows==='slain'||st.follows==='age')){v.stage='dead';v.beat=true;draw();return}
+    say(v.stage==='dead'?(st.succ&&st.succ.t==='end'?'…the dynasty saga: the line is broken':'…the heir, and the jarls weigh him'):st.follows==='fork'?`…spring ${st.year+1}, and the fork`:`…spring ${st.year+1}`);
+    setTimeout(()=>{fresh();draw()},1500)});
+  draw();
+}
+function fit(){for(const f of document.querySelectorAll('.frame')){const w=f.clientWidth,k=w/390;f.style.height=(844*k)+'px';f.querySelector('.ph').style.transform=`scale(${k})`}}
+fit();addEventListener('resize',fit);
+</script>

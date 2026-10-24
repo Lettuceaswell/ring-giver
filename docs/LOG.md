@@ -2,6 +2,23 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-24 (session 10, screen audit 3: the winter card)
+
+Round 3 of the five-screen audit. Audit page with the critique and three live mock-ups: https://claude.ai/artifact/HCnFYiyjm25E4SSc3oozDd . Waiting on Levi's pick; mine is **A, The Turn**.
+
+**How the states were found.** The card is random, so instead of a driven dynasty the persona playtests supply the states: `run.js` with `CARDS=<dir>` dumps the first save of each kind of card (birth son/daughter, wanderer, hard winter, harvest, man from the sea, feud, jarl death, suitor, quiet, the envoy, and the rival sail split by king or stranger, held or fell, a man or the King slain), each with `-aged` when old men also died in bed and `-late` past 880, plus `gathering` (a king turned wroth that winter) and `agedeath` (the King's old-age roll took him after the card). The hook only runs with `CARDS` set; the default run's md5 is unchanged (`95a07adb…`). `tools/audit/card-states.js` trims a save to what the mocks need and runs the card's button on a copy to learn what follows (spring, the fork, the old-age death, the King slain) and who takes the hall. Frequencies over 8 dynasties of the levi persona: birth 20.6%, sail 17.5% (the hall falls in about 6 of 48 a dynasty), Wanderer 11.8%, harvest 11.5%, jarl death 11.3%, suitor 10.1%, feud 6.1%, quiet 5.5%, hard winter 4.1%, man from the sea 1.6%.
+
+**The critique, in short.** A notice where the game promised a draw ("one card turns"): no face-down moment, every card the same voice and the same On. In 808 a strange fleet kills Ragnar at 35 with no son of age and no kin, the dynasty ends, and the card says so as line two in body text. In 852 six equal paragraphs. The fight is "(0 vs 101)". Effects are words where numbers exist. The gathering fleet (TODO 27) and the full bench (TODO 26) are never told. The King's old-age roll past fifty happens after the card, unseen. The death card does not say how he died, says "At most 0 holdings", and offers "The heir" to a line that has none.
+
+**Three options, all with:** tone by kind (oxblood grave, pine good, chestnut warning, iron routine; the King slain takes the title), the fight as a Guard vs Fleet bar, effects as chips with the struck and new figure, other news as weighted rows (old men's deaths grouped, grammar fixed), "X's fleet is gathering" the winter a king turns wroth, "The benches are full" when 8 sit without land, the King's roll on the card, the foot button naming what follows ("Spring · 826", "Ragnar is dead", "The line is broken"), and a death card with the cause and the heir or the broken line.
+- **A, The Turn (my pick):** the card lies face down on the winter night (350 ms), turns (520 ms); other news arrives as rows under it; past fifty a second card with the King's odds on its back, turned by the foot button.
+- **B, The Hall at Night:** a drawing above the text: horizon with hostile kings' sails (dashed while gathering), the fjord, the hall and its guard, the high seat, eight bench seats, the children. A fleet runs down the fjord and breaks or burns the hall; a seat empties; a child appears.
+- **C, The Saga Page:** the winter as one saga sentence written in word by word, numbers as footnotes, an Ahead box (fleets, full benches, next winter's odds), and a strip of every winter of this reign colored by tone, read back from the chronicle.
+
+**Found on the way (not fixed):** duplicate names among named men (two Odos die in one winter; two Osrics on one bench), "His 0 men" / "His 1 men", "This is what that costs." when the hall held.
+
+**Next:** Levi picks; build the winner, then round 4, the Fight sheet.
+
 ## 2026-10-24 (session 9, persona playtests: TODO 25)
 
 Levi's first full run was an automatic win, so the question was which levers make a bad plan lose. Built a headless kit, read what each personality got away with, tuned `game.js`, re-ran. Round 3 (the winter card) waits behind this.

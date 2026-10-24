@@ -29,6 +29,26 @@ G.markLost = (s, h, why) => { if (M) { if (/walked/.test(why)) M.holdWalked++; e
 const origCheckBreak = G.checkBreak;
 G.checkBreak = (s, k) => { const was = k && k.broken; origCheckBreak(s, k); if (M && k && k.broken && !was) { M.realmsBroken++; if (M.firstHostile[k.id] != null) M.breakWinters.push(s.year - M.firstHostile[k.id]); } };
 
+// ---- CARDS=dir: dump one save per kind of winter card (the screen audit's round 3 states) ------------
+const CARDS = process.env.CARDS, cardSeen = {};
+function cardKind(ev) {
+  if (ev.t === 'ruler') return 'envoy';
+  if (ev.t !== 'event') return ev.t;
+  const L = ev.lines.join(' '), aged = / died in his bed/.test(L) ? '-aged' : '';
+  if (ev.ev === 'rival') return 'rival-' + (/sail sighted/.test(ev.title) && !/^A rival/.test(ev.title) ? 'king' : 'strange') + (/hall fell/.test(L) ? '-fell' : '-held') + (/door of his hall/.test(L) ? '-kingslain' : / died in the door/.test(L) ? '-slain' : '') + aged;
+  if (ev.ev === 'birth') return 'birth-' + (/son/.test(ev.title) ? 'son' : 'daughter') + aged;
+  return ev.ev + aged;
+}
+function cardShot(s, ev, persona, seed) {
+  let k = cardKind(ev);
+  if (Object.values(s.rulers).some(x => x.wroth === s.year)) k = 'gathering'; // a king's fleet began to gather this winter (TODO 27)
+  else if (s.king.age > 50 && !s.kingSlain && ev.t === 'event') { const c = JSON.parse(JSON.stringify(s)); if (ev.choice) G.acceptSuitor(c, false); else G.next(c); if (c.queue[0] && c.queue[0].t === 'death') k = 'agedeath'; } // the winter's roll took the King if (cardSeen[k] && !(cardSeen[k].year < 830 && s.year > 880)) return; // keep one early and prefer a late one too
+  const key = cardSeen[k] ? k + '-late' : k; if (cardSeen[key] && key.endsWith('-late')) return;
+  cardSeen[key] = { year: s.year, persona, seed, title: ev.title, lines: ev.lines }; if (!cardSeen[k]) cardSeen[k] = cardSeen[key];
+  fs.mkdirSync(CARDS, { recursive: true }); fs.writeFileSync(path.join(CARDS, 'card-' + key + '.json'), JSON.stringify(s));
+  fs.writeFileSync(path.join(CARDS, '_cards.json'), JSON.stringify(cardSeen, null, 1));
+}
+
 // ---- the driver ------------------------------------------------------------------------------
 function newMetrics() {
   return { fights: 0, lost: 0, menLostFights: 0, lootTotal: 0, starveYears: 0, starveHard: 0, starveNewKing: 0, starveMen: 0, hallFell: 0, rivalSails: 0, rivalSilver: 0, rivalMen: 0,
@@ -140,6 +160,7 @@ function runOne(name, seed) {
         const n = Math.min(P.buy(s, sc), Math.floor(s.silver / (G.has(s, 'fairdealer') ? 2 : G.T.manPrice))); if (n > 0) { G.buyMen(s, n); M.menBought += n; }
         const sv = s.silver, mn = s.men; G.closeWinter(s);
         const ev = s.queue[0];
+        if (CARDS && ev) cardShot(s, ev, name, seed);
         if (ev && ev.t === 'event') { M.eventsBy[ev.ev] = (M.eventsBy[ev.ev] || 0) + 1; if (ev.ev === 'jarlDeath') M.jarlDeaths++;
           if (ev.ev === 'rival') { M.rivalSails++; if (process.env.TRACE) console.log(s.year, 'rival:', ev.lines.join(' / '), 'silver', sv); if (/hall fell/.test(ev.lines[0])) { M.hallFell++; M.rivalSilver += sv - s.silver; M.rivalMen += mn - s.men; }
             if (ev.lines.some(l => /died in the door of his hall/.test(l))) M.kingSlain++; else if (ev.lines.some(l => /died in the door/.test(l))) M.hallSlain++; } }

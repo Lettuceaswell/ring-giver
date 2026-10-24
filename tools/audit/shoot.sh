@@ -3,7 +3,7 @@
 #   tools/audit/shoot.sh setup            builds the harness dir (symlinks to the game, a driver page, saved states) and starts a server on :8766
 #   tools/audit/shoot.sh NAME 'HASH'      shoots http://127.0.0.1:8766/index.html#HASH to tools/audit/out/NAME.png at 390x844, 2x
 # HASH keys (driver page): state=<name from states/>  pane=map|ship|hall  saga=1  picker=1  man=<index into S.notables>  ruler=1
-#   dest=<coast id or empty>  board=1  unboard=1  rumor=<coast id>  delta=<silver>&dmen=<men>  nobeat=1 (skips the arrival and ledger beats)  buy=<n> (buy n men on the Winter sheet)  fresh=1&start=ragnar  shift=1 (drop queue[0])
+#   dest=<coast id or empty>  board=1  unboard=1  rumor=<coast id>  delta=<silver>&dmen=<men>  nobeat=1 (skips the arrival and ledger beats)  buy=<n> (buy n men on the Winter sheet)  fresh=1&start=ragnar  shift=1 (drop queue[0])  next=1 (run next(S): what follows the card)
 set -e
 ROOT=$(cd "$(dirname "$0")/../.." && pwd); H=$ROOT/tools/audit/harness; OUT=$ROOT/tools/audit/out
 if [ "$1" = setup ]; then
@@ -19,7 +19,7 @@ driver='''<script>window.onerror=(m,s,l)=>{document.title="ERR "+m+" "+l};
  if(st){const x=new XMLHttpRequest();x.open('GET','states/'+st+'.json',false);x.send();localStorage.setItem('seaking',x.responseText);} else if(h.get('fresh')) localStorage.removeItem('seaking');
  window.__after=function(){
   if(h.get('start')){startGame(h.get('start'));}
-  if(h.get('shift')){S.queue.shift();}
+  if(h.get('shift')){S.queue.shift();} if(h.get('next')){act(()=>next(S));}
   const q=h.get('pane');if(q)UI.pane=q;if(h.get('saga'))UI.saga=true;if(h.get('picker'))UI.picker=true;
   if(h.get('man')){UI.man=S.notables[+h.get('man')].id;}if(h.get('ruler')){UI.man=Object.values(S.rulers).find(k=>k.known).id;}
   if(h.get('dest')!==null){S.destination=h.get('dest')||null;}
