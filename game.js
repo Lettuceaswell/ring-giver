@@ -1,7 +1,7 @@
 // ---- Tuning (GDD §13) ----------------------------------------------------------
 const T = { startMen: 40, menPerF: 10, manPrice: 3, upkeep: 1, rumor: 20, startYear: 793, endYear: 1066,
   emptyUnrest: 10, heldCalm: 5, quietYears: 5, forkAges: [25, 35, 45, 55],
-  gift: 20, giftWarm: 15, hallWarm: 5, idleSour: 3, walkChance: 0.35 };
+  gift: 20, giftWarm: 15, hallWarm: 5, idleSour: 3, walkChance: 0.35, realmGrow: 30, raidSour: 10, takeSour: 25 };
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -23,6 +23,40 @@ function moveStance(s, m, d, why) {
   else { w.push({ y: s.year, t: why, d }); if (w.length > 6) w.shift(); }
 }
 function hallPay(s) { return holdPay(s.shores[HOME_ID]); }
+
+// ---- Rulers and realms (GDD §15.3) -----------------------------------------------
+function ownerOf(s, id) { return Object.values(s.rulers).find(k => k.coasts.includes(id)) || null; }
+// a ruler comes out of the fog when one of his coasts does; then his whole realm is named on the map
+function discoverRulers(s) {
+  const found = [];
+  for (const k of Object.values(s.rulers)) if (!k.known && k.coasts.some(c => s.shores[c].known)) { k.known = true; found.push(k); }
+  for (const k of found) for (const c of k.coasts) s.shores[c].known = true;
+  return found;
+}
+function rulerCards(s, found, envoy) { for (const k of found) s.queue.push({ t:'ruler', ruler: k.id, envoy: !!envoy }); }
+// each ruler takes one free coast beside his realm every few years; never the player's, never another king's
+function growRealms(s, lines) {
+  for (const k of Object.values(s.rulers)) {
+    if (k.broken || s.year < k.nextGrow) continue;
+    const r = rng(s.day + ':grow:' + k.id + s.year);
+    k.nextGrow = s.year + T.realmGrow + r.int(-8, 8);
+    const cands = [...new Set(k.coasts.flatMap(c => s.shores[c].neighbors))].filter(id => id !== HOME_ID && !ownerOf(s, id) && !isHolding(s, id) && !s.shores[id].walked);
+    if (!cands.length) continue;
+    const id = r.pick(cands), sh = s.shores[id]; k.coasts.push(id); k.newest = id;
+    if (k.known) { sh.known = true; lines.push(`${k.name}'s reach grows. ${sh.name} is his now.`); }
+    else if (sh.known || sh.neighbors.some(n => s.shores[n].known)) s.envoy = k.id; // his realm now touches what you know: his envoy comes this winter
+  }
+}
+// hold every coast of a realm but the anchor and the ruler breaks: he kneels, and the anchor lies open
+function checkBreak(s, k) {
+  if (!k || k.broken) return;
+  const rest = k.coasts.filter(c => c !== k.anchor);
+  if (!rest.length || rest.some(c => !isHolding(s, c))) return;
+  k.broken = true; k.stance = 40; k.why = [{ y: s.year, t: 'his realm is yours; he kneels', d: 0 }];
+  const a = s.shores[k.anchor]; a.holdable = true;
+  s.queue.push({ t:'summary', title: `${k.name} breaks`, lines: [`Every coast of his realm answers to you. ${k.name} kneels, and ${a.name} lies open to be held.`] });
+  s.log.push(`${s.year}: ${k.name} kneels. His realm is yours.`);
+}
 function fCap(s, m) { return (m.follow + (has(s,'ringgiver') ? 1 : 0)) * T.menPerF; }
 function strengthShip(s) { return s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.combat * m.men, 0); }
 function winOdds(S, D) { return clamp((S * 1.15 - D) / (S * 0.3), 0, 1); }
@@ -56,14 +90,14 @@ function newGame(kingKey, custom) {
   const stats = { ragnar: ['Ragnar', 4, 2, 3], rollo: ['Rollo', 2, 4, 3], custom: ['Custom', ...(custom || [3, 3, 3])] }[kingKey];
   const king = makeMan(custom && custom.name ? custom.name : stats[0], stats[1], stats[2], stats[3], { age: 20, isKing: true, titles: [], offeredPairs: [], born: T.startYear - 20 });
   const s = { seed: day, day, year: T.startYear, phase: 'spring', silver: 60, men: T.startMen, king, notables: [king], children: [],
-    holdings: [], shores: buildWorld(day), destination: null, rumorOffer: null, queue: [], log: [],
+    holdings: [], shores: buildWorld(day), rulers: buildRulers(day), destination: null, rumorOffer: null, queue: [], log: [], envoy: null, guard: null,
     deeds: { raids:0, blind:0, heldYears:0, jarlYears:0, bigWins:0, homeYears:0, rumors:0, menBought:0, stays:0, upkeep:0, marriages:0, years:0 },
     reign: { bestRaid: null, bestHoldings: 0, title: null, start: T.startYear },
     dynasty: [], flags: {}, gen: 1 };
   king.men = Math.min(T.startMen, fCap(s, king));
   const first = makeMan(rng(day + ':first')(0) < 0.5 ? 'Bjorn' : 'Ivar', 3, 2, 2, { age: 30, stance: 20, why: [{ y: T.startYear, t: 'sailed with your father', d: 20 }] });
   s.notables.push(first); first.men = 10;
-  revealAround(s, HOME_ID);
+  revealAround(s, HOME_ID); discoverRulers(s); // the sea king next door is known from the first spring
   s.queue.push({ t:'intro' });
   return s;
 }
@@ -114,6 +148,7 @@ function buyRumor(s) {
   const pick = r.pick(cands); pick.known = true; pick.rumored = true;
   s.silver -= price; s.deeds.rumors++; s.rumorOffer = pick.id;
   s.log.push(`The Wanderer speaks of ${pick.name}. Rich, he says.`);
+  for (const k of discoverRulers(s)) s.log.push(`He names its king too: ${k.name}, ${k.title}.`);
 }
 function takeTitle(s, key) { s.king.titles.push(key); s.reign.title = TITLES[key].name; s.log.push(`${s.king.name} is called ${TITLES[key].name}.`); next(s); }
 
@@ -140,6 +175,7 @@ function sail(s) {
     }
     for (const id of targets) { const x = s.shores[id]; x.known = x.seen = true; x.rumored = false; }
     s.queue.push({ t:'arrive', targets });
+    rulerCards(s, discoverRulers(s));
   } else {
     s.queue.push({ t:'noSail' });
   }
@@ -165,6 +201,7 @@ function chooseTarget(s, id) {
   let left = losses; for (const m of ship) { const l = Math.min(m.men, Math.round(losses * m.men / Math.max(1, menAboard))); m.men -= l; left -= l; }
   if (left > 0) { const m = ship[0]; const l = Math.min(m.men, left); m.men -= l; }
   s.men -= losses; s.deeds.raids++;
+  const owner = ownerOf(s, id); if (owner) moveStance(s, owner, -T.raidSour, `you raided ${sh.name}`);
   const res = { t:'fight', shore: id, S: Math.round(S * roll), D, win, margin, loot, losses, odds: winOdds(S, D) };
   s.queue.shift(); // the arrive card
   s.queue.unshift(res);
@@ -190,6 +227,8 @@ function chooseStay(s, jarlId) {
   j.place = sh.id; s.deeds.stays++; moveStance(s, j, 10, `given ${sh.name}`);
   revealAround(s, sh.id);
   s.log.push(`${s.year}: ${j.name} stays at ${sh.name}. It is ours.`);
+  const owner = ownerOf(s, sh.id); if (owner) { moveStance(s, owner, -T.takeSour, `you hold ${sh.name}, which was his`); checkBreak(s, owner); }
+  rulerCards(s, discoverRulers(s));
   next(s);
 }
 
@@ -234,6 +273,7 @@ function resolveLand(s) {
   s.deeds.jarlYears += s.notables.filter(m => !m.isKing && m.place !== 'home').length;
   // shores recover slowly
   for (const sh of Object.values(s.shores)) { if (sh.loot < sh.baseLoot) sh.loot = Math.min(sh.baseLoot, Math.round(sh.loot * 1.1) + 1); if (sh.def > sh.baseDef) sh.def = Math.max(sh.baseDef, Math.round(sh.def * 0.95)); }
+  growRealms(s, lines);
   s.reign.bestHoldings = Math.max(s.reign.bestHoldings, s.holdings.length);
   // everyone home for winter
   for (const m of s.notables) if (m.place === 'ship') m.place = 'home';
@@ -278,11 +318,17 @@ function trimMen(s) { let over = placedMen(s) - s.men; for (const m of s.notable
 
 function winterCard(s) {
   const r = rng(s.day + ':winter:' + s.year), k = s.king;
+  if (s.envoy && s.rulers[s.envoy] && !s.rulers[s.envoy].known) { // a realm grew to touch what you know: that is how you meet its king
+    const ru = s.rulers[s.envoy]; s.envoy = null; ru.known = true; for (const c of ru.coasts) s.shores[c].known = true;
+    s.queue.push({ t:'ruler', ruler: ru.id, envoy: true }); return;
+  }
+  s.envoy = null;
+  const foes = Object.values(s.rulers).filter(x => x.known && !x.broken && stanceWord(x.stance) === 'hostile');
   const deck = [];
   const kids = s.children.length;
   if (k.age < 55) deck.push(['birth', kids < 2 ? 6 : 3]);
   if (s.notables.some(m => !m.isKing && m.age > 45)) deck.push(['jarlDeath', 2]);
-  deck.push(['wanderer', 2]); deck.push(['rival', 1]); deck.push(['hardWinter', 1]); deck.push(['harvest', s.holdings.length ? 2 : 0]);
+  deck.push(['wanderer', 2]); deck.push(['rival', 1 + 2 * foes.length]); deck.push(['hardWinter', 1]); deck.push(['harvest', s.holdings.length ? 2 : 0]);
   deck.push(['seaman', 2]);
   if (s.children.some(c => c.sex === 'f' && c.age >= 16 && !c.married) && s.notables.some(m => !m.isKing && !m.kin)) deck.push(['suitor', 3]);
   if (s.notables.filter(m => !m.isKing).length >= 2) deck.push(['feud', 1]);
@@ -301,11 +347,13 @@ function winterCard(s) {
   } else if (ev === 'wanderer') {
     s.flags.wanderer = true; sc.title = 'The Wanderer at the door'; sc.lines.push('He winters in the hall. Rumors are half price in spring.');
   } else if (ev === 'rival') {
-    const D = r.int(20, 80), homeS = (s.guard ?? s.notables.filter(m => m.place === 'home').reduce((a, m) => a + m.rule * m.men, 0)) * (has(s,'hallward') ? 2 : 1);
-    sc.title = 'A rival sail sighted';
-    if (homeS * (0.85 + r() * 0.3) > D) sc.lines.push(`A strange fleet came up the fjord. The hall held (${Math.round(homeS)} vs ${D}).`);
+    const foe = foes.length ? r.pick(foes) : null, whose = foe ? `${foe.name}'s fleet` : 'A strange fleet';
+    const D = r.int(20, 80) + (foe ? 30 : 0), homeS = (s.guard ?? s.notables.filter(m => m.place === 'home').reduce((a, m) => a + m.rule * m.men, 0)) * (has(s,'hallward') ? 2 : 1);
+    sc.title = foe ? `${foe.name}'s sail sighted` : 'A rival sail sighted';
+    if (homeS * (0.85 + r() * 0.3) > D) sc.lines.push(`${whose} came up the fjord. The hall held (${Math.round(homeS)} vs ${D}).`);
     else { const lostS = Math.round(s.silver * 0.3), lostM = Math.round(s.men * 0.1); s.silver -= lostS; s.men -= lostM; trimMen(s);
-      sc.lines.push(`A strange fleet came up the fjord and the hall fell (${Math.round(homeS)} vs ${D}). ${lostS} silver and ${lostM} men gone.`); }
+      sc.lines.push(`${whose} came up the fjord and the hall fell (${Math.round(homeS)} vs ${D}). ${lostS} silver and ${lostM} men gone.`); }
+    if (foe) sc.lines.push(`${foe.name} is hostile. This is what that costs.`);
   } else if (ev === 'hardWinter') { s.flags.hardWinter = true; sc.title = 'Hard winter'; sc.lines.push('The ice came early. Upkeep is doubled next winter.'); }
   else if (ev === 'harvest') { s.flags.harvest = true; sc.title = 'Good harvest'; sc.lines.push('The land is kind. Holdings pay double next summer.'); }
   else if (ev === 'seaman') {
@@ -408,6 +456,7 @@ function migrate(s) {
   if (!s) return s;
   for (const m of s.notables) { if (m.stance === undefined) m.stance = m.kin ? 20 : 0; if (!m.why) m.why = []; }
   if (s.guard === undefined) s.guard = null;
+  if (!s.rulers) { s.rulers = buildRulers(s.day); s.envoy = null; for (const k of Object.values(s.rulers)) k.coasts = k.coasts.filter(c => !isHolding(s, c)); discoverRulers(s); }
   return s;
 }
 function save(s) { try { localStorage.setItem('seaking', JSON.stringify(s)); } catch (e) {} }

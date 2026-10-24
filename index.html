@@ -130,6 +130,12 @@ svg.map{width:100%;height:auto;max-height:42vh;display:block;background:var(--se
 .dest{fill:none;stroke:var(--primary);stroke-width:1.5}
 .edge{stroke:var(--text);stroke-opacity:.22;stroke-width:1}
 .edge.dark{stroke-opacity:.1}
+/* realms: one soft blob per king, the group's opacity so overlaps stay even */
+.realm{opacity:.3}.realm circle{fill:currentColor}.realm line{stroke:currentColor;stroke-width:22;stroke-linecap:round}
+.lbl.king{font:500 7.5px var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.75}
+.realm-coast.mine{color:var(--primary)}.realm-coast.dark{color:var(--iron)}
+.card.who .chev{color:var(--muted);font-size:18px}
+b.st-devoted,b.st-loyal{color:var(--pine)}b.st-sour{color:var(--chestnut)}b.st-hostile{color:var(--oxblood)}
 
 /* destination row and picker */
 button.dest{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;padding:10px 12px;gap:10px}

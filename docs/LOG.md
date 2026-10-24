@@ -2,6 +2,29 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-23 (session 4, build phase: people and kings)
+
+Built the first three steps of the build order in TODO.md (decided after playtest 1), plus the realm-break detection because it was five lines. Two commits: `2a8f635` (stance, Man card, hall) and the rulers commit after it.
+
+**Shipped**
+- **Stance** (GDD §15.1). `m.stance` −100..100, read in words by `stanceWord()`: devoted ≥60, loyal ≥20, cool, sour ≤−20, hostile ≤−60. `moveStance(s, m, d, why)` keeps the last six deeds in `m.why`; the same deed in consecutive years folds into one line. Deeds: loot share +5 (+10 on a rout), lost fight −5, holding held +3/yr, holding lost −10, given a holding +10, marriage +30, feud −10, idle at home with no men −3/yr, a summer at home with the King +5, gift +15, paying his Oath price +10. A new king halves everyone's stance. Oath: kin and loyal kneel; hostile never kneel free and cost ×2 (sour ×1.5). A hostile jarl with a holding walks mid-reign with 35% a summer (`walkAway()`, shared with the Oath).
+- **The Man card** (§15.4). `UI.man` holds the open card; tap any name (band, home, ship, holdings, Kings rows). Stats, stance with reasons, story, verbs in spring: send, men, gift (`T.gift` 20, once a year, kings ×3), marry a daughter. Marriage buttons left the Children list. The King's card shows his titles and children.
+- **The King holds the hall** (§15.2). Not a holdings-array entry: `resolveLand` handles it first. King home → `hallPay()` (= `holdPay` of Vestfold), his `heldRun` grows his Rule every third year, everyone at home warms +5. King away → "Vestfold paid nothing". `s.guard` is set in `sail()` to the Rule×men left at home that summer, and the winter rival sail fights that, not the winter roster. Rendered as the first Holdings row (`hallHTML`).
+- **Named rulers and realms** (§15.3). `RULERS` in `world.js`: Gudrød (Hordaland, Rogaland), Ælla (York, Humber), Ecgberht (Wessex, Cornwall), Charles (Paris, Rouen, Seine), Áed (Dublin, Munster), Anund (Birka, Gotland). `s.rulers[id]` = stance, why, coasts, known, broken, nextGrow, tint. `ownerOf(s, id)` scans coasts; nothing is stored on the shore. Discovery: `discoverRulers()` when any realm coast becomes `known`; then every coast of the realm becomes known (named on the map, no numbers). Gudrød is known from the first spring. Growth: `growRealms()` in `resolveLand`, each ruler one adjacent free coast every `T.realmGrow` 30 ± 8 years, never Vestfold, a player holding, a walked shore or another king's. If an unknown ruler grows to touch a known coast, `s.envoy` is set and the next winter card is his envoy (a `ruler` scene) instead of the deck. Raid in a realm −10, Stay on his coast −25. Hostile known rulers triple the rival-sail weight, the sail is named and 30 stronger. **Break:** hold every coast but the anchor → he kneels (stance pinned 40, `broken`), the anchor becomes holdable, a card says so.
+- Map: one tinted blob per known realm (`.realm`, group opacity .3, thick rounded lines along realm edges + r11 circles, tint = a brand token per ruler), the king's name in small caps under his anchor. Picker, destination row, Landfall picks and Known shores name the owner. Picker sort: seen by loot, rumored at the top, unseen-but-named at the foot.
+- `migrate()` runs on load: fills stance/why, builds rulers into older saves (dropping any starting realm coast the player already holds).
+
+**Tuning calls made here (GDD §13 updated)**: realm growth 30 ± 8 years, not the ~8 from D4. With 24 free coasts and six rulers, 8 filled the map by ~830; 30 fills it around 910 with no player land, later with some. Gift 20 / +15. Walk chance 35%.
+
+**Verified:** headless (`smokeA.js`, `smokeB.js` in the job tmp dir, 24 checks), two scripted dynasties 793→1066 with every new screen rendered each spring, no errors. Chrome at 520 px max-width: main with tints and Kings rows, Man card, ruler card, envoy card. Not on the phone yet.
+
+**Not built, by the build order:** ruler verbs (tribute either way, marry out, sail together), the promise-the-next-holding verb, the Wanderer selling a king's name as its own offer (today he names the king when the rumored coast is in a realm). The ruler card has only the gift verb and says so by omission.
+
+**Next**
+1. Levi plays it. Watch: does stance move enough to notice in one reign; is 30-year growth too slow to feel; does Gudrød next door read as a threat.
+2. Ruler verbs (step 4 of the build order), then pinch-zoom (TODO 15).
+3. The daughter's row says "tap a jarl"; if that is missed in play, put a marry button back on her row that opens the jarl list.
+
 ## 2026-10-23 (session 3, playtest 1)
 
 **Source:** Levi's first phone playtest, voice notes at `/mnt/g/Projects/transcribe/transcriptions/2026-10-23_ring-giver-playtest-notes.txt` (summary beside it in `summaries/`). The transcribe pipeline already ran scribe and Notion intake on it; this entry is the project side.

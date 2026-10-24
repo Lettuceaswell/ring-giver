@@ -161,6 +161,12 @@ Revised 2026-10-23 after playtest 1. Earlier versions also ruled out map interac
 | Rumor | 20 silver |
 | Mortality past 50 | 5% per year, +5% per year |
 | Quiet years to raise a local | 5 |
+| Stance bands | devoted ≥60 · loyal ≥20 · cool · sour ≤−20 · hostile ≤−60 |
+| Stance moves | loot share +5 (rout +10), lost fight −5, held +3/yr, lost holding −10, given land +10, marriage +30, gift +15, feud −10, idle −3/yr, summer home with the King +5; new king halves all |
+| Gift of silver | 20 (a king 60), once a year |
+| Hostile jarl walks | 35% a summer |
+| Realm growth | one free coast per ruler every 30 ± 8 years |
+| Raid / hold in a realm | −10 / −25 to its king |
 
 ## 14. Open questions
 

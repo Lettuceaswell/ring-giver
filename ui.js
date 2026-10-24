@@ -4,6 +4,7 @@ const $ = sel => document.querySelector(sel);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 const statLine = m => `<span class="stats">C <b>${m.combat}</b> · R <b>${m.rule}</b> · F <b>${m.follow}</b>${m.age ? ` · age ${m.age}` : ''}</span>`;
 const shoreOf = id => S.shores[id];
+const ownerName = id => { const o = ownerOf(S, id); return o && o.known ? o.name : null; }; // a known king's name on his coast
 const notable = id => S.notables.find(m => m.id === id);
 // line icons at the brand's thin strand weight: one stroke, no fills, nothing that is a symbol
 const ICONS = {
@@ -73,6 +74,7 @@ function mainHTML() {
   ${home.map(m => manCard(m)).join('')}
   <div class="card row"><span>Unled men</span><span class="stats"><b>${unledMen(S)}</b> — no use, still fed</span></div>
   ${childrenHTML()}
+  ${rulersHTML()}
   ${wandererHTML()}
   ${shoresHTML()}
   <div class="log">${S.log.slice(-6).reverse().map(l => `<div>${esc(l)}</div>`).join('')}</div>
@@ -91,7 +93,8 @@ function sailButton(ship) {
 function destHTML(ship) {
   const spring = S.phase === 'spring', d = S.destination, x = d && d !== 'blind' ? shoreOf(d) : null;
   const label = !ship.length ? 'No one aboard' : !d ? 'Choose a destination' : d === 'blind' ? 'Sail blind' : esc(x.name);
-  const sub = x ? (x.seen ? `loot ${x.loot} · ${x.def} defenders · ${x.holdable ? 'holdable' : 'cannot hold'}` : 'rich, by rumor') : d === 'blind' ? `${has(S,'farsailor') ? 5 : 3} dark coasts, fog until you arrive` : '';
+  const own = x && ownerName(x.id);
+  const sub = x ? (x.seen ? `loot ${x.loot} · ${x.def} defenders · ${x.holdable ? 'holdable' : 'cannot hold'}` : x.rumored ? 'rich, by rumor' : 'unseen') + (own ? ` · ${esc(own)}'s` : '') : d === 'blind' ? `${has(S,'farsailor') ? 5 : 3} dark coasts, fog until you arrive` : '';
   const Sh = strengthShip(S); let bar = '';
   if (x && x.seen) bar = barHTML(Sh, x.def);
   else if (ship.length) bar = `<div class="odds">Ship strength ${Sh}.</div>`;
@@ -105,11 +108,11 @@ function destHTML(ship) {
 function pickerHTML() {
   const Sh = strengthShip(S);
   const known = Object.values(S.shores).filter(x => x.known && x.id !== HOME_ID && !isHolding(S, x.id))
-    .sort((a, b) => (b.seen ? b.loot : 999) - (a.seen ? a.loot : 999) || a.name.localeCompare(b.name));
-  const row = x => `<div class="prow${S.destination === x.id ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'${x.id}');UI.picker=false})">
-    <span class="pname">${esc(x.name)}${x.walked ? `<small>${esc(x.walked.name)}'s now</small>` : x.rumored && !x.seen ? '<small>rich, by rumor</small>' : ''}</span>
+    .sort((a, b) => (b.seen ? b.loot : b.rumored ? 999 : -1) - (a.seen ? a.loot : a.rumored ? 999 : -1) || a.name.localeCompare(b.name));
+  const row = x => { const own = ownerName(x.id); return `<div class="prow${S.destination === x.id ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'${x.id}');UI.picker=false})">
+    <span class="pname">${esc(x.name)}${x.walked ? `<small>${esc(x.walked.name)}'s now</small>` : own ? `<small>${esc(own)}'s realm</small>` : x.rumored && !x.seen ? '<small>rich, by rumor</small>' : ''}</span>
     <span class="pnum rich">${x.seen ? x.loot : '?'}</span><span class="pnum">${x.seen ? x.def : '?'}</span>
-    <span class="psub">${x.seen ? oddsWords(Sh, x.def) : 'unknown'} · ${x.holdable ? 'holdable' : 'cannot hold'}</span></div>`;
+    <span class="psub">${x.seen ? oddsWords(Sh, x.def) : 'unknown'} · ${x.holdable ? 'holdable' : 'cannot hold'}</span></div>`; };
   const blind = `<div class="prow blind${S.destination === 'blind' ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'blind');UI.picker=false})">
     <span class="pname">Sail blind</span><span class="pnum">—</span><span class="pnum">—</span><span class="psub">${has(S,'farsailor') ? 5 : 3} dark coasts · fog until you arrive</span></div>`;
   return `<div class="overlay" onclick="if(event.target===this){UI.picker=false;render()}"><div class="scene">
@@ -155,7 +158,7 @@ function wandererHTML() {
 function shoresHTML() {
   const seen = Object.values(S.shores).filter(x => x.seen && x.id !== HOME_ID && !isHolding(S, x.id));
   if (!seen.length) return '';
-  return `<details><summary>Known shores (${seen.length})</summary><div class="card">${seen.map(x => `<div class="shore"><span>${esc(x.name)}${x.walked ? ` <span class="muted">— ${esc(x.walked.name)}'s</span>` : ''}${x.holdable ? '' : ' <span class="muted">· cannot hold</span>'}</span><span class="muted">loot <b class="rich">${x.loot}</b> · def ${x.def}</span></div>`).join('')}</div></details>`;
+  return `<details><summary>Known shores (${seen.length})</summary><div class="card">${seen.map(x => `<div class="shore"><span>${esc(x.name)}${x.walked ? ` <span class="muted">— ${esc(x.walked.name)}'s</span>` : ownerName(x.id) ? ` <span class="muted">— ${esc(ownerName(x.id))}'s</span>` : ''}${x.holdable ? '' : ' <span class="muted">· cannot hold</span>'}</span><span class="muted">loot <b class="rich">${x.loot}</b> · def ${x.def}</span></div>`).join('')}</div></details>`;
 }
 function dynastyHTML() {
   return S.dynasty.map(d => `<div class="card"><span class="name">${esc(d.king)}</span> <span class="stats">${d.from}–${d.to}${d.title ? ' · ' + d.title : ''}</span><br><span class="stats">${d.bestRaid ? `Richest raid: ${d.bestRaid.shore}, ${d.bestRaid.loot} silver (${d.bestRaid.year}). ` : 'Never raided. '}Most holdings: ${d.bestHoldings}.</span></div>`).join('') + `<div class="hint">Generation ${S.gen}. World seed ${S.day}.</div>`;
@@ -167,12 +170,15 @@ function mapHTML(targets) {
   const dark = Object.values(S.shores).filter(x => !x.known && x.neighbors.some(n => S.shores[n].known));
   const edges = EDGES.filter(([a, b]) => S.shores[a].known || S.shores[b].known).filter(([a, b]) => (S.shores[a].known || dark.includes(S.shores[a])) && (S.shores[b].known || dark.includes(S.shores[b])))
     .map(([a, b]) => `<line class="edge${S.shores[a].known && S.shores[b].known ? '' : ' dark'}" x1="${S.shores[a].x}" y1="${S.shores[a].y}" x2="${S.shores[b].x}" y2="${S.shores[b].y}"/>`).join('');
+  // known realms, tinted: one blob per king, drawn under the coast dots (GDD §15.3)
+  const realms = Object.values(S.rulers).filter(k => k.known).map(k => `<g class="realm" style="color:var(--${k.tint})">${EDGES.filter(([a, b]) => k.coasts.includes(a) && k.coasts.includes(b)).map(([a, b]) => `<line x1="${S.shores[a].x}" y1="${S.shores[a].y}" x2="${S.shores[b].x}" y2="${S.shores[b].y}"/>`).join('')}${k.coasts.map(id => `<circle cx="${S.shores[id].x}" cy="${S.shores[id].y}" r="11"/>`).join('')}</g>`).join('');
   const dots = known.map(x => {
     const mine = x.id === HOME_ID || isHolding(S, x.id), tgt = targets && targets.includes(x.id);
     const cls = x.id === HOME_ID ? 'home' : isHolding(S, x.id) ? 'hold' : x.seen ? (x.holdable ? 'seen' : 'seen nohold') : '';
     const r = mine ? 4 : (x.seen || x.rumored) ? 2.5 + Math.min(3, x.baseLoot / 80) : 3; // dot size is loot, in tiers
     const can = tappable && !mine;
-    return `<g class="${tgt ? 'tgt' : targets ? 'dim' : ''}${can ? ' tap' : ''}" ${can ? `onclick="act(()=>setDestination(S,'${x.id}'))"` : ''}>${can ? `<circle class="hit" cx="${x.x}" cy="${x.y}" r="13"/>` : ''}<circle class="coast ${cls}" cx="${x.x}" cy="${x.y}" r="${r.toFixed(1)}"/>${S.destination === x.id && !targets ? `<circle class="dest" cx="${x.x}" cy="${x.y}" r="${(r + 4).toFixed(1)}"/>` : ''}${tgt ? `<circle class="ring" cx="${x.x}" cy="${x.y}" r="${(r + 5).toFixed(1)}"/>` : ''}<text class="lbl" x="${x.x + r + 3}" y="${x.y + 3}">${esc(x.name)}</text></g>`; }).join('')
+    const own = ownerName(x.id), anchor = own && ownerOf(S, x.id).anchor === x.id;
+    return `<g class="${tgt ? 'tgt' : targets ? 'dim' : ''}${can ? ' tap' : ''}" ${can ? `onclick="act(()=>setDestination(S,'${x.id}'))"` : ''}>${can ? `<circle class="hit" cx="${x.x}" cy="${x.y}" r="13"/>` : ''}<circle class="coast ${cls}" cx="${x.x}" cy="${x.y}" r="${r.toFixed(1)}"/>${anchor ? `<text class="lbl king" x="${x.x + r + 3}" y="${x.y + 12}">${esc(own)}</text>` : ''}${S.destination === x.id && !targets ? `<circle class="dest" cx="${x.x}" cy="${x.y}" r="${(r + 4).toFixed(1)}"/>` : ''}${tgt ? `<circle class="ring" cx="${x.x}" cy="${x.y}" r="${(r + 5).toFixed(1)}"/>` : ''}<text class="lbl" x="${x.x + r + 3}" y="${x.y + 3}">${esc(x.name)}</text></g>`; }).join('')
     + dark.map(x => `<circle class="coast dark" cx="${x.x}" cy="${x.y}" r="2"/>`).join('');
   // crop to what is drawn, with room for the labels; never narrower than the eye expects
   const all = targets ? targets.map(id => S.shores[id]) : [...known, ...dark], pad = targets ? 40 : 28;
@@ -181,7 +187,7 @@ function mapHTML(targets) {
   if (x1 - x0 < minW) { const c = (x0 + x1) / 2; x0 = c - minW / 2; x1 = c + minW / 2; }
   if (y1 - y0 < minH) { const c = (y0 + y1) / 2; y0 = c - minH / 2; y1 = c + minH / 2; }
   if ((y1 - y0) / (x1 - x0) > 1.1) { const c = (x0 + x1) / 2, w = (y1 - y0) / 1.1; x0 = c - w / 2; x1 = c + w / 2; }
-  return `<svg class="map${targets ? ' landfall' : ''}" viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${(x1 - x0).toFixed(0)} ${(y1 - y0).toFixed(0)}">${edges}${dots}</svg>`;
+  return `<svg class="map${targets ? ' landfall' : ''}" viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${(x1 - x0).toFixed(0)} ${(y1 - y0).toFixed(0)}">${realms}${edges}${dots}</svg>`;
 }
 
 // ---- The Man card (GDD §15.4): one sheet for a person, every verb that applies now ---------
@@ -218,7 +224,26 @@ function manSheet(id) {
     ${verbs}
     <div class="actions"><button onclick="UI.man=null;render()">Back</button></div></div></div>`;
 }
-function rulerSheet(k) { return ''; } // named rulers arrive with the realms
+// the kings you know of: one row each, the card behind it
+function rulersHTML() {
+  const ks = Object.values(S.rulers).filter(k => k.known);
+  if (!ks.length) return '';
+  return `<h2>${ico('crown')}Kings</h2>` + ks.map(k => `<div class="card row who" ${openMan(k.id)}><div><span class="name">${esc(k.name)}</span>${k.broken ? '<span class="tag kin">Kneels</span>' : stanceTag(k)}<br><span class="stats">${esc(k.title)} · ${k.coasts.length} coast${k.coasts.length === 1 ? '' : 's'}</span></div><span class="chev">▸</span></div>`).join('');
+}
+function realmList(k) {
+  return k.coasts.map(id => { const x = shoreOf(id); return `<span class="realm-coast ${isHolding(S, id) ? 'mine' : x.seen ? '' : 'dark'}">${esc(x.name)}${isHolding(S, id) ? ' (yours)' : id === k.anchor ? ' (his seat)' : ''}</span>`; }).join(', ');
+}
+function rulerSheet(k) {
+  const spring = S.phase === 'spring', price = giftPrice(k), gifted = k.gifted === S.year;
+  const held = k.coasts.filter(c => c !== k.anchor && isHolding(S, c)).length, rest = k.coasts.length - 1;
+  return `<div class="overlay" onclick="if(event.target===this){UI.man=null;render()}"><div class="scene">
+    <h1>${ico('crown')}${esc(k.name)}</h1><p class="stats">${esc(k.title)}</p>
+    <h2>Toward the King</h2>${k.broken ? '<div class="stance st-loyal">kneels</div><div class="hint">His realm answers to you. He will not rise again.</div>' : stanceHTML(k)}
+    <h2>His realm</h2><p>${realmList(k)}</p>
+    <p class="hint">${k.broken ? `${esc(shoreOf(k.anchor).name)} lies open to be held.` : `He takes a free coast beside his own every ${T.realmGrow} years or so. Raid his coasts and he sours; hold one and he sours more. Hold every coast but ${esc(shoreOf(k.anchor).name)} and he breaks: ${held} of ${rest} so far.`}</p>
+    ${spring && !k.broken ? `<h2>Warm him</h2><div class="where"><button class="small" ${S.silver < price || gifted ? 'disabled' : ''} onclick="act(()=>gift(S,'${k.id}'))">${gifted ? 'Gifted this year' : `Gift ${price} silver`}</button><span class="hint" style="margin:0;align-self:center">once a year · +${T.giftWarm}</span></div>` : ''}
+    <div class="actions"><button onclick="UI.man=null;render()">Back</button></div></div></div>`;
+}
 
 // ---- Scenes -------------------------------------------------------------------------------
 function overlayHTML(sc) {
@@ -229,7 +254,12 @@ function overlayHTML(sc) {
   else if (sc.t === 'noSail') h = `<h1>Summer</h1><p>The ship stays beached. The land contests itself.</p><div class="actions">${btn('On', 'next(S)')}</div>`;
   else if (sc.t === 'arrive') { const Sh = strengthShip(S);
     h = `<h1>${ico('ship')}Landfall</h1>${mapHTML(sc.targets)}<p>The fog lifts. Ship strength <b class="rich">${Sh}</b>. Pick one.</p>${sc.targets.map(id => { const x = shoreOf(id);
-      return `<div class="pick" onclick="act(()=>chooseTarget(S,'${id}'))"><div class="row"><span class="name">${esc(x.name)}</span><span class="stats">loot <b class="rich">${x.loot}</b>${x.holdable ? ' · holdable' : ''}${x.walked ? ` · ${esc(x.walked.name)} holds it` : ''}</span></div>${barHTML(Sh, x.def)}</div>`; }).join('')}`; }
+      return `<div class="pick" onclick="act(()=>chooseTarget(S,'${id}'))"><div class="row"><span class="name">${esc(x.name)}</span><span class="stats">loot <b class="rich">${x.loot}</b>${x.holdable ? ' · holdable' : ''}${x.walked ? ` · ${esc(x.walked.name)} holds it` : ownerName(id) ? ` · ${esc(ownerName(id))}'s` : ''}</span></div>${barHTML(Sh, x.def)}</div>`; }).join('')}`; }
+  else if (sc.t === 'ruler') { const k = S.rulers[sc.ruler], w = stanceWord(k.stance), newest = k.newest && shoreOf(k.newest);
+    h = `<h1>${ico('crown')}${esc(k.name)}</h1><p class="stats">${esc(k.title)}</p>
+    <p>${sc.envoy ? `His envoy comes over the ice with gifts and a long look at the hall. ${esc(k.name)}'s reach has grown${newest ? ` to ${esc(newest.name)}` : ''}, and now it touches yours.` : `The men bring back a king's name.`} He holds ${realmList(k)}.</p>
+    <p>He is <b class="st-${w}">${w}</b> toward you. Raid his coasts and he sours. Hold every one but ${esc(shoreOf(k.anchor).name)} and he breaks.</p>
+    <div class="actions">${btn('On', 'next(S)')}</div>`; }
   else if (sc.t === 'fight') { const x = shoreOf(sc.shore);
     h = `<h1>${ico('axe')}${esc(x.name)}</h1>${barHTML(sc.S, sc.D, 'Ship', 'Defenders', true)}<div class="result ${sc.win ? '' : 'lose'}">${sc.win ? (sc.margin > 1 ? 'Rout.' : sc.margin > 0.3 ? 'Victory.' : 'A narrow thing.') : 'Driven back.'}</div>
     <p>${sc.win ? `${sc.loot} silver in loot.` : 'No loot.'} ${sc.losses} men lost.${sc.win && sc.margin > 1 ? ' The men will follow these jarls anywhere.' : ''}</p><div class="actions">${btn('On', 'next(S)')}</div>`; }

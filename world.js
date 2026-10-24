@@ -95,6 +95,23 @@ function buildWorld(seed) {
   return shores;
 }
 
+// ---- Named rulers (GDD §15.3): a stance and a clock, never a turn -----------------
+// [id, name, title, anchor, starting realm, map tint (a brand token)]
+const RULERS = [
+  ['gudrod',   'Gudrød',   'sea king of Hordaland',  'hordaland', ['hordaland', 'rogaland'],  'oxblood'],
+  ['aella',    'Ælla',     'King of Northumbria',    'york',      ['york', 'humber'],         'chestnut'],
+  ['ecgberht', 'Ecgberht', 'King of Wessex',         'wessex',    ['wessex', 'cornwall'],     'accent'],
+  ['charles',  'Charles',  'King of the Franks',     'paris',     ['paris', 'rouen', 'seine'], 'pine'],
+  ['aed',      'Áed',      'King of Tara',           'dublin',    ['dublin', 'munster'],      'iron'],
+  ['anund',    'Anund',    'King at Birka',          'birka',     ['birka', 'gotland'],       'text'],
+];
+function buildRulers(seed) {
+  const r = rng(seed + ':rulers'), out = {};
+  for (const [id, name, title, anchor, coasts, tint] of RULERS)
+    out[id] = { id, name, title, anchor, coasts: [...coasts], tint, stance: 0, why: [], known: false, broken: false, nextGrow: 793 + r.int(6, 30) };
+  return out;
+}
+
 // ---- Titles: each bends one rule ----------------------------------------------
 const TITLES = {
   ironside:   { name:'Ironside',     text:'Ship losses halved.',                      score: s => s.deeds.raids * 2 },
