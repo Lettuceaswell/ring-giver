@@ -104,6 +104,21 @@ button.armed{border-color:var(--oxblood);color:var(--oxblood)}
 .men button{width:32px;height:32px;font-size:18px;line-height:1;padding:0}
 .men .n{min-width:52px;text-align:center;font:500 17px/1 var(--mono);font-variant-numeric:tabular-nums}
 .men .cap{font:400 10.5px/1.4 var(--mono);color:var(--muted)}
+.men .fill{width:auto;padding:0 10px;font:500 12px/1 var(--body);letter-spacing:.06em;margin-left:4px}
+/* the market: the stepper and the sum (TODO 23) */
+.step{display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 12px}
+.step button{width:44px;height:44px;font-size:22px;line-height:1;padding:0}
+.step .n{font:500 26px/1 var(--display);min-width:110px;text-align:center;font-variant-numeric:tabular-nums}
+.step .n small{display:block;font:400 11px/1.6 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sum{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font:400 14px/1.5 var(--mono);font-variant-numeric:tabular-nums;padding:10px 12px;background:var(--bg);border:1px solid var(--rule);border-radius:var(--r)}
+.sum .k{color:var(--muted)}
+.sum .v{text-align:right;color:var(--text)}
+.sum .v .op{color:var(--iron)}
+.sum .v .out{color:var(--oxblood)}
+.sum .v .in{color:var(--pine)}
+.sum .v b{font-weight:500;color:var(--accent)}
+.sum .w{grid-column:1/-1;font-size:12px;color:var(--chestnut)}
+.sum .w[hidden]{display:none}
 button{font:500 15px/1.2 var(--body);background:var(--raised);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:9px 12px;cursor:pointer;transition:border-color .2s var(--ease),background .2s var(--ease)}
 button:disabled{opacity:.35}
 button.primary{background:var(--primary);color:var(--on-primary);border-color:var(--primary);font-size:16px}

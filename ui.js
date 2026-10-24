@@ -1,6 +1,6 @@
 let S = migrate(load());
 // screen state that is not game state: which pane, the picker, the open Man card, the Saga sheet, the two-tap arm, and what changed since the band last showed it
-const UI = { pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 } };
+const UI = { pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10 };
 const $ = sel => document.querySelector(sel);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 const statLine = m => `<span class="stats">C <b>${m.combat}</b> · R <b>${m.rule}</b> · F <b>${m.follow}</b>${m.age ? ` · age ${m.age}` : ''}</span>`;
@@ -35,6 +35,7 @@ function render() {
   const sheet = S.queue.length ? overlayHTML(S.queue[0]) : UI.man ? manSheet(UI.man) : UI.saga ? sagaSheet() : UI.picker ? pickerHTML() : '';
   app.innerHTML = bandHTML(!S.queue.length) + paneHTML() + footHTML() + sheet;
   const p = $('.pane'); if (p) p.scrollTop = UI.scroll[UI.pane] || 0;
+  if ($('#bn')) marketNums();
 }
 function act(fn) {
   const p = $('.pane'); if (p) UI.scroll[UI.pane] = p.scrollTop;
@@ -79,6 +80,25 @@ function bump(k, d) { const v = cust[k] + d, sum = cust.c + cust.r + cust.f + d;
   $('#' + k).innerHTML = dots(v); $('#' + k + 'w').textContent = STAT_WORDS[k](v); $('#pts').textContent = ptsLine(); }
 function startGame(k) { S = newGame(k); UI.pane = 'map'; save(S); render(); }
 function startCustom() { const name = $('#cname').value.trim() || 'Halfdan'; S = newGame('custom', Object.assign([cust.c, cust.r, cust.f], { name })); UI.pane = 'map'; save(S); render(); }
+
+// ---- The market (Winter sheet): pick how many, read the sum, then one Buy that names the deal. Numbers update in place; the sheet does not jump ----
+function marketHTML(p, room) {
+  return `<div class="step"><button id="bdec" onclick="setBuy(-5)">−</button><span class="n"><span id="bn"></span><small>men</small></span><button id="binc" onclick="setBuy(5)">+</button></div>
+  <div class="sum"><span class="k">Silver</span><span class="v"><span>${S.silver}</span> <span class="op">−</span> <span class="out" id="bcost"></span> <span class="op">→</span> <b id="bleft"></b></span>
+    <span class="k">Men</span><span class="v"><span>${S.men}</span> <span class="op">+</span> <span class="in" id="bn2"></span> <span class="op">→</span> <b id="bmen"></b></span>
+    <span class="w" id="bwarn" hidden></span></div>`;
+}
+function setBuy(d) { if (d) UI.buy += d; marketNums(); }
+function marketNums() {
+  const p = has(S,'fairdealer') ? 2 : T.manPrice, room = menRoom(S), max = Math.floor(S.silver / p / 5) * 5;
+  const n = UI.buy = Math.max(0, Math.min(UI.buy, max)), cost = n * p, over = n - room;
+  const set = (id, v) => { const e = $('#' + id); if (e) e.textContent = v; };
+  set('bn', n); set('bn2', n); set('bcost', cost); set('bleft', S.silver - cost); set('bmen', S.men + n);
+  const w = $('#bwarn'); if (w) { w.hidden = over <= 0; w.textContent = over > 0 ? `${over} of these would sit unled: fed, no use, until another named man comes to the hall.` : ''; }
+  const dec = $('#bdec'), inc = $('#binc'), buy = $('#bbuy');
+  if (dec) dec.disabled = n <= 5; if (inc) inc.disabled = n + 5 > max;
+  if (buy) { buy.disabled = n <= 0; buy.textContent = n > 0 ? `Buy ${n} men for ${cost} silver` : 'Not enough silver for five men'; }
+}
 
 // ---- The band: year, king, silver and men; tap it for the Saga. What changed shows once, when the band is in view (TODO 21) ----
 function bandHTML(quiet) {
@@ -166,7 +186,7 @@ function manCard(m) {
   const spring = S.phase === 'spring', cap = fCap(S, m);
   const places = [['ship', 'Ship'], ['home', 'Home'], ...(m.isKing ? [] : S.holdings.map(h => [h.id, h.name]))];
   return `<div class="card"><div class="row"><div class="who" ${openMan(m.id)}><span class="name">${esc(m.name)}</span>${m.isKing ? '<span class="tag">King</span>' : stanceTag(m)}${m.son ? '<span class="tag kin">Son</span>' : m.kin ? '<span class="tag kin">Kin</span>' : ''}<br>${statLine(m)}</div>
-    <div class="men"><button ${spring ? '' : 'disabled'} onclick="act(()=>addMen(S,'${m.id}',-5))">−</button><span class="n">${m.men}<div class="cap">of ${cap}</div></span><button ${spring ? '' : 'disabled'} onclick="act(()=>addMen(S,'${m.id}',5))">+</button></div></div>
+    <div class="men"><button ${spring ? '' : 'disabled'} onclick="act(()=>addMen(S,'${m.id}',-5))">−</button><span class="n">${m.men}<div class="cap">of ${cap}</div></span><button ${spring ? '' : 'disabled'} onclick="act(()=>addMen(S,'${m.id}',5))">+</button><button class="fill" ${spring && m.men < cap && unledMen(S) ? '' : 'disabled'} onclick="act(()=>addMen(S,'${m.id}',${cap}))">Fill</button></div></div>
     ${spring ? `<div class="where">${places.map(([id, nm]) => `<button class="small ${m.place === id ? 'sel' : ''}" onclick="act(()=>place(S,'${m.id}','${id}'))">${esc(nm)}</button>`).join('')}</div>` : ''}</div>`;
 }
 // the hall is a holding row with the King as its jarl (GDD §15.2); it cannot revolt
@@ -274,7 +294,7 @@ function manSheet(id) {
   const cap = fCap(S, m), price = giftPrice(m), gifted = m.gifted === S.year;
   const verbs = !spring ? '<div class="hint">Verbs are spoken in spring.</div>' : `
     <h2>Send him</h2><div class="where">${places.map(([pid, nm]) => `<button class="small ${m.place === pid ? 'sel' : ''}" onclick="act(()=>place(S,'${m.id}','${pid}'))">${esc(nm)}</button>`).join('')}</div>
-    <div class="row" style="margin-top:10px"><span>Men he leads</span><div class="men"><button onclick="act(()=>addMen(S,'${m.id}',-5))">−</button><span class="n">${m.men}<div class="cap">of ${cap}</div></span><button onclick="act(()=>addMen(S,'${m.id}',5))">+</button></div></div>
+    <div class="row" style="margin-top:10px"><span>Men he leads</span><div class="men"><button onclick="act(()=>addMen(S,'${m.id}',-5))">−</button><span class="n">${m.men}<div class="cap">of ${cap}</div></span><button onclick="act(()=>addMen(S,'${m.id}',5))">+</button><button class="fill" ${m.men < cap && unledMen(S) ? '' : 'disabled'} onclick="act(()=>addMen(S,'${m.id}',${cap}))">Fill</button></div></div>
     ${m.isKing ? '' : `<h2>Warm him</h2>
     <div class="where"><button class="small" ${S.silver < price || gifted ? 'disabled' : ''} onclick="act(()=>gift(S,'${m.id}'))">${gifted ? 'Gifted this year' : `Gift ${price} silver`}</button><span class="hint" style="margin:0;align-self:center">once a year · +${T.giftWarm}</span></div>
     ${!m.kin && daughters.length ? `<div class="where" style="margin-top:8px">${daughters.map(d => `<button class="small" onclick="act(()=>marry(S,'${d.id}','${m.id}'))">Marry ${esc(d.name)} to him</button>`).join('')}<span class="hint" style="margin:0;align-self:center">he is kin then · +30</span></div>` : ''}`}`;
@@ -336,9 +356,9 @@ function overlayHTML(sc) {
     ${sc.land.length ? `<h2>The land</h2>${sc.land.map(l => `<p>${esc(l)}</p>`).join('')}` : ''}
     ${sc.hall.length ? `<h2>The hall eats</h2>${sc.hall.map(l => `<p>${esc(l)}</p>`).join('')}` : ''}
     <h2>The market</h2>
-    <p>A man costs <b class="rich">${p}</b> silver and eats 1 each winter at home. You have <b class="rich">${S.silver}</b> silver and ${S.men} men.</p>
-    <p>${room ? `Your named men can lead <b>${room}</b> more. Past that, men sit unled: fed, no use.` : 'Your named men lead all they can. New men would sit unled until another man comes to the hall.'}</p>
-    <div class="actions"><div class="row">${[5, 10, 20].map(n => `<button ${S.silver >= n * p ? '' : 'disabled'} onclick="act(()=>buyMen(S,${n}))">Buy ${n} · ${n * p}</button>`).join('')}</div>${btn('Close the market', 'closeWinter(S)')}</div>`; }
+    <p>A man costs <b class="rich">${p}</b> silver and eats 1 each winter at home.</p>
+    ${marketHTML(p, room)}
+    <div class="actions"><button class="primary" id="bbuy" onclick="act(()=>buyMen(S,UI.buy))"></button>${btn('Close the market', 'closeWinter(S)', '')}</div>`; }
   else if (sc.t === 'event') h = `<h1>${esc(sc.title)}</h1>${sc.lines.map(l => `<p>${esc(l)}</p>`).join('')}<div class="actions">${sc.choice ? btn('Give her', 'acceptSuitor(S,true)') + btn('Refuse', 'acceptSuitor(S,false)', '') : btn('On', 'next(S)')}</div>`;
   else if (sc.t === 'death') { const r = S.reign;
     h = `<h1>${ico('death')}${esc(S.king.name)} is dead</h1><p>${S.king.age} winters. King ${r.start}–${S.year}.</p><h2>The Saga</h2>${r.bestRaid ? `<p>The year ${r.bestRaid.year}: ${esc(r.bestRaid.shore)} fell and the ship came home with ${r.bestRaid.loot} silver.</p>` : '<p>He never took a shore.</p>'}<p>At most ${r.bestHoldings} holdings answered to him.${r.title ? ` Men called him ${r.title}.` : ''}</p><div class="actions">${btn('The heir', 'startSuccession(S)')}</div>`; }

@@ -13,6 +13,9 @@ Levi: the choose-your-king screen "is not working": a new player is met with `C 
 
 - **Picker rows:** the realm note ("Gudrød's realm", "Bjorn's now", "rich, by rumor") sits beside the coast name in parentheses instead of on its own line, so it stays apart from the odds line below (Levi).
 
+- **The market, option B** (Levi picked it from three live mocks: ledger buttons / stepper and sum / the chest as a bar). The three `Buy n · cost` buttons are gone. A stepper picks how many men (fives, capped by silver), and the sum reads in full under it in mono: `Silver 60 − 30 → 30`, `Men 40 + 10 → 50`, with a chestnut warning line when some of them would sit unled. One Buy button names the deal: "Buy 10 men for 30 silver". `marketHTML` / `setBuy` / `marketNums` in `ui.js`; the numbers update in place so the sheet does not jump; `UI.buy` keeps the chosen count between renders. "Close the market" is the quiet button now.
+- **Fill.** Every named man's men stepper, the King's too, on the Hall/Ship cards and the Man sheet, has a Fill button: he takes all he can lead from the unled (`addMen(S, id, cap)` clamps). Disabled when he is at cap or no one is unled.
+
 **Verified:** Chrome at 390 px: both cards and the builder read clean, steppers respect 1–5 and the nine-point cap, Begin starts Halfdan 2/3/4 with 40 men and the intro card.
 
 **Note for local testing:** an old `http.server` from a past session can still own port 8765 and serve a stale copy; check the served `<title>` before trusting a screenshot.
