@@ -146,7 +146,7 @@ function pickerHTML() {
   const known = Object.values(S.shores).filter(x => x.known && x.id !== HOME_ID && !isHolding(S, x.id))
     .sort((a, b) => (b.seen ? b.loot : b.rumored ? 999 : -1) - (a.seen ? a.loot : a.rumored ? 999 : -1) || a.name.localeCompare(b.name));
   const row = x => { const own = ownerName(x.id); return `<div class="prow${S.destination === x.id ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'${x.id}');UI.picker=false})">
-    <span class="pname">${esc(x.name)}${x.walked ? `<small>${esc(x.walked.name)}'s now</small>` : own ? `<small>${esc(own)}'s realm</small>` : x.rumored && !x.seen ? '<small>rich, by rumor</small>' : ''}</span>
+    <span class="pname">${esc(x.name)}${x.walked ? `<small>(${esc(x.walked.name)}'s now)</small>` : own ? `<small>(${esc(own)}'s realm)</small>` : x.rumored && !x.seen ? '<small>(rich, by rumor)</small>' : ''}</span>
     <span class="pnum rich">${x.seen ? x.loot : '?'}</span><span class="pnum">${x.seen ? x.def : '?'}</span>
     <span class="psub">${x.seen ? oddsWords(Sh, x.def) : 'unknown'} · ${x.holdable ? 'holdable' : 'cannot hold'}</span></div>`; };
   const blind = `<div class="prow blind${S.destination === 'blind' ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'blind');UI.picker=false})">

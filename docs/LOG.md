@@ -11,6 +11,8 @@ Levi: the choose-your-king screen "is not working": a new player is met with `C 
 - **Each king is a way to play.** Ragnar "the raider", Rollo "the settler", each with one sentence of how his reign will feel (fast red silver kept badly; slow sure silver, weak at sea). The letter triplet is gone. `statRows()` in `ui.js` shows the three stats as dots (`●●●●○`) with what each one does in the rules, in words: "each man aboard fights as 4", "each man on land holds as 2", "leads 30 men". The numbers come straight from `strengthShip`, `guard`/`resolveLand`, and `fCap`, so the screen cannot drift from the rules.
 - **Custom is "Your own"**, with the same rows and +/− steppers; the meaning line updates live (bump Followability, "leads 40 men"), and the points line reads "2 points left to spend" / "All nine placed". Name field moved above the stats.
 
+- **Picker rows:** the realm note ("Gudrød's realm", "Bjorn's now", "rich, by rumor") sits beside the coast name in parentheses instead of on its own line, so it stays apart from the odds line below (Levi).
+
 **Verified:** Chrome at 390 px: both cards and the builder read clean, steppers respect 1–5 and the nine-point cap, Begin starts Halfdan 2/3/4 with 40 men and the intro card.
 
 **Note for local testing:** an old `http.server` from a past session can still own port 8765 and serve a stale copy; check the served `<title>` before trusting a screenshot.
