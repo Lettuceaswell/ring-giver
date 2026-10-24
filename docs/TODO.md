@@ -117,7 +117,8 @@ Five screens, one round each, in order of use: spring Map pane · Winter sheet �
 **Also decided mid-round (Levi):** no sheet should need a scroll to the bottom to leave. Every dismissible sheet has a sticky title row with an ×. Keep this rule for every new sheet.
 **Round 2 decided (2026-10-23):** A, The Ledger. The Winter sheet is "Autumn N": a counted account of the year (chest in spring, loot, a rent row per holding, the hall's bill with the plain figure struck through when a title or a hard winter changed it), events weighted by kind, the market as one card with what the men buy ("+37 ship strength under Ragnar") and the room among the named men, collapsing to one line when nothing can be bought, and a sticky "Into winter · one card turns". Built session 8. Not taken from B or C: the waterfall bar; bought men going straight to a leader (they still sit unled until Fill).
 **Round 3 decided (2026-10-24, session 10):** the winter card. Audit page https://claude.ai/artifact/HCnFYiyjm25E4SSc3oozDd with three live options on real playtest saves: A, The Turn (my pick: a face-down card that turns, toned by kind; the King's roll as a second card you turn); B, The Hall at Night (a drawing of the fjord, high seat, benches and children that the card acts on); C, The Saga Page (the winter as a saga sentence, Ahead, and a strip of the reign's winters). Shared by all three: the fight as Guard vs Fleet, effects in numbers, deaths in bed grouped, the gathering fleet (27) and the full bench (26) as rows, the King's old-age roll on the card, and a death card that names the cause and the heir or the broken line (29). **Decided: A, The Turn. Built session 10.** Found on the way (all fixed in the build): duplicate names among named men (two Odos, two Osrics in one hall), "His 0 men" / "His 1 men", "This is what that costs." printed when the hall held, and the death card's "At most 0 holdings".
-**Next: round 4, the Fight sheet.** Left over from round 3: the turn's timing and the King's card need a phone (TODO 29); the quiet-years line still does not mention full benches (TODO 26).
+**Round 4 (2026-10-24, session 11):** the Fight sheet (Landfall, the fight, Plunder or stay). Audit page https://claude.ai/artifact/T7ttHAvgb7SxcSNheD5bx9 with three live options on real playtest saves: A, The Clash (my pick: two ranks of marks, the odds strip's needle, the ranks close and the verdict stamps); B, The Raid on the Chart (the fight on the lit map, the defenders' ring breaks, the loot runs home into the chest); C, The Roll Call (the crew as the body, each man's row resolving). Shared: the odds strip (the roll's range banded driven back / narrow / victory / rout, the needle lands on the day), the raid's account (loot, men and their worth, the net, the coast arming, the owner's stance), the crew with the fallen on the card and the King's fall as the title, the foot button naming what follows, Plunder or stay as a trade with each jarl's hold chance, and Turn for home at Landfall (31). **Waiting on Levi's pick.**
+Left over from round 3: the turn's timing and the King's card need a phone (TODO 29); the quiet-years line still does not mention full benches (TODO 26).
 
 ---
 
@@ -152,3 +153,18 @@ Named men falling in fights (the summary card) and the King slain in the hall do
 
 ## 30. Does 0.5 odds read as a gamble?
 Settler-style fighting at 0.5 odds now loses about 30%. Confirm the commit sheet's odds temperature makes 0.5 read as a coin toss, not a fair fight.
+
+---
+
+## 31. Turn for home at Landfall
+A blind landfall can show only hopeless coasts (912 in Levi's line: 758, 296, 898 defenders against 135) and "Pick one." is the only way out. The GDD's price for sailing blind is "a season gone". **Recommendation:** a Turn for home button at Landfall: the summer is spent, no loot, no blood. It makes blind sailing cheaper; Levi's call. Shown in all three round-4 mocks.
+
+---
+
+## 32. Board all boards men with no men
+`boardAll` puts every named man aboard, including those with no men to lead. They add nothing to the ship and each can fall (838: eight aboard, seven leading no one; Styr and Hastein fell). **Recommendation:** Board all skips a man with no men; boarding him by hand still works.
+
+---
+
+## 33. Late raids lose money
+In Levi's line past 900, 88% of fights bring home less silver than the men they cost at the market price (13% before 900): coasts arm toward 1,000 defenders and wins bring 25 to 46 silver for 58 to 84 men. The arming is as designed; the round-4 account makes it visible. Judge in play whether late raiding needs a new reason (holdings, tribute, glory) or a cheaper coast. Also: at least 242 of 374 lost fights in his line were hopeless before the ship sailed.

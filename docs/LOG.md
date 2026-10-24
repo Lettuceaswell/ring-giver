@@ -2,6 +2,25 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-24 (session 11, screen audit 4: the Fight sheet)
+
+Round 4 of the five-screen audit: everything after Sail (Landfall, the fight, Plunder or stay, the fallen). Audit page with the critique and three live mock-ups: https://claude.ai/artifact/T7ttHAvgb7SxcSNheD5bx9 . **Waiting on Levi's pick.**
+
+**How the states were found.** Like round 3, from the persona playtests: `FIGHTS=<dir> node tools/playtest/run.js` dumps the first save of each kind of summer scene and, with the levi persona, counts them (`_fightcount.json`). With `FIGHTS` set, `G.chooseTarget` is wrapped to stamp `s.pre4` (the crew and the coast before the fight) so the mocks can show before and after. `tools/audit/fight-states.js` trims a save for the mocks; a Landfall carries the fight each coast would bring, run on a copy with the game's seed. Default-run md5 unchanged (`95a07adb…`). Also fixed in `run.js`: the card dump's keep-one-early line had been swallowed into a comment.
+
+**What a summer brings (Levi's line, 8 dynasties, 2,168 fights):** rout 56%, victory 19%, narrow 8%, driven back 17%; a named man falls in 14%; the King falls 61 times (7.6 a dynasty); Plunder or stay 18%; Landfall 18%. The roll changes the winner in only 6% of fights (odds strictly between 0 and 1), but sets loot and losses in all. Past 900, 88% of fights cost more in men (3 silver each) than they bring.
+
+**The critique, in short.** The verdict is printed in the same frame the bar starts to grow; the roll is never shown. The bar's odds words use the rolled strength, so 838 (sailed on 81%, lost) reads "even" and 967 (76%, won) reads "sure". "28 silver in loot. 84 men lost." (921) never adds up to a loss of about 220 silver, nor says Lindisfarne is at 1,000 defenders now. The men are a number: Follow +1 on a rout, Combat +1 at the third raid and stance are silent; the fallen come on a separate card after On; in 967 the King falls in a won fight and the fight card does not say so. Plunder or stay is about fifty words of rules every time, borrows fight words for a holding ("Holds 84 vs Unrest 69 · sure · bloody"), says "hopeless" for a jarl who would hold once his men are sent, and never names the king whose coast or seat it is. A blind Landfall can offer only hopeless coasts with no way home. Every button is On.
+
+**Three options, all with:** the odds strip (the roll's 0.85 to 1.15 range banded by what each day brings; the share right of oxblood is exactly the odds sailed on; the needle lands on the day; loot range under it), the raid's account, the crew rows with the fallen on the fight card and the King's fall as the title, the foot naming what follows, Plunder or stay as a trade (now against a year, summers to earn it back, unrest in one line, the king's price and his realm's count, each jarl's hold chance with his men and with his full following, "send 9"), and Turn for home at Landfall (TODO 31).
+- **A, The Clash (my pick):** two ranks of marks (strength, grouped by leader, the King's in accent) across a line; the needle swings 900 ms, the ranks close, lost marks go oxblood, the verdict stamps.
+- **B, The Raid on the Chart:** the sheet stays low and the map stays lit, cropped to Vestfold and the coast; the defenders' ring breaks or holds; the loot runs home along the route and the band's chest counts it in; Plunder or stay draws the coast as a holding with rent and unrest; Landfall's odds are printed on the map and the coasts are tappable there.
+- **C, The Roll Call:** the crew is the body; after the needle each man's row resolves (his bar shrinks in oxblood, gains and stance appear); the account is a footer.
+
+**Found on the way (not fixed):** TODO 32 (Board all boards men with no men), TODO 33 (late raids lose money), and Landfall's little map piles labels on the Channel (pinch-zoom, TODO 15).
+
+**Next:** Levi picks; build the winner with the shared fixes; decide TODO 31 to 33. Then round 5, the Hall pane.
+
 ## 2026-10-24 (session 10, screen audit 3: the winter card)
 
 Round 3 of the five-screen audit. Audit page with the critique and three live mock-ups: https://claude.ai/artifact/HCnFYiyjm25E4SSc3oozDd . Levi chose my pick, **A, The Turn**, and it is built (commit 7b9957d, below). Commits: 80c82a3 (audit page and kit), 7b9957d (the build), and the bookkeeping commit after it.

@@ -42,11 +42,39 @@ function cardKind(ev) {
 function cardShot(s, ev, persona, seed) {
   let k = cardKind(ev);
   if (Object.values(s.rulers).some(x => x.wroth === s.year)) k = 'gathering'; // a king's fleet began to gather this winter (TODO 27)
-  else if (s.king.age > 50 && !s.kingSlain && ev.t === 'event') { const c = JSON.parse(JSON.stringify(s)); if (ev.choice) G.acceptSuitor(c, false); else G.next(c); if (c.queue[0] && c.queue[0].t === 'death') k = 'agedeath'; } // the winter's roll took the King if (cardSeen[k] && !(cardSeen[k].year < 830 && s.year > 880)) return; // keep one early and prefer a late one too
+  else if (s.king.age > 50 && !s.kingSlain && ev.t === 'event') { const c = JSON.parse(JSON.stringify(s)); if (ev.choice) G.acceptSuitor(c, false); else G.next(c); if (c.queue[0] && c.queue[0].t === 'death') k = 'agedeath'; } // the winter's roll took the King
+  if (cardSeen[k] && !(cardSeen[k].year < 830 && s.year > 880)) return; // keep one early and prefer a late one too
   const key = cardSeen[k] ? k + '-late' : k; if (cardSeen[key] && key.endsWith('-late')) return;
   cardSeen[key] = { year: s.year, persona, seed, title: ev.title, lines: ev.lines }; if (!cardSeen[k]) cardSeen[k] = cardSeen[key];
   fs.mkdirSync(CARDS, { recursive: true }); fs.writeFileSync(path.join(CARDS, 'card-' + key + '.json'), JSON.stringify(s));
   fs.writeFileSync(path.join(CARDS, '_cards.json'), JSON.stringify(cardSeen, null, 1));
+}
+
+// ---- FIGHTS=dir: dump one save per kind of summer scene (the screen audit's round 4 states) ---------
+const FIGHTS = process.env.FIGHTS, fightSeen = {}, fightCount = {};
+if (FIGHTS) { const ct = G.chooseTarget; G.chooseTarget = (s, id) => { // what the crew and the coast were before the fight, for the mock-ups' before and after
+  const sh = s.shores[id], own = G.ownerOf(s, id);
+  s.pre4 = { shore: id, def: sh.def, loot: sh.loot, silver: s.silver, men: s.men, S: G.strengthShip(s), owner: own ? { name: own.name, stance: own.stance } : null,
+    crew: s.notables.filter(m => m.place === 'ship').map(m => ({ id: m.id, name: m.name, isKing: !!m.isKing, kin: !!m.kin, son: !!m.son, age: m.age, men: m.men, c: m.combat, r: m.rule, f: m.follow, stance: m.stance, raids: m.raids })) };
+  return ct(s, id); }; }
+function fightKind(s, sc) {
+  const q = s.queue, after = q.slice(1).map(x => x.t), own = id => Object.values(s.rulers).find(k => k.coasts.includes(id));
+  if (sc.t === 'arrive') return 'land-' + (s.lastDest === 'blind' ? 'blind' + sc.targets.length : 'aimed') + (sc.targets.some(id => s.shores[id].walked) ? '-walked' : '') + (sc.targets.some(own) ? '-owned' : '');
+  if (sc.t === 'fight') return (sc.win ? 'win-' + (sc.margin > 1 ? 'rout' : sc.margin > 0.3 ? 'victory' : 'narrow') : 'lose') + (after.includes('death') ? '-kingfell' : after.includes('summary') && q.slice(1).some(x => x.t === 'summary' && / went down /.test(x.lines.join(' '))) ? '-fell' : '') + (after[0] === 'stay' ? '-stay' : '');
+  if (sc.t === 'stay') return 'stay' + (sc.walked ? '-walked' : '') + (own(sc.shore) ? '-owned' : '') + (s.notables.filter(m => m.place === 'ship' && !m.isKing).length > 2 ? '-many' : '');
+  if (sc.t === 'summary' && s.phase === 'summer') return / went down /.test(sc.lines.join(' ')) ? (/on his shield/.test(sc.lines.join(' ')) ? 'fallen-king' : 'fallen') : / breaks$/.test(sc.title) ? 'breaks' : 'summary';
+  if (sc.t === 'ruler' && s.phase === 'summer') return 'ruler-met';
+  if (sc.t === 'noSail') return 'nosail';
+  return null;
+}
+function fightShot(s, sc, persona, seed) {
+  const k = fightKind(s, sc); if (!k) return;
+  if (persona === 'levi') { const b = k.replace(/-late$/, ''); fightCount[b] = (fightCount[b] || 0) + 1; if (sc.t === 'fight') { const c = fightCount, inc = n => c[n] = (c[n] || 0) + 1; inc('_fights'); if (sc.odds > 0 && sc.odds < 1) inc('_luck'); if (s.year > 900) { inc('_late'); if (sc.loot < sc.losses * G.T.manPrice) inc('_lateLoss'); } if (s.year <= 900) { inc('_early'); if (sc.loot < sc.losses * G.T.manPrice) inc('_earlyLoss'); } } fs.mkdirSync(FIGHTS, { recursive: true }); fs.writeFileSync(path.join(FIGHTS, '_fightcount.json'), JSON.stringify(fightCount, null, 1)); }
+  if (fightSeen[k] && !(fightSeen[k].year < 830 && s.year > 880)) return; // one early, and one late if there is one
+  const key = fightSeen[k] ? k + '-late' : k; if (fightSeen[key] && key.endsWith('-late')) return;
+  fightSeen[key] = { year: s.year, persona, seed, t: sc.t }; if (!fightSeen[k]) fightSeen[k] = fightSeen[key];
+  fs.mkdirSync(FIGHTS, { recursive: true }); fs.writeFileSync(path.join(FIGHTS, 'fight-' + key + '.json'), JSON.stringify(s));
+  fs.writeFileSync(path.join(FIGHTS, '_fights.json'), JSON.stringify(fightSeen, null, 1));
 }
 
 // ---- the driver ------------------------------------------------------------------------------
@@ -143,6 +171,7 @@ function runOne(name, seed) {
   const holdSeries = {};
   const drive = () => {
     const sc = s.queue[0]; if (!sc) return false;
+    if (FIGHTS) fightShot(s, sc, name, seed);
     switch (sc.t) {
       case 'arrive': G.chooseTarget(s, P.target(s, sc)); break;
       case 'fight': M.fights++; if (!sc.win) M.lost++; M.menLostFights += sc.losses; M.lootTotal += sc.loot; G.next(s); break;
