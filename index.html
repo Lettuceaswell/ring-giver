@@ -59,6 +59,18 @@ h2 svg{width:16px;height:16px;flex:none;color:var(--muted)}
 .stats b{color:var(--text);font-weight:500}
 .tag{font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:var(--r);padding:3px 5px;margin-left:6px;vertical-align:2px}
 .tag.kin{color:var(--pine);border-color:var(--pine)}
+.tag.st-devoted,.tag.st-loyal{color:var(--pine);border-color:var(--pine)}
+.tag.st-sour{color:var(--chestnut);border-color:var(--chestnut)}
+.tag.st-hostile{color:var(--oxblood);border-color:var(--oxblood)}
+.who{cursor:pointer}
+.who .name{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:4px;text-decoration-thickness:1px}
+.top .who .name{text-decoration:none}
+/* the Man card: stance as a word, then the deeds behind it */
+.stance{font-family:var(--display);font-size:26px;line-height:1.1;margin:2px 0 8px}
+.stance.st-devoted,.stance.st-loyal{color:var(--pine)}.stance.st-cool{color:var(--muted)}.stance.st-sour{color:var(--chestnut)}.stance.st-hostile{color:var(--oxblood)}
+.why{display:grid;grid-template-columns:auto 1fr auto;gap:3px 10px;font:12px/1.4 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.why b{font-weight:500}.why b.up{color:var(--pine)}.why b.down{color:var(--oxblood)}
+.scene h1 .tag{vertical-align:middle}
 .men{display:flex;align-items:center;gap:4px}
 .men button{width:32px;height:32px;font-size:18px;line-height:1;padding:0}
 .men .n{min-width:52px;text-align:center;font:500 17px/1 var(--mono);font-variant-numeric:tabular-nums}
