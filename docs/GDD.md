@@ -213,4 +213,4 @@ The frame the game sits in on a phone. Decisions 18–22 in TODO.md.
 
 **The chronicle.** `s.log` is `{y, t}`: fights lost, plunder, stays, marriages, walks, revolts, realm growth, winter cards. The yearly rent roll stays on the Winter sheet.
 
-**The map.** Real coast: Natural Earth 10m land (public domain), clipped to 12°W–34°E, 36°–64°N, Mercator, simplified to a 40 KB path in `coast.js` by `coast.py`. Every coast is placed by longitude and latitude through the same projection; the crop still follows the known coasts, so the world opens outward as before, but Denmark is Denmark.
+**The map.** Real coast: Natural Earth 10m land (public domain), clipped to 12°W–34°E, 36°–64°N, Mercator, simplified to a 40 KB path in `coast.js` by `tools/coast.py`. Every coast is placed by longitude and latitude through the same projection; the crop still follows the known coasts, so the world opens outward as before, but Denmark is Denmark.
