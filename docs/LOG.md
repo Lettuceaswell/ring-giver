@@ -1,8 +1,10 @@
-# Sea King — progress log
+# Ring Giver — progress log
 
 Newest first. Read this before touching anything.
 
 ## 2026-10-23 (session 5, the shell)
+
+**Name.** The game is **Ring Giver** (Levi, end of session 5): title, manifest, setup screen, doc headings. It had shipped as "Sea King" since session 1. Storage keys (`seaking`, `seaking-sagas`) and the SW cache name keep the old word so no save is lost; "sea king" stays as in-world flavor (Gudrød's title, the end card). The *Ring-giver* title a king can earn keeps its name too: the game is named for the thing a king is called.
 
 Levi's second phone playtest came back as two complaints: no way to start over, and the main screen is one long thread. Five decisions were drafted (TODO 18–22), all approved as recommended, then built in one pass, plus two asks from the same message: a frame of reference for buying men, and a real map.
 

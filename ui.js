@@ -50,7 +50,7 @@ function go(pane) { UI.pane = pane; render(); }
 function setupHTML() {
   const past = loadPast();
   const kings = p => { const ks = p.rows.map(r => r.king); return ks.length > 3 ? `${ks.slice(0, 3).join(', ')} and ${ks.length - 3} more` : ks.join(', '); };
-  return `<div class="setup"><img class="mark" src="mark/ring-small.svg" alt=""><h1>Sea King</h1><div class="sub">793. A hall, forty men, one ship. Play until the dynasty ends.</div>
+  return `<div class="setup"><img class="mark" src="mark/ring-small.svg" alt=""><h1>Ring Giver</h1><div class="sub">793. A hall, forty men, one ship. Play until the dynasty ends.</div>
   <div class="pick" onclick="startGame('ragnar')"><span class="name">Ragnar</span> <span class="stats">C 4 · R 2 · F 3</span><small>Leans Combat. Raids hard, holds poorly.</small></div>
   <div class="pick" onclick="startGame('rollo')"><span class="name">Rollo</span> <span class="stats">C 2 · R 4 · F 3</span><small>Leans Rule. Holds land, bleeds at sea.</small></div>
   <div class="card"><span class="name">Custom</span> <span class="stats">9 points across three</span>

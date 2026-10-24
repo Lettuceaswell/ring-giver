@@ -1,4 +1,4 @@
-# Sea King — Decisions Ahead
+# Ring Giver — Decisions Ahead
 
 Ordered by how much each one constrains everything after it. Each carries a recommendation; Director's call.
 

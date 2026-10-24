@@ -15,7 +15,7 @@ const check = (where) => { renders++; const h = app.innerHTML; for (const bad of
 eval(code);
 // start
 check('setup empty');
-if (!app.innerHTML.includes('Sea King')) { console.log('no setup'); process.exit(1); }
+if (!app.innerHTML.includes('Ring Giver')) { console.log('no setup'); process.exit(1); }
 startGame('ragnar'); check('intro');
 let year0 = S.year, deaths = 0, stays = 0, fights = 0, winters = 0, skips = 0, landfalls = 0, maxYears = 700;
 const r = rng('smoke');

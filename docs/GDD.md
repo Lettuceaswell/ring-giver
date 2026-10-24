@@ -1,4 +1,4 @@
-# Sea King — Game Design Document
+# Ring Giver — Game Design Document
 
 Working title. A mini-CK3 for one thumb. Viking Age dynasty, 793 onward, played one year at a time.
 Mechanics and rationale only. Visual and technical decisions belong to the builder.
