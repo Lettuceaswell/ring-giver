@@ -86,7 +86,9 @@ function reachable(s, id) { // within 2 of home or any holding
   const bases = [HOME_ID, ...s.holdings.map(h => h.id)];
   return bases.some(b => dist(s, b, id) <= 2);
 }
-function revealAround(s, id) { s.shores[id].known = s.shores[id].seen = true; for (const n of s.shores[id].neighbors) { s.shores[n].known = s.shores[n].seen = true; } }
+// a coast first seen is stamped with the year, so the next spring's map can show it arriving (the arrival beat)
+function see(s, x) { if (!x.seen) x.seenY = s.year; x.known = x.seen = true; }
+function revealAround(s, id) { see(s, s.shores[id]); for (const n of s.shores[id].neighbors) see(s, s.shores[n]); }
 function isHolding(s, id) { return s.holdings.some(h => h.id === id); }
 function holdPay(sh) { return Math.max(10, Math.round(sh.baseLoot / 4)); }
 function stayUnrest(s, sh) { return clamp(Math.round(sh.baseDef / 1.5) - (has(s,'landtaker') ? 20 : 0), 10, 100); }
@@ -180,7 +182,7 @@ function sail(s) {
       targets = [t.id, ...t.neighbors.filter(n => n !== HOME_ID && !isHolding(s, n)).slice(0, 2)];
     }
     const knownCoast = s.destination !== 'blind' && s.shores[s.destination].seen; // a coast already seen: no Landfall, straight to the fight (TODO 20)
-    for (const id of targets) { const x = s.shores[id]; x.known = x.seen = true; x.rumored = false; }
+    for (const id of targets) { const x = s.shores[id]; see(s, x); x.rumored = false; }
     s.lastDest = s.destination;
     for (const m of ship) m.sailed = true; // they board again next spring
     s.queue.push({ t:'arrive', targets });

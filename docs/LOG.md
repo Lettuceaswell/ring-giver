@@ -2,6 +2,29 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-23 (session 7, screen audit 1: the spring Map screen)
+
+Levi: audit the five most-used screens one at a time, three live alternatives each, he picks. Screen 1 is the spring Map pane. Audit page with the critique and the three mock-ups: https://claude.ai/artifact/BZLsmsJppbmJz16RN1pBJb . He chose **A, The Chart**, and agreed with the whole critique.
+
+**The critique, in short.** Honest and flat: the right facts in the same voice every year. The map was a picture of all Europe with dots on it (the SVG was taller than its viewBox, so Italy leaked into the letterbox in 793), and the fog was invisible. The band wrapped badly. The commit (Sail) sat far from the odds and looked the same at "sure" and "hopeless". Three equal cards under the map. No arrival, no departure, no sense of the centuries. The first spring's primary button said "Stay home this year".
+
+**Shipped (option A)**
+- **The map is the screen.** The Map pane is the whole viewport behind the band and the foot (`.pane.map` is absolute; the band is `glass` over it). `fitMap()` in `ui.js` refits the crop to the screen's shape after every render and sits the known world in the free water between band and sheet. Known coasts stay the crop; the rest of Europe lies in fog.
+- **The fog is real.** `mapHTML` draws the land twice: dim everywhere, lit inside an SVG mask of blurred circles around every known coast (r 46 seen, 30 known). Lit sea inside the same mask. Realm tints live under the mask so they fade into the dark with the coast. Landfall uses the same drawing, framed.
+- **The band.** Grid: year and resources on the first row, name, age, tags and "· fork at N" or "· death N%" on the second; past fifty a two-pixel life strand that shortens with the death chance. "48 men · 10 unled".
+- **Two chips over the water.** Rumor (price; names the coast once bought, and tapping it sets the destination) and the crew ("38 aboard · all aboard" boards everyone). The Wanderer card and the Everyone-aboard row are gone from the Map pane.
+- **The commit sheet** (`sheetHTML`): where, loot and defenders, the odds bar, and one plank with the odds words and the odds' temperature as its underline (`oddsTemp`: pine sure, teal likely, chestnut even, oxblood long). Ask states: "Choose a coast · tap one on the map" opens the picker; "No one aboard · tap the crew"; "Stay home this year" is a text button under the plank when no one is aboard. Ship and Hall panes keep the old Sail bar.
+- **The arrival beat.** The first render of the Map pane in a new spring (`UI.beatYear`): the band's silver and men count up from last year (`countUp`, 650 ms), the fog mask scales in (`fogin`, 1 s), coasts first seen last summer bloom in sequence (`seenY` stamped in `game.js` `see()`), and the route from the hall draws (`routeTo` over the coast graph, `pathLength` dash). Reduced motion skips all of it.
+- **Departure.** `depart()`: a ship dot runs the route for 0.9 s (SMIL `animateMotion`), then `sail(S)`.
+- **The first spring teaches on the thing itself.** The richest seen coast pulses until a destination is set; then the crew chip glows until men board. Sub-line: "Tap a coast. Rich ones are bigger dots."
+- **Back without scrolling** (Levi, mid-session): every dismissible sheet (Man, ruler, Saga, picker) has an × in its title row, and the title row is sticky, so the way out is always on screen. Bottom Back stays.
+
+**Verified:** `node tools/smoke.js` 793→1066, 20 generations, 7201 renders, no errors. Headless Chromium at 390 px: 793 first spring, 800 blind, 815 with and without men and destination, 850 hopeless odds, 900 late game, intro, Landfall, Man card, Hall pane. Not on the phone yet.
+
+**Open from the audit, not built:** label pile-up on the Channel coast by 900 and 7.5 px king names (pinch-zoom is the real fix, TODO 15); the realm tints as pills.
+
+**Next:** screens 2–5 in order: the Winter sheet, the winter card, the Fight sheet, the Hall pane. Same method: a harness page that loads a saved state from the hash, headless screenshots, one artifact with three live options.
+
 ## 2026-10-23 (session 6, the landing screen)
 
 Levi: the choose-your-king screen "is not working": a new player is met with `C 4 · R 2 · F 3`, which means nothing, and only the Custom card names the stats, with no reasoning. No tutorial wanted, just the minimum that gets a player fired up and in control. Built as one screen, no screen before it (active-user law: teach on the thing itself).

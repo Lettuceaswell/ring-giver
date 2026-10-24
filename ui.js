@@ -1,6 +1,7 @@
 let S = migrate(load());
 // screen state that is not game state: which pane, the picker, the open Man card, the Saga sheet, the two-tap arm, and what changed since the band last showed it
-const UI = { pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10 };
+const UI = { pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10, beatYear: 0, routeDrawn: null };
+const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = sel => document.querySelector(sel);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 const statLine = m => `<span class="stats">C <b>${m.combat}</b> · R <b>${m.rule}</b> · F <b>${m.follow}</b>${m.age ? ` · age ${m.age}` : ''}</span>`;
@@ -32,11 +33,59 @@ function render() {
   if (!S) { app.innerHTML = setupHTML(); return; }
   if (S.queue.length) UI.picker = false;
   if (UI.man && !S.rulers?.[UI.man] && !notable(UI.man)) UI.man = null; // he died, or walked
+  const quiet = !S.queue.length, open = UI.man || UI.saga || UI.picker;
+  // the arrival beat: the first time the Map pane shows a new spring, the band counts, the fog opens, last summer's coasts bloom, the route draws
+  const beat = quiet && S.phase === 'spring' && UI.pane === 'map' && !open && UI.beatYear !== S.year;
+  if (beat) UI.beatYear = S.year;
   const sheet = S.queue.length ? overlayHTML(S.queue[0]) : UI.man ? manSheet(UI.man) : UI.saga ? sagaSheet() : UI.picker ? pickerHTML() : '';
-  app.innerHTML = bandHTML(!S.queue.length) + paneHTML() + footHTML() + sheet;
-  const p = $('.pane'); if (p) p.scrollTop = UI.scroll[UI.pane] || 0;
+  app.innerHTML = bandHTML(quiet, beat) + paneHTML(beat) + footHTML() + sheet;
+  const p = $('.pane'); if (p && UI.pane !== 'map') p.scrollTop = UI.scroll[UI.pane] || 0;
   if ($('#bn')) marketNums();
+  fitMap(); if (beat) countUp(app);
+  if (UI.pane === 'map') UI.routeDrawn = S.destination;
 }
+// the map behind the band and the commit sheet: crop to the known world, match the screen's shape, and sit the world in the free water between the two
+function fitMap() {
+  const svg = $('.pane.map svg.map'); if (!svg || !svg.dataset || !svg.dataset.crop) return;
+  const [x0, y0, x1, y1] = svg.dataset.crop.split(' ').map(Number);
+  const W = svg.clientWidth, H = svg.clientHeight; if (!W || !H) return;
+  const top = $('.top'), foot = $('.foot'), bandH = top ? top.offsetHeight : 90, footH = foot ? foot.offsetHeight : 220;
+  const freeC = (bandH + (H - footH)) / 2 / H;
+  let w = x1 - x0, h = y1 - y0; const want = W / H; if (w / h > want) h = w / want; else w = h * want;
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 + (0.5 - freeC) * h;
+  svg.setAttribute('viewBox', `${(cx - w / 2).toFixed(1)} ${(cy - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
+}
+if (typeof addEventListener === 'function') addEventListener('resize', fitMap);
+// numbers in the band count from last year's value to this one (data-count holds the target)
+function countUp(root) {
+  if (reducedMotion || !root.querySelectorAll || typeof requestAnimationFrame !== 'function') return;
+  for (const el of root.querySelectorAll('[data-count]')) {
+    const to = +el.dataset.count, from = +el.textContent; if (from === to) continue;
+    const t0 = performance.now(), dur = 650;
+    const step = t => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+}
+// Sail: the ship leaves along the route, then the summer's sheet rises
+function depart() {
+  const plank = $('.plank'); if (plank) plank.disabled = true;
+  const svg = $('.pane.map svg.map'), rt = svg && svg.querySelector('.route');
+  if (!rt || reducedMotion) { act(() => sail(S)); return; }
+  const path = 'M' + rt.getAttribute('points').split(' ').join(' L').replace(/,/g, ' ');
+  svg.insertAdjacentHTML('beforeend', `<circle class="shipdot" r="3"><animateMotion dur="0.9s" fill="freeze" begin="indefinite" path="${path}"/></circle>`);
+  const am = svg.querySelector('.shipdot animateMotion'); if (am && am.beginElement) am.beginElement();
+  setTimeout(() => act(() => sail(S)), 950);
+}
+// the coast graph's path from the hall to a shore, for the route line and the departing ship
+function routeTo(s, to) {
+  const prev = { [HOME_ID]: null }, q = [HOME_ID];
+  while (q.length) { const c = q.shift(); if (c === to) break; for (const n of s.shores[c].neighbors) if (!(n in prev)) { prev[n] = c; q.push(n); } }
+  if (!(to in prev)) return [HOME_ID, to];
+  const p = []; for (let c = to; c; c = prev[c]) p.unshift(c); return p;
+}
+// the odds as a temperature on the plank: pine, teal, chestnut, oxblood
+function oddsTemp(Sv, D) { const p = winOdds(Sv, D); return 't-' + (p >= .97 ? 'sure' : p >= .7 ? 'likely' : p >= .4 ? 'even' : 'long'); }
+const closeX = fn => `<button class="x" onclick="${fn}" aria-label="Back">×</button>`;
 function act(fn) {
   const p = $('.pane'); if (p) UI.scroll[UI.pane] = p.scrollTop;
   const was = S ? { silver: S.silver, men: S.men } : null;
@@ -101,24 +150,45 @@ function marketNums() {
 }
 
 // ---- The band: year, king, silver and men; tap it for the Saga. What changed shows once, when the band is in view (TODO 21) ----
-function bandHTML(quiet) {
+function bandHTML(quiet, beat) {
   const k = S.king, titles = k.titles.map(t => `<span class="tag">${TITLES[t].name}</span>`).join('');
-  const nextFork = T.forkAges.find(a => a > k.age);
+  const nextFork = T.forkAges.find(a => a > k.age), death = k.age > 50 ? Math.round(5 * (k.age - 50) * (has(S,'oldwise') ? .5 : 1)) : 0;
   const show = quiet || UI.man || UI.saga, d = UI.pend;
   const delta = v => show && v ? `<span class="delta ${v > 0 ? 'up' : 'down'}">${v > 0 ? '+' : ''}${v}</span>` : '';
-  const h = `<div class="top" onclick="UI.saga=true;render()"><div><div class="year">${S.year}</div><div class="king">${esc(k.name)}, ${k.age}${titles}${nextFork ? ` · fork at ${nextFork}` : ''}${k.age > 50 ? ` · <span class="death">death ${Math.round(5 * (k.age - 50) * (has(S,'oldwise') ? .5 : 1))}%</span>` : ''}</div></div>
-    <div class="res">${delta(d.silver)}<b>${S.silver}</b> silver<br>${delta(d.men)}${unledMen(S)} unled / <b>${S.men}</b> men</div></div>`;
+  const n = (v, dv) => `<b data-count="${v}">${beat && dv ? v - dv : v}</b>`; // counts up to v on the beat
+  // past fifty, a life strand under the king's name: what is left of it shortens each winter
+  const life = death ? `<div class="life"><i style="width:${Math.max(5, 100 - death)}%"></i></div>` : '';
+  const h = `<div class="top${UI.pane === 'map' ? ' glass' : ''}" onclick="UI.saga=true;render()"><div class="year">${S.year}</div>
+    <div class="res">${delta(d.silver)}${n(S.silver, d.silver)} silver<br>${delta(d.men)}${n(S.men, d.men)} men · ${unledMen(S)} unled</div>
+    <div class="king">${esc(k.name)}, ${k.age}${titles}${nextFork ? `<span class="fork">· fork at ${nextFork}</span>` : ''}${death ? `<span class="death">· death ${death}%</span>` : ''}</div>${life}</div>`;
   if (show) UI.pend = { silver: 0, men: 0 };
   return h;
 }
 
 // ---- Panes: Map, Ship, Hall. Each fits one screen; the band above, the Sail bar and tabs below (TODO 19) ----
-function paneHTML() {
+function paneHTML(beat) {
   const ship = S.notables.filter(m => m.place === 'ship'), home = S.notables.filter(m => m.place === 'home');
-  const body = UI.pane === 'ship' ? shipPane(ship) : UI.pane === 'hall' ? hallPane(home) : mapPane(ship);
-  return `<div class="pane ${UI.pane}">${body}</div>`;
+  if (UI.pane === 'map') {
+    // the chart: the whole screen is the map; the band floats above it, the commit sheet below, two chips over the water
+    const newIds = beat ? Object.values(S.shores).filter(x => x.seenY === S.year - 1).map(x => x.id) : [];
+    const first = S.gen === 1 && !S.deeds.raids && !S.destination && S.phase === 'spring'; // the first spring: one coast pulses until it is tapped
+    const hint = first ? (Object.values(S.shores).filter(x => x.seen && x.id !== HOME_ID).sort((a, b) => b.loot - a.loot)[0] || {}).id : null;
+    return `<div class="pane map">${mapHTML(null, { beat, newIds, hint, draw: UI.routeDrawn !== S.destination })}</div><div class="free">${chipsHTML(ship)}</div>`;
+  }
+  return `<div class="pane ${UI.pane}">${UI.pane === 'ship' ? shipPane(ship) : hallPane(home)}</div>`;
 }
-function mapPane(ship) { return mapHTML() + destHTML(ship) + wandererHTML(); }
+// the Wanderer and the crew as two chips over the water, spring only
+function chipsHTML(ship) {
+  if (S.phase !== 'spring') return '';
+  const p = rumorPrice(S), off = S.rumorOffer;
+  const rumor = off === 'none' ? `<div class="chip dim">${ico('wanderer')}Nothing new within reach</div>`
+    : off ? `<div class="chip" onclick="act(()=>setDestination(S,'${off}'))">${ico('wanderer')}He names <b class="rich">${esc(shoreOf(off).name)}</b></div>`
+    : `<div class="chip${S.silver < p ? ' dim' : ''}" onclick="act(()=>buyRumor(S))">${ico('wanderer')}Rumor <small>${p ? `${p} silver` : 'free'}</small></div>`;
+  const ab = ship.reduce((a, m) => a + m.men, 0), atHome = S.notables.some(m => m.place === 'home');
+  const hint = S.destination && !ab && !S.deeds.raids && S.gen === 1; // the first spring, second lesson: the crew
+  const crew = `<div class="chip${hint ? ' hint' : ''}" onclick="${atHome ? 'act(()=>boardAll(S))' : "go('ship')"}">${ico('men')}${ab} aboard${atHome ? ' <small>all aboard</small>' : ''}</div>`;
+  return rumor + crew;
+}
 function shipPane(ship) {
   return `<h2>${ico('ship')}The ship</h2>${destHTML(ship)}
   ${ship.map(m => manCard(m)).join('') || '<div class="card empty">No one aboard. <b>Everyone aboard</b> puts the whole hall on the ship; or send men one at a time from the Hall.</div>'}`;
@@ -134,7 +204,27 @@ function hallPane(home) {
 function footHTML() {
   const ship = S.notables.filter(m => m.place === 'ship');
   const tab = (id, label, icon, n) => `<button class="${UI.pane === id ? 'on' : ''}" onclick="go('${id}')">${ico(icon)}<span>${label}${n ? ` · ${n}` : ''}</span></button>`;
-  return `<div class="foot">${sailButton(ship)}<nav class="tabs">${tab('map', 'Map', 'map')}${tab('ship', 'Ship', 'ship', ship.reduce((a, m) => a + m.men, 0))}${tab('hall', 'Hall', 'hall', S.holdings.length)}</nav></div>`;
+  return `<div class="foot${UI.pane === 'map' ? ' commit' : ''}">${UI.pane === 'map' ? sheetHTML(ship) : sailButton(ship)}<nav class="tabs">${tab('map', 'Map', 'map')}${tab('ship', 'Ship', 'ship', ship.reduce((a, m) => a + m.men, 0))}${tab('hall', 'Hall', 'hall', S.holdings.length)}</nav></div>`;
+}
+// the commit sheet: where, the odds, and one plank that carries the odds' temperature (audit 1, option A)
+function sheetHTML(ship) {
+  const spring = S.phase === 'spring', d = S.destination, x = d && d !== 'blind' ? shoreOf(d) : null, Sh = strengthShip(S), manned = Sh > 0;
+  const own = x && ownerName(x.id), first = S.gen === 1 && !S.deeds.raids;
+  let name, sub = '';
+  if (!spring) { name = `Winter ${S.year}`; sub = 'The year turns.'; }
+  else if (!d) { name = 'Where this year?'; sub = first ? 'Tap a coast. Rich ones are bigger dots.' : 'Tap a coast on the map, or open the list.'; }
+  else if (d === 'blind') { name = 'Sail blind'; sub = `${has(S,'farsailor') ? 5 : 3} dark coasts, fog until you arrive`; }
+  else { name = esc(x.name); sub = (x.seen ? `loot ${x.loot} · ${x.def} defenders · ${x.holdable ? 'holdable' : 'cannot hold'}` : x.rumored ? 'rich, by rumor' : 'unseen') + (own ? ` · ${esc(own)}'s` : ''); }
+  const bar = x && x.seen && manned ? barHTML(Sh, x.def) : d && manned ? `<div class="odds">Ship strength ${Sh}.</div>` : '';
+  let label, small = '', fn = '', cls = 'plank', temp = '';
+  if (!spring) label = 'Winter';
+  else if (!d) { label = 'Choose a coast'; small = 'tap one on the map'; fn = 'UI.picker=true;render()'; cls += ' ask'; }
+  else if (!manned) { label = 'No one aboard'; small = 'tap the crew'; fn = "go('ship')"; cls += ' ask'; }
+  else { label = `Sail for ${d === 'blind' ? 'the dark' : esc(x.name)}${d !== 'blind' && S.lastDest === d ? ' again' : ''}`; fn = 'depart()';
+    if (x && x.seen) { small = oddsWords(Sh, x.def); temp = oddsTemp(Sh, x.def); } else small = `ship ${Sh}`; }
+  const stay = spring && !manned ? `<button class="stay" onclick="act(()=>sail(S))">Stay home this year</button>` : '';
+  return `<div class="sheet ${temp}"><div class="dest" ${spring ? 'onclick="UI.picker=true;render()"' : ''}><div><div class="dname">${name}</div>${sub ? `<div class="dsub">${sub}</div>` : ''}</div><span class="chev">▸</span></div>
+    ${bar}<button class="${cls}" ${spring ? '' : 'disabled'} onclick="${fn}"><span>${label}</span><small>${small}</small></button>${stay}</div>`;
 }
 function sailButton(ship) {
   const spring = S.phase === 'spring', manned = ship.length > 0, d = S.destination;
@@ -172,7 +262,7 @@ function pickerHTML() {
   const blind = `<div class="prow blind${S.destination === 'blind' ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'blind');UI.picker=false})">
     <span class="pname">Sail blind</span><span class="pnum">—</span><span class="pnum">—</span><span class="psub">${has(S,'farsailor') ? 5 : 3} dark coasts · fog until you arrive</span></div>`;
   return `<div class="overlay" onclick="if(event.target===this){UI.picker=false;render()}"><div class="scene">
-    <h1>${ico('ship')}Where?</h1><p>Ship strength <b class="rich">${Sh}</b>. Richest first. Tapping a coast on the map works too.</p>
+    <h1>${ico('ship')}Where?${closeX('UI.picker=false;render()')}</h1><p>Ship strength <b class="rich">${Sh}</b>. Richest first. Tapping a coast on the map works too.</p>
     <div class="phead"><span>Shore</span><span>loot</span><span>def</span></div>
     ${known.map(row).join('')}${blind}
     <div class="actions"><button onclick="UI.picker=false;render()">Back</button></div></div></div>`;
@@ -207,17 +297,11 @@ function childrenHTML() {
   const hasJarl = S.notables.some(m => !m.isKing && !m.kin);
   return `<h2>${ico('men')}Children</h2>` + S.children.map(c => `<div class="card row"><span>${esc(c.name)} <span class="stats">${c.sex === 'm' ? 'son' : 'daughter'}, ${c.age}${c.married ? `, wife of ${esc(c.married)}` : c.ofAge ? ', in the hall' : c.sex === 'f' && c.age >= 16 ? (hasJarl ? ' · of age. Tap a jarl to marry her to him' : ' · of age') : ''}</span></span></div>`).join('');
 }
-function wandererHTML() {
-  if (S.phase !== 'spring') return '';
-  const p = rumorPrice(S);
-  return `<div class="card row wand"><span>${ico('wanderer')}<span>${S.rumorOffer === 'none' ? 'The Wanderer knows nothing new within reach.' : S.rumorOffer ? `The Wanderer names <b class="rich">${esc(shoreOf(S.rumorOffer).name)}</b>.` : 'The Wanderer sells the name of a rich coast.'}</span></span>
-    <button class="small" ${S.silver < p || S.rumorOffer ? 'disabled' : ''} onclick="act(()=>buyRumor(S))">Rumor · ${p}</button></div>`;
-}
 function reignRow(d) {
   return `<div class="card"><span class="name">${esc(d.king)}</span> <span class="stats">${d.from}–${d.now ? 'now' : d.to}${d.title ? ' · ' + d.title : ''}</span><br><span class="stats">${d.bestRaid ? `Richest raid: ${esc(d.bestRaid.shore)}, ${d.bestRaid.loot} silver (${d.bestRaid.year}). ` : 'Never raided. '}Most holdings: ${d.bestHoldings}.</span></div>`;
 }
 function dynastyHTML() { return S.dynasty.map(reignRow).join('') + `<div class="hint">Generation ${S.gen}. World seed ${S.day}.</div>`; }
-function mapHTML(targets) {
+function mapHTML(targets, o = {}) {
   const known = Object.values(S.shores).filter(x => x.known);
   const tappable = !targets && S.phase === 'spring' && !S.queue.length;
   // the edge of the known world: unnamed coasts one step past what is known, drawn in iron
@@ -235,16 +319,31 @@ function mapHTML(targets) {
     // the king's name under his seat opens his card (the Kings list lived here before TODO 19)
     const L = x.side === 'l', AB = x.side === 'a' || x.side === 'b', lx = L ? x.x - r - 3 : AB ? x.x : x.x + r + 3, ly = x.side === 'a' ? x.y - r - 4 : x.side === 'b' ? x.y + r + 11 : x.y + 3, kw = 8 + own?.name.length * 5.2 || 0;
     const kname = anchor ? `<g class="kname" ${targets ? '' : `onclick="event.stopPropagation();UI.man='${own.id}';render()"`}><rect x="${L ? x.x - r - kw : x.x + r}" y="${x.y + 4}" width="${kw}" height="14" fill="transparent"/><text class="lbl king${L ? ' l' : AB ? ' c' : ''}" x="${lx}" y="${x.side === 'a' ? ly - 9 : ly + 10}">${esc(own.name)}</text></g>` : '';
-    return `<g class="${tgt ? 'tgt' : targets ? 'dim' : ''}${can ? ' tap' : ''}" ${can ? `onclick="act(()=>setDestination(S,'${x.id}'))"` : ''}>${can ? `<circle class="hit" cx="${x.x}" cy="${x.y}" r="13"/>` : ''}<circle class="coast ${cls}" cx="${x.x}" cy="${x.y}" r="${r.toFixed(1)}"/>${S.destination === x.id && !targets ? `<circle class="dest" cx="${x.x}" cy="${x.y}" r="${(r + 4).toFixed(1)}"/>` : ''}${tgt ? `<circle class="ring" cx="${x.x}" cy="${x.y}" r="${(r + 5).toFixed(1)}"/>` : ''}<text class="lbl${L ? ' l' : AB ? ' c' : ''}" x="${lx}" y="${ly}">${esc(x.name)}</text>${kname}</g>`; }).join('')
+    const isNew = o.newIds && o.newIds.includes(x.id), hint = o.hint === x.id; // a coast first seen last summer blooms; the first spring's coast pulses
+    return `<g class="c ${tgt ? 'tgt' : targets ? 'dim' : ''}${can ? ' tap' : ''}${isNew ? ' bloom' : ''}" ${isNew ? `style="animation-delay:${(.35 + o.newIds.indexOf(x.id) * .12).toFixed(2)}s"` : ''} ${can ? `onclick="act(()=>setDestination(S,'${x.id}'))"` : ''}>${can ? `<circle class="hit" cx="${x.x}" cy="${x.y}" r="13"/>` : ''}<circle class="coast ${cls}" cx="${x.x}" cy="${x.y}" r="${r.toFixed(1)}"/>${S.destination === x.id && !targets ? `<circle class="dest" cx="${x.x}" cy="${x.y}" r="${(r + 4).toFixed(1)}"/>` : ''}${tgt || hint ? `<circle class="ring" cx="${x.x}" cy="${x.y}" r="${(r + 5).toFixed(1)}"/>` : ''}<text class="lbl${L ? ' l' : AB ? ' c' : ''}" x="${lx}" y="${ly}">${esc(x.name)}</text>${kname}</g>`; }).join('')
     + dark.map(x => `<circle class="coast dark" cx="${x.x}" cy="${x.y}" r="2"/>`).join('');
-  // crop to what is drawn, with room for the labels; never narrower than the eye expects
-  const all = targets ? targets.map(id => S.shores[id]) : [...known, ...dark], pad = targets ? 40 : 28;
+  // the fog: a lit pool of sea and coast around every known shore, dimmer land and deeper water everywhere else
+  const fog = known.map(x => `<circle cx="${x.x}" cy="${x.y}" r="${x.seen ? 46 : 30}" fill="#fff"/>`).join('');
+  // the route from the hall to the standing destination
+  let route = '';
+  if (!targets && S.destination && S.destination !== 'blind' && S.shores[S.destination] && S.shores[S.destination].known) {
+    const pts = routeTo(S, S.destination).map(id => S.shores[id]);
+    route = `<polyline pathLength="1" class="route${o.draw ? ' draw' : ''}" points="${pts.map(p => p.x + ',' + p.y).join(' ')}"/>`;
+  }
+  // crop to what is drawn, with room for the labels; never narrower than the eye expects. The pane's map is refit to the screen's shape after render (fitMap)
+  const all = targets ? targets.map(id => S.shores[id]) : [...known, ...dark], pad = targets ? 40 : 22;
   let x0 = Math.min(...all.map(x => x.x - (x.side === 'l' ? 40 : 0))) - pad, x1 = Math.max(...all.map(x => x.x + (x.side === 'l' ? 0 : 40))) + pad, y0 = Math.min(...all.map(x => x.y)) - pad, y1 = Math.max(...all.map(x => x.y)) + pad;
   const minW = 220, minH = 150;
   if (x1 - x0 < minW) { const c = (x0 + x1) / 2; x0 = c - minW / 2; x1 = c + minW / 2; }
   if (y1 - y0 < minH) { const c = (y0 + y1) / 2; y0 = c - minH / 2; y1 = c + minH / 2; }
-  if ((y1 - y0) / (x1 - x0) > 1.1) { const c = (x0 + x1) / 2, w = (y1 - y0) / 1.1; x0 = c - w / 2; x1 = c + w / 2; }
-  return `<svg class="map${targets ? ' landfall' : ''}" viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${(x1 - x0).toFixed(0)} ${(y1 - y0).toFixed(0)}"><path class="land" d="${COAST_PATH}"/>${realms}${edges}${dots}</svg>`;
+  if (targets && (y1 - y0) / (x1 - x0) > 1.1) { const c = (x0 + x1) / 2, w = (y1 - y0) / 1.1; x0 = c - w / 2; x1 = c + w / 2; }
+  const id = targets ? 'l' : 'p', cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, big = 'x="-1000" y="-1000" width="3000" height="3000"';
+  return `<svg class="map${targets ? ' landfall' : ''}" viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${(x1 - x0).toFixed(0)} ${(y1 - y0).toFixed(0)}" ${targets ? '' : `preserveAspectRatio="xMidYMid slice" data-crop="${x0.toFixed(1)} ${y0.toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}"`}>
+    <defs><filter id="fb${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="11"/></filter>
+    <mask id="fog${id}" maskUnits="userSpaceOnUse" ${big}><rect ${big} fill="#000"/><g filter="url(#fb${id})" class="${o.beat ? 'fogin' : ''}" style="transform-origin:${cx.toFixed(1)}px ${cy.toFixed(1)}px">${fog}</g></mask></defs>
+    <rect class="seaDark" ${big}/><path class="land dark" d="${COAST_PATH}"/>
+    <g mask="url(#fog${id})"><rect class="seaLit" ${big}/><path class="land" d="${COAST_PATH}"/>${realms}</g>
+    ${edges}${route}${dots}</svg>`;
 }
 
 // ---- The Saga sheet: the kings, the chronicle by year, and the way out (TODO 18, 22) ----
@@ -259,7 +358,7 @@ function sagaSheet() {
   if (byYear.before) chron += block('—', byYear.before);
   const armed = Date.now() - UI.armed < 3000;
   return `<div class="overlay" onclick="if(event.target===this){UI.saga=false;render()}"><div class="scene">
-    <h1>${ico('oath')}Saga</h1><p class="stats">Generation ${S.gen} · the seas of ${S.day}</p>
+    <h1>${ico('oath')}Saga${closeX('UI.saga=false;render()')}</h1><p class="stats">Generation ${S.gen} · the seas of ${S.day}</p>
     <h2>Kings</h2>${reigns.map(reignRow).join('')}
     <h2>Chronicle</h2><div class="chron">${chron || '<div class="hint">Nothing yet. Sail.</div>'}</div>
     <h2>New dynasty</h2>
@@ -300,7 +399,7 @@ function manSheet(id) {
     ${!m.kin && daughters.length ? `<div class="where" style="margin-top:8px">${daughters.map(d => `<button class="small" onclick="act(()=>marry(S,'${d.id}','${m.id}'))">Marry ${esc(d.name)} to him</button>`).join('')}<span class="hint" style="margin:0;align-self:center">he is kin then · +30</span></div>` : ''}`}`;
   const children = m.isKing && S.children.length ? `<h2>Children</h2><p class="stats">${S.children.map(c => `${esc(c.name)} ${c.age}${c.married ? `, wife of ${esc(c.married)}` : ''}`).join(' · ')}</p>` : '';
   return `<div class="overlay" onclick="if(event.target===this){UI.man=null;render()}"><div class="scene">
-    <h1>${esc(m.name)}${m.isKing ? '<span class="tag">King</span>' : ''}${m.son ? '<span class="tag kin">Son</span>' : m.kin ? '<span class="tag kin">Kin</span>' : ''}</h1>
+    <h1>${esc(m.name)}${m.isKing ? '<span class="tag">King</span>' : ''}${m.son ? '<span class="tag kin">Son</span>' : m.kin ? '<span class="tag kin">Kin</span>' : ''}${closeX('UI.man=null;render()')}</h1>
     <p>${statLine(m)}</p>
     ${m.isKing ? '' : `<h2>Toward the King</h2>${stanceHTML(m)}`}
     <h2>His story</h2><p>${story.join(' ')}</p>${children}
@@ -314,7 +413,7 @@ function rulerSheet(k) {
   const spring = S.phase === 'spring', price = giftPrice(k), gifted = k.gifted === S.year;
   const held = k.coasts.filter(c => c !== k.anchor && isHolding(S, c)).length, rest = k.coasts.length - 1;
   return `<div class="overlay" onclick="if(event.target===this){UI.man=null;render()}"><div class="scene">
-    <h1>${ico('crown')}${esc(k.name)}</h1><p class="stats">${esc(k.title)}</p>
+    <h1>${ico('crown')}${esc(k.name)}${closeX('UI.man=null;render()')}</h1><p class="stats">${esc(k.title)}</p>
     <h2>Toward the King</h2>${k.broken ? '<div class="stance st-loyal">kneels</div><div class="hint">His realm answers to you. He will not rise again.</div>' : stanceHTML(k)}
     <h2>His realm</h2><p>${realmList(k)}</p>
     <p class="hint">${k.broken ? `${esc(shoreOf(k.anchor).name)} lies open to be held.` : `He takes a free coast beside his own every ${T.realmGrow} years or so. Raid his coasts and he sours; hold one and he sours more. Hold every coast but ${esc(shoreOf(k.anchor).name)} and he breaks: ${held} of ${rest} so far.`}</p>
