@@ -83,3 +83,26 @@ Lindisfarne, Paris, Tours, Galicia, Lisbon cannot be held. It now says so before
 **Build order:** stance on every man + the Man card with the verbs that already exist (marry, send) → the King holds the hall → named rulers on the anchors with stance, realms tinted, fog discovery, realm growth on the clock → ruler verbs (tribute, marry out, sail together) → break-a-realm bonus. Tune after.
 
 **Status 2026-10-23 (session 4):** steps 1–3 built, plus the envoy card and the break (he kneels, the anchor opens). Gift silver was added as the one stance verb so stance could be worked on, not only read. Open: ruler verbs (tribute, marry out, sail together), promise-the-next-holding. See LOG.
+
+---
+
+## From playtest 2 (2026-10-23): the shell
+
+Levi: "make it feel more like a game on my phone." He named the first two. All five are about the frame the game sits in, not the rules. Each carries a recommendation; Director's call.
+
+## 18. Where does the menu live, and what is a new run?
+Today "Start over" is inside the collapsed Dynasty `<details>` at the foot of the page, behind a `confirm()` dialog. On the phone it does not exist. **Recommend:** tap the top band (year + king) to open the **Hall sheet**: the dynasty rows, the seed line ("the seas of 23 Oct 2026"), and **New dynasty**. No dialog: the button becomes "Tap again · this dynasty is lost" for three seconds (undo-over-confirm, law 1). New dynasty goes to the setup screen. The abandoned or finished dynasty keeps only its Saga rows in a second key (`seaking-sagas`), listed at the foot of setup as **Past kings**. One live dynasty at a time, no slots. Same day, same seas stays the rule.
+
+## 19. Panes, not a thread
+The main screen is nine sections stacked into one scroll with the Sail button floating over it. **Recommend:** three panes behind a bottom bar, each fitting one viewport, swipe or tap between them: **Map · Ship · Hall**. Map: the map at full height (pinch-zoom from TODO 15 lands here), the destination row under it, the Wanderer as one row; kings' names and coasts are tapped on the map, so the Kings and Known shores lists go away. Ship: destination, Everyone aboard, the men aboard. Hall: men at home, the hall row and holdings, children, unled men. The band stays sticky, the Sail bar stays fixed under the tabs. The log and dynasty leave the main screen (see 22). Open on Map in spring: the game's one question is where to sail.
+
+## 20. A quiet turn is two taps
+273 years at eight taps each is 2,000 taps of chrome. Destination clears every autumn; the crew stays; summer and winter each push three or four sheets. **Recommend:** (a) the destination survives the year, so the Sail button reads "Sail for Lindisfarne again"; (b) the land summary, the hall eats, and the market fold into one **Winter** sheet with the market's buttons at its foot, and no line that says nothing happened; (c) an Arrive at a known coast with the three targets already seen skips its sheet when the destination was named (it only matters when sailing blind). The fork, the death, the Oath, the winter card keep their own sheets: those are the game.
+
+## 21. The game shows what changed
+Numbers change silently on re-render: silver drops, a jarl cools, a holding is gone, and the screen just looks different. **Recommend:** every scene records what it moved, and the next render shows it once: silver and men in the band tick and flash (pine up, oxblood down), a stance tag that moved carries its arrow for one turn, a lost holding leaves a struck-through row that fades at the next spring. No toasts, no sound. One rule: change is visible on the thing that changed, for one render.
+
+## 22. The chronicle is a screen
+The story lives in six log lines at the foot of the page and in winter cards that vanish when dismissed. **Recommend:** a **Saga** tab in the Hall sheet (18): every year as one block of its lines, newest first, the king's reign as the heading, the dynasty rows at the top. It is the same `s.log` grouped by year, with the winter card's text pushed into it. The end-of-dynasty card already reads the dynasty rows; it reads this too. Cap it at the live dynasty; past kings keep rows only (18).
+
+**Build order:** 19 first (every other item hangs on where things sit) → 18 → 20 → 22 → 21. 19 and 18 are one session; 20 wants a playtest after.
