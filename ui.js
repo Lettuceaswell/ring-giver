@@ -50,23 +50,33 @@ function go(pane) { UI.pane = pane; render(); }
 function setupHTML() {
   const past = loadPast();
   const kings = p => { const ks = p.rows.map(r => r.king); return ks.length > 3 ? `${ks.slice(0, 3).join(', ')} and ${ks.length - 3} more` : ks.join(', '); };
-  return `<div class="setup"><img class="mark" src="mark/ring-small.svg" alt=""><h1>Ring Giver</h1><div class="sub">793. A hall, forty men, one ship. Play until the dynasty ends.</div>
-  <div class="pick" onclick="startGame('ragnar')"><span class="name">Ragnar</span> <span class="stats">C 4 · R 2 · F 3</span><small>Leans Combat. Raids hard, holds poorly.</small></div>
-  <div class="pick" onclick="startGame('rollo')"><span class="name">Rollo</span> <span class="stats">C 2 · R 4 · F 3</span><small>Leans Rule. Holds land, bleeds at sea.</small></div>
-  <div class="card"><span class="name">Custom</span> <span class="stats">9 points across three</span>
-    <div class="custom"><input id="cname" placeholder="Name" value="Halfdan"><span></span>
-      <span>Combat</span><span class="men"><button onclick="bump('c',-1)">−</button><span class="n" id="c">3</span><button onclick="bump('c',1)">+</button></span>
-      <span>Rule</span><span class="men"><button onclick="bump('r',-1)">−</button><span class="n" id="r">3</span><button onclick="bump('r',1)">+</button></span>
-      <span>Followability</span><span class="men"><button onclick="bump('f',-1)">−</button><span class="n" id="f">3</span><button onclick="bump('f',1)">+</button></span></div>
-    <div class="hint" id="pts">9 of 9 placed</div>
+  return `<div class="setup"><img class="mark" src="mark/ring-small.svg" alt=""><h1>Ring Giver</h1>
+  <div class="sub">793. You are twenty, with a hall, forty men, and one ship. Raid for silver. Hold what you take. Marry well, and die. Then your son faces the jarls: they kneel, or they walk. Play until the line ends.</div>
+  <h2>Choose your king</h2>
+  <div class="pick" onclick="startGame('ragnar')"><span class="name">Ragnar</span><small>The raider. Silver comes fast and the summers run red. What he takes, he keeps badly.</small>${statRows(4, 2, 3)}</div>
+  <div class="pick" onclick="startGame('rollo')"><span class="name">Rollo</span><small>The settler. Takes a coast and holds it. Silver comes slow and sure, and the fleet is weak when it must fight.</small>${statRows(2, 4, 3)}</div>
+  <div class="card"><span class="name">Your own</span><small>Name him. Nine points, one to five each.</small>
+    <input id="cname" class="cname" placeholder="Name" value="Halfdan">
+    ${statRows(cust.c, cust.r, cust.f, true)}
+    <div class="hint" id="pts">${ptsLine()}</div>
     <button class="primary" style="width:100%;margin-top:10px" onclick="startCustom()">Begin</button></div>
   <p class="hint">The world is seeded by today's date. Anyone who starts a dynasty today sails the same seas.</p>
   ${past.length ? `<h2>Past kings</h2>${past.map(p => `<div class="card"><span class="name">${esc(kings(p))}</span><br><span class="stats">${p.from}–${p.to} · ${p.gens} king${p.gens === 1 ? '' : 's'} · ${esc(p.why)} · the seas of ${p.seed}</span></div>`).join('')}` : ''}
   <div class="imprint">House Hansen</div></div>`;
 }
+// the three stats as dots and what each one does in the rules: Combat multiplies men at sea, Rule multiplies men on land, Followability is men led (F × 10)
+const dots = n => `<span class="dots">${'●'.repeat(n)}${'○'.repeat(5 - n)}</span>`;
+const STAT_WORDS = { c: v => `each man aboard fights as ${v}`, r: v => `each man on land holds as ${v}`, f: v => `leads ${v * T.menPerF} men` };
+function statRows(c, r, f, edit) {
+  const row = (k, label, v) => `<span class="k">${label}</span>${edit
+    ? `<span class="men"><button onclick="bump('${k}',-1)">−</button><span class="n" id="${k}">${dots(v)}</span><button onclick="bump('${k}',1)">+</button></span>`
+    : dots(v)}<i id="${edit ? k + 'w' : ''}">${STAT_WORDS[k](v)}</i>`;
+  return `<div class="srows${edit ? ' edit' : ''}">${row('c', 'Combat', c)}${row('r', 'Rule', r)}${row('f', 'Followability', f)}</div>`;
+}
 const cust = { c: 3, r: 3, f: 3 };
+const ptsLine = () => { const left = 9 - cust.c - cust.r - cust.f; return left ? `${left} point${left === 1 ? '' : 's'} left to spend` : 'All nine placed'; };
 function bump(k, d) { const v = cust[k] + d, sum = cust.c + cust.r + cust.f + d; if (v < 1 || v > 5 || sum > 9) return; cust[k] = v;
-  $('#' + k).textContent = v; $('#pts').textContent = `${cust.c + cust.r + cust.f} of 9 placed`; }
+  $('#' + k).innerHTML = dots(v); $('#' + k + 'w').textContent = STAT_WORDS[k](v); $('#pts').textContent = ptsLine(); }
 function startGame(k) { S = newGame(k); UI.pane = 'map'; save(S); render(); }
 function startCustom() { const name = $('#cname').value.trim() || 'Halfdan'; S = newGame('custom', Object.assign([cust.c, cust.r, cust.f], { name })); UI.pane = 'map'; save(S); render(); }
 

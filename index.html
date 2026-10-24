@@ -203,10 +203,15 @@ details summary::after{content:' ▸'}details[open] summary::after{content:' ▾
 .setup .mark{width:72px;height:72px;display:block;margin-bottom:18px}
 .setup h1{font-family:var(--display);font-size:40px;line-height:1;color:var(--text);margin-bottom:8px}
 .setup .sub{color:var(--muted);margin-bottom:24px;font-size:15px}
-.setup .pick{padding:14px}
-.setup .pick small{display:block;color:var(--muted);margin-top:4px;font-size:13px}
-.custom{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:8px}
-.custom input{font:inherit;background:var(--raised);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:9px 10px;width:100%}
+.setup .pick,.setup>.card{padding:14px}
+.setup .pick small,.setup .card small{display:block;color:var(--muted);margin-top:4px;font-size:13.5px;line-height:1.45}
+.srows{display:grid;grid-template-columns:auto auto 1fr;gap:6px 10px;align-items:center;margin-top:12px;font-size:13px}
+.srows .k{color:var(--text)}
+.srows i{font-style:normal;color:var(--muted)}
+.dots{font-family:var(--mono);letter-spacing:.1em;color:var(--accent);white-space:nowrap}
+.srows.edit{grid-template-columns:auto auto 1fr;gap:8px 10px}
+.srows.edit .men .n{min-width:auto;padding:0 2px}
+.cname{font:inherit;background:var(--raised);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:9px 10px;width:100%;margin-top:12px}
 .imprint{display:flex;align-items:center;gap:10px;margin-top:40px;color:var(--muted);font:500 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase}
 .imprint::before{content:"";width:28px;height:var(--strand);background:var(--accent)}
 
