@@ -1,7 +1,17 @@
 // ---- Tuning (GDD §13) ----------------------------------------------------------
 const T = { startMen: 40, menPerF: 10, manPrice: 3, upkeep: 1, rumor: 20, startYear: 793, endYear: 1066,
   emptyUnrest: 10, heldCalm: 5, quietYears: 5, forkAges: [25, 35, 45, 55],
-  gift: 20, giftWarm: 15, hallWarm: 5, idleSour: 3, walkChance: 0.35, realmGrow: 30, raidSour: 10, takeSour: 25 };
+  gift: 20, giftWarm: 15, hallWarm: 5, idleSour: 3, walkChance: 0.35, realmGrow: 30, raidSour: 10, takeSour: 25,
+  // TODO 25, the persona playtests: what makes a bad plan lose
+  fallLoss: 0.25, fallWin: 0.25,   // a named man aboard falls in a lost fight at lossFrac x fallLoss; in a bloody win at (lossFrac - 0.2) x fallWin
+  defWin: 1.3, defCap: 1000, defMend: 0.965, // after a win a coast's defenders x defWin (cap defCap); each autumn x defMend back toward its own (was 1.2, 200, 0.95)
+  hallSlay: 0.5, guardSave: 3, richHall: 300, richKing: 1, // a fallen hall kills a named man at hallSlay x (1 - guardSave x guard / fleet) x clamp(chest / richHall, king's fleet 1 | strange 0, 2); the victim is the King at chest / richHall x richKing (at most 0.75), else by lot
+  starveSour: 10,                  // a hungry winter: every jarl sours (half at a holding); the sourest at home leaves with his men
+  breakYears: 3,                   // summers a whole realm must be held before its king kneels
+  strike: 0.3, strikeBase: 40, strikePer: 20, strikeSated: 20, // a hostile king comes for a holding that was his each summer at this chance; host = base + per x his free coasts; a coast won back warms him
+  benches: 8,                      // named men without a holding the hall will feed at its table; past that no wanderer or local comes (sons always do)
+  oldAge: 0.04,                    // past sixty a named man dies in his bed at oldAge x (age - 60) a winter
+  reachFree: 10, reachRise: 0.003, reachMax: 0.05 }; // past reachFree holdings each holding stirs (unrest +15..40) at reachRise x the excess a summer, at most reachMax
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -18,6 +28,7 @@ function stanceWord(v) { return STANCE.find(([lo]) => (v || 0) >= lo)[1]; }
 function moveStance(s, m, d, why) {
   if (!m || !d || m.isKing) return;
   m.stance = clamp((m.stance || 0) + d, -100, 100);
+  if (m.wroth != null && stanceWord(m.stance) !== 'hostile') m.wroth = null; // a king warmed out of hostility must stay hostile a full year again before his fleet sails
   if (m.moved && m.moved.y === s.year) m.moved.d += d; else m.moved = { y: s.year, d };
   const w = m.why = m.why || [], last = w[w.length - 1];
   if (last && last.t === why && Math.sign(last.d) === Math.sign(d)) { last.d += d; last.y = s.year; } // the same deed, year on year, is one line
@@ -58,12 +69,16 @@ function growRealms(s, lines, events = []) {
 function checkBreak(s, k) {
   if (!k || k.broken) return;
   const rest = k.coasts.filter(c => c !== k.anchor);
-  if (!rest.length || rest.some(c => !isHolding(s, c))) return;
+  if (!rest.length || rest.some(c => !isHolding(s, c))) { k.yoke = null; return; }
+  if (k.yoke == null) k.yoke = s.year; // the realm is held; he bends, and kneels only when it has stayed held (TODO 25)
+  if (s.year - k.yoke < T.breakYears) return;
   k.broken = true; k.stance = 40; k.why = [{ y: s.year, t: 'his realm is yours; he kneels', d: 0 }];
   const a = s.shores[k.anchor]; a.holdable = true;
   s.queue.push({ t:'summary', title: `${k.name} breaks`, lines: [`Every coast of his realm answers to you. ${k.name} kneels, and ${a.name} lies open to be held.`] });
   log(s, `${k.name} kneels. His realm is yours.`);
 }
+// the hall's benches: only so many named men can sit at the King's table without a holding of their own; a full hall draws no more (TODO 25)
+function benchRoom(s) { return s.notables.filter(m => !m.isKing && !s.holdings.some(h => h.id === m.place)).length < T.benches; }
 function fCap(s, m) { return (m.follow + (has(s,'ringgiver') ? 1 : 0)) * T.menPerF; }
 function strengthShip(s) { return s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.combat * m.men, 0); }
 function winOdds(S, D) { return clamp((S * 1.15 - D) / (S * 0.3), 0, 1); }
@@ -205,21 +220,31 @@ function chooseTarget(s, id) {
   let loot = 0;
   if (win) {
     loot = Math.round(sh.loot * clamp(0.5 + margin / 2, 0.3, 1) * (has(s,'seawolf') ? 1.25 : 1));
-    sh.loot = Math.round(sh.loot * 0.6); sh.def = Math.min(200, Math.round(sh.def * 1.2));
+    sh.loot = Math.round(sh.loot * 0.6); sh.def = Math.min(T.defCap, Math.round(sh.def * T.defWin)); // a coast arms against the raider who keeps coming (TODO 25)
     for (const m of ship) { m.raids++; if (m.raids % 3 === 0) m.combat = clamp(m.combat + 1, 1, 5); if (margin > 1) m.follow = clamp(m.follow + 1, 1, 5); moveStance(s, m, margin > 1 ? 10 : 5, `shared the loot of ${sh.name}`); }
     if (margin > 1) s.deeds.bigWins++;
-  } else { sh.def = Math.min(200, Math.round(sh.def * 1.1)); for (const m of ship) moveStance(s, m, -5, `bled at ${sh.name} for nothing`); log(s, `Driven back at ${sh.name}. ${losses} men lost.`); if (s.yr) s.yr.beaten = sh.name; }
+  } else { sh.def = Math.min(T.defCap, Math.round(sh.def * 1.1)); for (const m of ship) moveStance(s, m, -5, `bled at ${sh.name} for nothing`); log(s, `Driven back at ${sh.name}. ${losses} men lost.`); if (s.yr) s.yr.beaten = sh.name; }
   // distribute losses across the ship's men
   let left = losses; for (const m of ship) { const l = Math.min(m.men, Math.round(losses * m.men / Math.max(1, menAboard))); m.men -= l; left -= l; }
   if (left > 0) { const m = ship[0]; const l = Math.min(m.men, left); m.men -= l; }
   s.men -= losses; s.deeds.raids++;
   const owner = ownerOf(s, id); if (owner) moveStance(s, owner, -T.raidSour, `you raided ${sh.name}`);
+  // named men are not safe aboard: each may fall, the likelier the bloodier the day (TODO 25). The win odds stay the true odds of the fight
+  const fr = rng(s.day + ':fall:' + s.year + id), fallP = win ? Math.max(0, lossFrac - 0.2) * T.fallWin : lossFrac * T.fallLoss;
+  const fallen = fallP > 0 ? ship.filter(() => fr() < fallP) : [];
   const res = { t:'fight', shore: id, S: Math.round(S * roll), D, win, margin, loot, losses, odds: winOdds(S, D) };
   s.queue.shift(); // the arrive card
   s.queue.unshift(res);
-  const canStay = win && sh.holdable && (sh.walked || ship.some(m => !m.isKing));
+  const canStay = win && sh.holdable && (sh.walked || ship.some(m => !m.isKing && !fallen.includes(m)));
   if (canStay) s.queue.splice(1, 0, { t:'stay', shore: id, loot, walked: !!sh.walked });
   else if (win) { plunder(s, loot, id); }
+  if (fallen.length) {
+    const lines = fallen.map(m => m.isKing ? `${m.name} went down in the shield wall at ${sh.name}. The ship brings him home on his shield.` : `${m.name} went down at ${sh.name}. ${m.men ? `His ${m.men} men come home unled.` : ''}`.trim());
+    for (const m of fallen) if (!m.isKing) { s.notables = s.notables.filter(x => x !== m); log(s, `${m.name} fell at ${sh.name}.`); }
+    const king = fallen.find(m => m.isKing), at = canStay ? 2 : 1;
+    s.queue.splice(at, 0, { t:'summary', title: fallen.length > 1 ? `The fallen of ${sh.name}` : `${fallen[0].name} falls`, lines });
+    if (king) { log(s, `${king.name} fell at ${sh.name}.`); s.queue.splice(at + 1, 0, { t:'death' }); }
+  }
   save(s);
 }
 function plunder(s, loot, id) {
@@ -279,7 +304,12 @@ function resolveLand(s) {
       j.heldRun++; if (j.heldRun % 3 === 0) j.rule = clamp(j.rule + 1, 1, 5);
       s.deeds.heldYears++; moveStance(s, j, 3, `held ${h.name} and it paid`);
       lines.push(`${h.name} pays ${pay}. ${j.name} holds it.`); rows.push({ n: h.name, v: pay, why: `${j.name} holds it${dbl}` });
-      if (h.quiet > 0 && h.quiet % T.quietYears === 0) {
+      const n = s.holdings.length; // a long reach: past a few holdings, any one may stir, and next summer asks more of its jarl (TODO 25)
+      if (n > T.reachFree && r() < Math.min(T.reachMax, T.reachRise * (n - T.reachFree))) {
+        const up = 15 + r.int(0, 25); h.unrest = clamp(h.unrest + up, 0, 100);
+        events.push({ k:'empty', t:`${h.name} stirs.`, s:`unrest ${h.unrest} next summer · ${n} holdings is a long reach for one hall` });
+      }
+      if (h.quiet > 0 && h.quiet % T.quietYears === 0 && benchRoom(s)) {
         const sh = s.shores[h.id], nm = rng(s.day + h.id + s.year).pick(LOCAL_NAMES[sh.culture]);
         s.notables.push(makeMan(nm, 1 + r.int(0, 1), 3 + r.int(0, 2), 2 + r.int(0, 1), { age: 22 + r.int(0, 15) }));
         lines.push(`Five quiet years at ${h.name}. ${nm} comes to the hall.`); events.push({ k:'new', t:`${nm} comes to the hall.`, s:`five quiet years at ${h.name}` });
@@ -290,9 +320,30 @@ function resolveLand(s) {
       rows.push({ n: h.name, v: 0, why: 'lost' }); events.push({ k:'lost', t:`${h.name} rose against ${j.name}.`, s:`${lost ? `${lost} men dead` : 'no men dead'} · the holding is lost` });
     }
   }
+  // a hostile king does not wait for the winter deck: he comes for a holding that was his (TODO 25)
+  for (const k of Object.values(s.rulers)) {
+    if (!k.known || k.broken || stanceWord(k.stance) !== 'hostile') continue;
+    const near = s.holdings.filter(h => h.taken !== s.year && k.coasts.includes(h.id));
+    if (!near.length || r() >= T.strike) continue;
+    const h = r.pick(near), j = s.notables.find(m => m.place === h.id);
+    const D = Math.round((T.strikeBase + T.strikePer * k.coasts.filter(c => !isHolding(s, c)).length) * (0.85 + r() * 0.3));
+    const G = j ? Math.round(j.rule * j.men * (0.85 + r() * 0.3)) : 0;
+    if (G > D) { moveStance(s, j, 5, `held ${h.name} against ${k.name}`); lines.push(`${k.name} came for ${h.name}. ${j.name} held it (${G} vs ${D}).`); events.push({ k:'realm', t:`${k.name} came for ${h.name}.`, s:`${j.name} held it · ${G} vs ${D}` }); continue; }
+    const lost = j ? Math.round(j.men * 0.4) : 0; if (j) { j.men -= lost; s.men -= lost; j.heldRun = 0; moveStance(s, j, -10, `lost ${h.name} to ${k.name}`); }
+    loseHolding(s, h, j, `taken by ${k.name}`); if (!k.coasts.includes(h.id)) k.coasts.push(h.id);
+    moveStance(s, k, T.strikeSated, `took ${h.name} from you`);
+    lines.push(`${k.name} came for ${h.name} and took it (${G} vs ${D}).${lost ? ` ${lost} men dead.` : ''}`);
+    rows.push({ n: h.name, v: 0, why: `taken by ${k.name}` });
+    events.push({ k:'lost', t:`${k.name} took ${h.name}.`, s:`${j ? `${j.name} could not hold it · ${G} vs ${D}` : 'no one held it'}${lost ? ` · ${lost} men dead` : ''} · it is his now` });
+  }
+  // a held realm bends before it breaks: its king kneels only when every coast has stayed held (TODO 25)
+  for (const k of Object.values(s.rulers)) if (k.known && !k.broken) {
+    checkBreak(s, k);
+    if (!k.broken && k.yoke != null) { const left = T.breakYears - (s.year - k.yoke); events.push({ k:'realm', t:`${k.name} bends.`, s:`his realm is held · ${left} more summer${left > 1 ? 's' : ''} and he kneels` }); }
+  }
   s.deeds.jarlYears += s.notables.filter(m => !m.isKing && m.place !== 'home').length;
   // shores recover slowly
-  for (const sh of Object.values(s.shores)) { if (sh.loot < sh.baseLoot) sh.loot = Math.min(sh.baseLoot, Math.round(sh.loot * 1.1) + 1); if (sh.def > sh.baseDef) sh.def = Math.max(sh.baseDef, Math.round(sh.def * 0.95)); }
+  for (const sh of Object.values(s.shores)) { if (sh.loot < sh.baseLoot) sh.loot = Math.min(sh.baseLoot, Math.round(sh.loot * 1.1) + 1); if (sh.def > sh.baseDef) sh.def = Math.max(sh.baseDef, Math.round(sh.def * T.defMend)); }
   growRealms(s, lines, events);
   s.reign.bestHoldings = Math.max(s.reign.bestHoldings, s.holdings.length);
   // everyone home for winter; those who sailed board again in spring, and the destination stands (TODO 20)
@@ -330,7 +381,14 @@ function upkeep(s, events = []) {
   const due = Math.round(home * T.upkeep * (hard ? 2 : 1) * (deep ? 0.5 : 1));
   let cost = due; s.deeds.upkeep += cost;
   const lines = []; let starve = 0;
-  if (cost > s.silver) { starve = Math.min(home, Math.ceil((cost - s.silver) / 2)); cost = s.silver; s.men -= starve; trimMen(s); lines.push(`The hall could not feed everyone. ${starve} men left.`); events.unshift({ k:'starve', t:'The hall could not feed everyone.', s:`${starve} men left` }); }
+  if (cost > s.silver) {
+    starve = Math.min(home, cost - s.silver); cost = s.silver; s.men -= starve; trimMen(s); // every man the chest cannot feed walks
+    // a hungry hall is remembered (TODO 25): every jarl sours, and the sourest at home will not starve twice
+    for (const m of s.notables) if (!m.isKing) moveStance(s, m, m.place === 'home' ? -T.starveSour : -Math.round(T.starveSour / 2), 'the hall went hungry');
+    const gone = s.notables.filter(m => !m.isKing && !m.kin && m.place === 'home' && m.stance <= -20).sort((a, b) => a.stance - b.stance)[0];
+    lines.push(`The hall could not feed everyone. ${starve} men left.`); events.unshift({ k:'starve', t:'The hall could not feed everyone.', s:`${starve} men left · every jarl remembers it` });
+    if (gone) { s.notables = s.notables.filter(m => m !== gone); s.men -= gone.men; lines.push(`${gone.name} will not starve in this hall. He goes, and his ${gone.men} men with him.`); events.splice(1, 0, { k:'starve', t:`${gone.name} will not starve in this hall.`, s:`he goes, and his ${gone.men} men with him` }); }
+  }
   s.silver -= cost; lines.push(`${home} men at home ate ${cost} silver.`);
   if (hard) events.push({ k:'hard', t:'Hard winter.', s:'the ice came early · the hall ate double' });
   if (lines.length > 1) log(s, lines[0]);
@@ -348,13 +406,18 @@ function winterCard(s) {
     s.queue.push({ t:'ruler', ruler: ru.id, envoy: true }); return;
   }
   s.envoy = null;
-  const foes = Object.values(s.rulers).filter(x => x.known && !x.broken && stanceWord(x.stance) === 'hostile');
+  // the old die in their beds: past sixty a named man's winters are counted, as the King's are past fifty (TODO 25). Told on this winter's card
+  const dr = rng(s.day + ':age:' + s.year), aged = s.notables.filter(m => !m.isKing && m.age > 60 && dr() < T.oldAge * (m.age - 60));
+  if (aged.length) s.notables = s.notables.filter(m => !aged.includes(m));
+  // a king's fleet takes a year to gather: only a king hostile last winter too sails on the hall (TODO 25), so the hostile word on his card is the warning
+  for (const x of Object.values(s.rulers)) { const h = x.known && !x.broken && stanceWord(x.stance) === 'hostile'; if (!h) x.wroth = null; else if (x.wroth == null) x.wroth = s.year; }
+  const foes = Object.values(s.rulers).filter(x => x.wroth != null && x.wroth < s.year);
   const deck = [];
   const kids = s.children.length;
-  if (k.age < 55) deck.push(['birth', kids < 2 ? 6 : 3]);
+  if (k.age < 55) deck.push(['birth', kids < 2 ? 7 : 4]);
   if (s.notables.some(m => !m.isKing && m.age > 45)) deck.push(['jarlDeath', 2]);
-  deck.push(['wanderer', 2]); deck.push(['rival', 1 + 2 * foes.length]); deck.push(['hardWinter', 1]); deck.push(['harvest', s.holdings.length ? 2 : 0]);
-  deck.push(['seaman', 2]);
+  deck.push(['wanderer', 2]); deck.push(['rival', 1 + 2 * foes.length + Math.min(6, 2 * Math.floor(s.silver / T.richHall))]); deck.push(['hardWinter', 1]); deck.push(['harvest', s.holdings.length ? 2 : 0]); // a rich chest draws sails
+  if (benchRoom(s)) deck.push(['seaman', 2]);
   if (s.children.some(c => c.sex === 'f' && c.age >= 16 && !c.married) && s.notables.some(m => !m.isKing && !m.kin)) deck.push(['suitor', 3]);
   if (s.notables.filter(m => !m.isKing).length >= 2) deck.push(['feud', 1]);
   deck.push(['quiet', 1]);
@@ -377,7 +440,13 @@ function winterCard(s) {
     sc.title = foe ? `${foe.name}'s sail sighted` : 'A rival sail sighted';
     if (homeS * (0.85 + r() * 0.3) > D) sc.lines.push(`${whose} came up the fjord. The hall held (${Math.round(homeS)} vs ${D}).`);
     else { const lostS = Math.round(s.silver * 0.3), lostM = Math.round(s.men * 0.1); s.silver -= lostS; s.men -= lostM; trimMen(s);
-      sc.lines.push(`${whose} came up the fjord and the hall fell (${Math.round(homeS)} vs ${D}). ${lostS} silver and ${lostM} men gone.`); }
+      sc.lines.push(`${whose} came up the fjord and the hall fell (${Math.round(homeS)} vs ${D}). ${lostS} silver and ${lostM} men gone.`);
+      // a thin hall is a deadly one: someone dies in the door, by lot, the likelier the thinner the guard (TODO 25)
+      if (r() < T.hallSlay * clamp(1 - T.guardSave * homeS / D, 0, 1) * clamp(s.silver / T.richHall, foe ? 1 : 0, 2)) { // a king's fleet comes for blood; a strange one kills for a rich chest; a rich chest behind a thin guard is deadlier still
+        const v = r() < clamp(s.silver / T.richHall * T.richKing, 0, 0.75) ? k : r.pick(s.notables.filter(m => !s.holdings.some(h => h.id === m.place))); // they came for the King's silver: the richer the chest, the likelier it is him; else by lot
+        if (v && v.isKing) { s.kingSlain = true; sc.lines.push(`${k.name} died in the door of his hall.`); }
+        else if (v) { s.notables = s.notables.filter(m => m !== v); sc.lines.push(`${v.name} died in the door of the hall.${v.men ? ` His ${v.men} men are unled.` : ''}`); }
+      } }
     if (foe) sc.lines.push(`${foe.name} is hostile. This is what that costs.`);
   } else if (ev === 'hardWinter') { s.flags.hardWinter = true; sc.title = 'Hard winter'; sc.lines.push('The ice came early. Upkeep is doubled next winter.'); }
   else if (ev === 'harvest') { s.flags.harvest = true; sc.title = 'Good harvest'; sc.lines.push('The land is kind. Holdings pay double next summer.'); }
@@ -393,6 +462,7 @@ function winterCard(s) {
     b.follow = clamp(b.follow - 1, 1, 5); moveStance(s, b, -10, `shamed at the King's table by ${a.name}`); sc.title = 'A feud in the hall'; sc.lines.push(`${a.name} shamed ${b.name} at the table. Men drift from ${b.name}.`);
   } else { sc.title = 'A quiet winter'; sc.lines.push('Snow on the roof. Nothing stirs.'); }
   log(s, ev === 'quiet' ? 'A quiet winter.' : `${sc.title}. ${sc.lines[0]}`);
+  for (const m of aged) { const t = `${m.name} died in his bed, ${m.age} winters old.${m.men ? ` His ${m.men} men walk home unled.` : ''}`; sc.lines.push(t); log(s, t); }
   s.queue.push(sc);
 }
 function acceptSuitor(s, yes) { const sc = s.queue[0]; if (yes) marry(s, sc.choice.d, sc.choice.j); next(s); }
@@ -401,7 +471,7 @@ function acceptSuitor(s, yes) { const sc = s.queue[0]; if (yes) marry(s, sc.choi
 function endWinter(s) {
   const k = s.king, r = rng(s.day + ':death:' + s.year);
   const p = k.age > 50 ? 0.05 * (k.age - 50) * (has(s,'oldwise') ? 0.5 : 1) : 0;
-  if (p > 0 && r() < p) { s.queue.push({ t:'death' }); return; }
+  if (s.kingSlain || (p > 0 && r() < p)) { s.kingSlain = false; s.queue.push({ t:'death' }); return; }
   newYear(s);
 }
 function newYear(s) {
@@ -438,7 +508,7 @@ function startSuccession(s) {
   const sons = s.notables.filter(m => m.son);
   if (sons.length) s.queue.push({ t:'heir', sons: sons.map(m => m.id) });
   else {
-    const inlaw = s.notables.find(m => m.kin && !m.son);
+    const inlaw = s.notables.filter(m => m.kin && !m.son).sort((a, b) => a.age - b.age)[0]; // the youngest of the kin, who may yet raise sons
     if (inlaw) { s.queue.push({ t:'summary', title: 'No son', lines: [`${inlaw.name}, married into the line, takes the hall.`] }); crown(s, inlaw); }
     else s.queue.push({ t:'end', reason: 'noheir' });
   }
@@ -470,7 +540,7 @@ function oathPay(s, pay) {
   else walkAway(s, j, s.holdings.find(h => h.id === j.place)); // he walks with his holding
   next(s);
 }
-function finishCoronation(s) { newYear(s); next(s); }
+function finishCoronation(s) { if (s.phase === 'summer') next(s); else { newYear(s); next(s); } } // a King who fell at sea is crowned over in summer; the land and winter still come
 
 // ---- Scene queue ------------------------------------------------------------------------------
 function next(s) {

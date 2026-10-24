@@ -121,4 +121,29 @@ Five screens, one round each, in order of use: spring Map pane Â· Winter sheet Â
 
 ## 25. Playtests with personalities, before round 3 (Levi, 2026-10-23)
 Levi's first full run: never lost a battle, never short of men or silver, expanded every few years, and a king's anger never mattered because he could subjugate him at once. "It feels like I'm just optimizing an automatic win." **Plan:** scripted players, each a policy, driven headlessly through whole dynasties on several seeds (the kit in `tools/audit/gen-states.js` already drives one): the raider (richest seen coast every summer, plunder, never stays), the settler (stays wherever holdable, King home), the miser (never buys men), the reckless (sails blind, fights at any odds), the hall-sitter (King always home, jarls sail), the courtier (gifts and marriages, raids only sure fights), and Levi's own line as he describes it. For each: fights lost, years the chest could not feed the hall, men lost to starvation, holdings held per decade and lost, rulers turned hostile and how many winters until each was subjugated, deaths, titles, the year the line broke. Then the question is which levers make a bad plan lose: defender strength and recovery, upkeep, loot share, unrest, the realm clock, rulers' answers to raids (a rival sail, tribute demands), oath prices. Tune, re-run, and only then round 3.
+**Done 2026-10-24 (session 9):** the kit is `tools/playtest/`; bad plans now lose (raider breaks 16/16, reckless 13/16, levi loses 14% of fights and 16 holdings a line). Tuning and numbers in LOG session 9 and `tools/playtest/LEVERS.md`. Left over: items 26 to 30.
 
+---
+
+## 26. The bench cap is silent
+Wanderers and locals stop coming when 8 named men sit without holdings (`T.benches`). Nothing in the UI says the hall is full. Say so where the player would expect the man: the winter card and the quiet-years line.
+
+---
+
+## 27. A king's fleet is announced by nothing but the word
+A hostile king's fleet comes only after a full year hostile (`wroth`), but only the word "hostile" tells the player. Round 3, the winter event card, is the place to warn ("his fleet is gathering").
+
+---
+
+## 28. Overreach "stirs" may be noise
+Past ten holdings each stirs at a small chance, about one ledger event a year late game. Judge in play whether it reads as pressure or as clutter.
+
+---
+
+## 29. Check the new deaths on the real cards
+Named men falling in fights (the summary card) and the King slain in the hall door are checked headlessly only. Play both in the real UI and read the cards.
+
+---
+
+## 30. Does 0.5 odds read as a gamble?
+Settler-style fighting at 0.5 odds now loses about 30%. Confirm the commit sheet's odds temperature makes 0.5 read as a coin toss, not a fair fight.

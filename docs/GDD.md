@@ -25,7 +25,7 @@ The only resource that fights, holds, or counts. A single pool at home.
 - Men on the ship raid. Men on the land hold. Men at home eat.
 - Men are led only by Notable Men. Men beyond anyone's Followability sit unled: no use, still fed.
 - Men are bought with silver at the winter market. Nothing else creates them except sons coming of age.
-- Losses are the only drain. A bad summer hurts for years.
+- Losses are the only drain, and a chest that cannot feed the hall: each man short of silver walks. A bad summer hurts for years.
 
 **Why:** control, happiness, levies, garrison, overextension are all the same question — *where are your men this year?*
 
@@ -34,6 +34,8 @@ Named cards. The King is one; sons become them; the world supplies more. Three s
 - **Combat** — multiplies men on the ship.
 - **Rule** — multiplies men on the land.
 - **Followability** — how many men he can lead (F × 10).
+
+Named men are not safe aboard: each may fall in a lost fight or a bloody win, the King too. Past sixty they die in their beds.
 
 A Notable Man is placed on exactly one of: the ship, a holding, or home. His men go with him.
 Stats grow by doing: raiding feeds Combat, holding feeds Rule, a big win feeds Followability.
@@ -154,18 +156,28 @@ Revised 2026-10-23 after playtest 1. Earlier versions also ruled out map interac
 |---|---|
 | Starting men | 40 |
 | Followability → men led | F × 10 |
-| Shore defenders | 20–150 |
+| Shore defenders | 20–150; ×1.3 after a win (cap 1000), ×1.1 after a loss, ×0.965 a year back toward its own |
 | Holding unrest | 10–100, +10 per empty year, −5 per held year |
 | Price of a man | 3 silver |
-| Winter upkeep per man at home | 1 silver |
+| Winter upkeep per man at home | 1 silver; a man leaves for each silver short |
 | Rumor | 20 silver |
 | Mortality past 50 | 5% per year, +5% per year |
+| Named man falls aboard | lost fight loss share × 0.25; bloody win (loss share − 0.2) × 0.25 |
+| Old age past 60 | 4% × (age − 60) a winter |
 | Quiet years to raise a local | 5 |
 | Stance bands | devoted ≥60 · loyal ≥20 · cool · sour ≤−20 · hostile ≤−60 |
 | Stance moves | loot share +5 (rout +10), lost fight −5, held +3/yr, lost holding −10, given land +10, marriage +30, gift +15, feud −10, idle −3/yr, summer home with the King +5; new king halves all |
 | Gift of silver | 20 (a king 60), once a year |
 | Hostile jarl walks | 35% a summer |
 | Realm growth | one free coast per ruler every 30 ± 8 years |
+| Realm break | all coasts held for 3 summers |
+| Hostile king strikes | 30% a summer at a holding that was his; host 40 + 20 per free coast; he warms +20 if he wins |
+| King's fleet | only after a full year hostile |
+| Fallen hall | kills a named man at 0.5 × (1 − 3 × guard/fleet) × chest/300 (0–2; a strange fleet needs a chest); the King at chest/300, at most 0.75 |
+| Hungry winter | every jarl −10 (−5 at a holding); the sourest at home leaves |
+| Bench cap | 8 named men without a holding; then no wanderer or local comes |
+| Long reach | past 10 holdings, each stirs at 0.3% × excess a summer (max 5%) |
+| Births | weight 7 under two children, else 4 |
 | Raid / hold in a realm | −10 / −25 to its king |
 
 ## 14. Open questions
@@ -189,7 +201,7 @@ Vestfold is a holding row with the King as its jarl. King home: it pays its yiel
 ### 15.3 Named rulers and realms
 Five or six named rulers own the famous anchors: a king at York, the Frankish king behind Paris, the king of Dublin, a rival sea king in Hordaland, and so on. They do not take turns. Each has a stance (§15.1) and a realm: the coasts around his anchor, tinted on the map. Coasts between realms start unowned. Realms grow on a seeded clock: each ruler takes one adjacent unowned coast every few years, never a coast the player holds, so free land runs out over the centuries and the late game is all kings.
 
-Raiding in a realm sours its ruler; holding one of his coasts sours him more. Take every coast of a realm and he breaks: his anchor opens to be held, or he kneels and his stance pins to loyal. That is the region bonus, and the path to it is drawn on the map.
+Raiding in a realm sours its ruler; holding one of his coasts sours him more. Take every coast of a realm and hold them three summers and he breaks: his anchor opens to be held, or he kneels and his stance pins to loyal. That is the region bonus, and the path to it is drawn on the map.
 
 Rulers come out of the fog like coasts. Until one of his coasts is seen a ruler has no card and his realm is dark. See one and the realm tints and his card opens. When a realm grows to touch a coast the player knows, that winter's card is his envoy arriving. The Wanderer can sell a king's name the way he sells a rich coast.
 

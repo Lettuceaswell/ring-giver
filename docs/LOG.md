@@ -2,6 +2,47 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-24 (session 9, persona playtests: TODO 25)
+
+Levi's first full run was an automatic win, so the question was which levers make a bad plan lose. Built a headless kit, read what each personality got away with, tuned `game.js`, re-ran. Round 3 (the winter card) waits behind this.
+
+**The kit (`tools/playtest/`).** `run.js` plays whole dynasties, 793 to 1066, for scripted players; `personas.js` holds the policies; `LEVERS.md` is the inventory of every balance lever with line numbers, what exists, what changed, what was observed. Usage: `node tools/playtest/run.js [--seeds N] [--persona X] [--seed N] [--json f]`; `TRACE=1` with `--seed` prints each King's death and the ship every 20 years. About 25 s for the default run. Deterministic: `Math.random` is seeded and `Date` is faked inside a `vm`, so the same seeds give the same lines (md5 of the default run's output `95a07adb71b7c5a72cc71be49af22944`). Eight personas: **raider** (richest seen coast every summer, never stays), **rover** (richest coast at odds of 0.75 or better, never holds, guards the hall, gifts hostile kings), **settler** (stays wherever holdable), **miser** (never buys men), **reckless** (sails blind, fights at any odds), **hall-sitter** (King always home, jarls sail), **courtier** (gifts and marriages, only sure fights), **levi** (his own line as he described it).
+
+**Baseline finding (cfddfb7, 8 seeds).** 55 of 56 lines reached 1066. The reckless lost 50% of its fights and lived. The levi persona lost 0 of 273 fights, held all 33 coasts by about 850, and broke 5.4 realms a line, each king kneeling the summer his realm was held. Starving was cheaper than feeding (one man left per 2 silver short). Named men never died in fights; late lines carried 500 to 900 of them. A hostile ruler's only answer to a raid was a rival sail.
+
+**The changes (`T` at the top of `game.js`, each commented in place).**
+- `fallLoss` 0.25, `fallWin` 0.25: named men aboard can fall. In a lost fight each falls at lossFrac x fallLoss, in a bloody win at (lossFrac - 0.2) x fallWin. A fallen jarl leaves the roll and his men come home unled; a fallen King gets a summary card, then the death card, and `finishCoronation` now lets the summer and winter still run when he fell in summer.
+- `defWin` 1.3, `defCap` 1000, `defMend` 0.965 (were 1.2, 200, 0.95): a coast arms toward the raider who keeps coming, and mends more slowly.
+- `hallSlay` 0.5, `guardSave` 3, `richHall` 300, `richKing` 1: a fallen hall kills a named man, the likelier the thinner the guard and the richer the chest; the victim is the King at chest/richHall (at most 0.75), else by lot. A rich chest also draws more rival sails (+2 per 300 silver, at most +6).
+- `starveSour` 10 and starving at 1 man per silver short (was per 2): every jarl sours, and the sourest unkin jarl at home leaves with his men.
+- `breakYears` 3: a realm held whole must stay held three summers before its king kneels ("bends" on the winter sheet counts them down).
+- `strike` 0.3, `strikeBase` 40, `strikePer` 20, `strikeSated` 20: a hostile king comes for a holding that was his each summer; host against the jarl's Rule x men; lost, he takes it back and warms.
+- `benches` 8: no wanderer or local comes while 8 named men sit without a holding (sons always do).
+- `oldAge` 0.04: past sixty a named man dies in his bed at oldAge x (age - 60) a winter.
+- `reachFree` 10, `reachRise` 0.003, `reachMax` 0.05: past ten holdings each may stir (unrest +15..40) a summer ahead.
+- A king's fleet sails only after he has been hostile a full year (`wroth`), so the hostile word is a year's warning. Births weigh 7 / 4 (were 6 / 3). With no son the youngest kin inherits. `finishCoronation` in summer, above.
+
+**Before and after (16 seeds).** Columns: lines broken of 16, fights lost %, starving years, holdings peak, holdings lost.
+
+| persona | broke/16 | lost % | starve yrs | hold peak | holdings lost |
+|---|---|---|---|---|---|
+| raider | 0 -> 16 | 19 -> 22 | 10 -> 2.2 | 0 -> 0 | 0 -> 0 |
+| rover | 3 -> 4 | 1.7 -> 2.7 | 11 -> 7.8 | 0 -> 0 | 0 -> 0 |
+| settler | 0 -> 0 | 0.2 -> 30 | 38 -> 18 | 33 -> 33 | 1.4 -> 4.6 |
+| miser | 2 -> 9 | 1.8 -> 3.6 | 0 -> 0 | 1.5 -> 1.0 | 1.0 -> 1.0 |
+| reckless | 0 -> 13 | 45 -> 53 | 18 -> 2.9 | 18 -> 6.5 | 2.4 -> 3.1 |
+| hall-sitter | 0 -> 0 | 0.1 -> 12 | 42 -> 12 | 28 -> 31 | 0.6 -> 12 |
+| courtier | 0 -> 2 | 0 -> 0 | 47 -> 19 | 27 -> 27 | 0.7 -> 8.9 |
+| levi | 0 -> 0 | 0 -> 14 | 50 -> 21 | 33 -> 33 | 1.1 -> 16 |
+
+Also: the levi persona now holds about 27 coasts in 843-852 (was 33), and a hostile king takes about 7 years to kneel (was at once).
+
+**Verified:** smoke OK; determinism md5 above on the default run; all 21 saves in `tools/audit/states` load and advance two years; a forced King-falls-at-sea run reaches the next spring. `sw.js` cache bumped to v5.
+
+**Residual risks.** The rover and the miser sit at their limits, plus or minus 2 seeds. The settler loses 30% of its fights at its 0.5-odds threshold. The levi persona's fights-lost % is sensitive to `defWin`. All of it is headless; none has been played by a hand.
+
+**Next:** round 3 of the screen audit, the winter event card. And Levi should play a dynasty to feel it (TODO 26 to 30 log what to look for).
+
 ## 2026-10-23 (session 8, screen audit 2: the Winter sheet)
 
 Round 2 of the five-screen audit. Audit page with the critique and three live mock-ups: https://claude.ai/artifact/DSHVXj6S2YXbbcTWg4fDri . Levi: "build your pick", so **A, The Ledger** is built (below).
