@@ -4,7 +4,7 @@ Newest first. Read this before touching anything.
 
 ## 2026-10-24 (session 10, screen audit 3: the winter card)
 
-Round 3 of the five-screen audit. Audit page with the critique and three live mock-ups: https://claude.ai/artifact/HCnFYiyjm25E4SSc3oozDd . Waiting on Levi's pick; mine is **A, The Turn**.
+Round 3 of the five-screen audit. Audit page with the critique and three live mock-ups: https://claude.ai/artifact/HCnFYiyjm25E4SSc3oozDd . Levi chose my pick, **A, The Turn**, and it is built (commit 7b9957d, below). Commits: 80c82a3 (audit page and kit), 7b9957d (the build), and the bookkeeping commit after it.
 
 **How the states were found.** The card is random, so instead of a driven dynasty the persona playtests supply the states: `run.js` with `CARDS=<dir>` dumps the first save of each kind of card (birth son/daughter, wanderer, hard winter, harvest, man from the sea, feud, jarl death, suitor, quiet, the envoy, and the rival sail split by king or stranger, held or fell, a man or the King slain), each with `-aged` when old men also died in bed and `-late` past 880, plus `gathering` (a king turned wroth that winter) and `agedeath` (the King's old-age roll took him after the card). The hook only runs with `CARDS` set; the default run's md5 is unchanged (`95a07adb…`). `tools/audit/card-states.js` trims a save to what the mocks need and runs the card's button on a copy to learn what follows (spring, the fork, the old-age death, the King slain) and who takes the hall. Frequencies over 8 dynasties of the levi persona: birth 20.6%, sail 17.5% (the hall falls in about 6 of 48 a dynasty), Wanderer 11.8%, harvest 11.5%, jarl death 11.3%, suitor 10.1%, feud 6.1%, quiet 5.5%, hard winter 4.1%, man from the sea 1.6%.
 

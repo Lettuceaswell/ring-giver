@@ -72,6 +72,8 @@ One screen. Three phases. The year advances only on Sail.
 
 **Winter — one card.** The market (silver → men). Then a single seeded event: a birth, a death, a fork, a rival sail sighted, a wanderer's arrival. Then the mortality roll if the King is past fifty.
 
+**The card itself (screen audit 3, built 2026-10-24).** The event is a card that lies face down on the winter night and turns; its kind sets its tone (grave oxblood, good pine, warning chestnut, routine iron). Its effects carry their numbers, other news of the winter sits under it as short rows, and it warns of what is coming: a king's fleet gathering (it sails a year later if he stays hostile) and benches full (no new man comes). Past fifty the mortality roll is turned on the card as the King's own card, from the same seed, so the odds and the fate are unchanged; only the moment is shown. The death card names how he died and who takes the hall, or that the line is broken. No two living men or children of a hall share a name.
+
 ## 5. One resolution rule
 
 Every contest in the game is **Strength vs Strength**, shown as a bar before the player commits.
