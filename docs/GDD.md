@@ -97,7 +97,7 @@ The year's spine. Information arrives one beat at a time.
 
 **The King's risk.** Every named man aboard may fall; the chance is the same for each and is shown where the choice is made (the spring commit sheet, Landfall) and on the battle. Board all leaves home a man with no one to lead.
 
-**The return.** Where a coast is chosen (the picker, the destination line, Landfall) each seen coast shows its **net**: the loot the raid should bring less the men it should cost at the market price, averaged over every day the rolls could bring, and what the raid does to the coast's king. The picker sorts by it. The defenders stay on the bar; the net is the question.
+**The return.** Where a coast is chosen (the picker, Landfall) each seen coast shows its **profit**: the loot the raid should bring less the men it should cost at the market price, averaged over every day the rolls could bring. The list runs most profit first; under a coast, only its catch (the King may fall, the fight may be lost, its king turns colder, it cannot be held). The chosen coast's full account (loot, men lost, its king, its rent) is on the commit sheet with the odds.
 
 Fog and discovery:
 - The whole map starts dark. Fog lifts by arriving, or for free around a holding.

@@ -128,11 +128,11 @@ function fightRisk(S, D, iron) {
 }
 const shipRisk = (s, D) => fightRisk(strengthShip(s), D, has(s, 'ironside'));
 // what a raid on a seen coast should bring with the ship as it stands, averaged over every day the rolls could bring: the loot, the men lost and what they
-// cost at the market, the net, and what it does to the coast's king (Levi, session 14: the return, not the defenders, is the question)
+// cost at the market, the profit, and what it does to the coast's king (Levi, session 14: the return, not the defenders, is the question)
 function raidValue(s, id) {
   const sh = s.shores[id], aboard = s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.men, 0), r = shipRisk(s, sh.def);
   const loot = Math.round(r.loot * sh.loot * (has(s,'seawolf') ? 1.25 : 1)), men = Math.round(r.loss * aboard), k = ownerOf(s, id);
-  return { win: r.win, fall: r.fall, loot, men, cost: men * T.manPrice, net: loot - men * T.manPrice,
+  return { win: r.win, fall: r.fall, loot, men, cost: men * T.manPrice, profit: loot - men * T.manPrice,
     king: k && k.known ? { name: k.name, st0: stanceWord(k.stance), st1: stanceWord((k.stance || 0) - T.raidSour) } : null };
 }
 // the odds in words: how likely, and how dear. A sure fight can still be a bloody one.
