@@ -1,0 +1,482 @@
+<title>Winter Sheet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a reading column for the audit, then three phones side by side on a dark bench. Single theme by choice: the game's own Forge palette (House Hansen), so the mock-ups sit in their real colors. */
+:root{
+  --bg:#2B2E33; --surface:#353A40; --raised:#3D434A; --rule:#4A4F55; --deep:#24272C;
+  --text:#E8DFCC; --muted:#C9A58E; --iron:#8A9096;
+  --primary:#5A95A6; --on-primary:#2B2E33; --fjord:#214C58; --sea:#1B3C46; --sea-dark:#152E36;
+  --accent:#C9A58E; --chestnut:#A47159; --pine:#8FA793; --oxblood:#B07A7C;
+  --display:"Fraunces","Iowan Old Style",Georgia,serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:2px; --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 80px}
+.col{max-width:720px}
+h1,h2,h3,h4{font-weight:400;margin:0;text-wrap:balance}
+.eyebrow{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:28px;height:1.5px;background:var(--accent)}
+h1{font:400 44px/1.05 var(--display);margin:14px 0 12px}
+h2{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:48px 0 14px;padding-top:14px;border-top:1px solid var(--rule)}
+h3{font:400 24px/1.2 var(--display)}
+p{margin:8px 0}
+.lede{font-size:18px;color:var(--text);max-width:62ch}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+b{font-weight:600}
+a{color:var(--primary)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th{text-align:left;font:500 10.5px/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:6px 10px 6px 0;border-bottom:1px solid var(--rule)}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td:first-child{font-family:var(--display);font-size:16px;white-space:nowrap}
+.tbl{overflow-x:auto}
+.tag{display:inline-block;font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:var(--r);padding:3px 5px;margin:0 3px 3px 0;white-space:nowrap;vertical-align:1px}
+.five{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:16px 0 0}
+.five div{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;font-size:13.5px;line-height:1.4}
+.five .k{font-family:var(--display);font-size:17px;display:block;color:var(--text)}
+.five .n{font-family:var(--mono);color:var(--muted);font-size:12px;display:block;margin-top:4px}
+.five .here{border-color:var(--primary)}
+.five .done{opacity:.6}
+/* the original, with callouts */
+.now{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:24px;align-items:start;margin-top:14px}
+@media (max-width:760px){.now{grid-template-columns:1fr}}
+.now img{width:100%;border:1px solid var(--rule);border-radius:var(--r);display:block}
+.shots{display:grid;gap:12px}
+.shots figcaption{font:400 12px/1.4 var(--mono);color:var(--muted);margin-top:6px}
+.calls{counter-reset:c;display:grid;gap:10px;align-content:start}
+.calls div{display:grid;grid-template-columns:26px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
+.calls div::before{counter-increment:c;content:counter(c);width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--bg);font:600 12px/22px var(--mono);text-align:center}
+.calls i{font-style:normal;color:var(--muted);font-family:var(--mono);font-size:12px}
+/* verdict and fixes */
+.verdict{font-family:var(--display);font-size:21px;line-height:1.4;color:var(--text);max-width:60ch}
+.fixes{display:grid;gap:12px;margin-top:14px}
+.fix{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 16px}
+.fix h4{font:400 20px/1.25 var(--display);color:var(--text);margin-bottom:6px}
+.fix p{font-size:14.5px;margin:4px 0}
+.fix .m{margin-top:8px}
+ul{padding-left:18px;margin:8px 0}li{margin:4px 0;font-size:15px}
+/* the bench */
+.bench{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:18px;align-items:start}
+@media (max-width:980px){.bench{grid-template-columns:1fr;max-width:460px}}
+.opt{display:grid;gap:10px}
+.opt header{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.opt .letter{font:400 13px/1 var(--mono);color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+.opt .pick{font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--pine);border:1px solid var(--pine);border-radius:var(--r);padding:4px 6px}
+.ctrl{display:flex;gap:6px;flex-wrap:wrap}
+.ctrl button{font:500 12px/1 var(--body);background:var(--raised);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:8px 10px;cursor:pointer;letter-spacing:.04em}
+.ctrl button.on{border-color:var(--primary);color:var(--primary)}
+.ctrl button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.frame{width:100%;position:relative;background:var(--deep);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.ph{width:390px;height:844px;transform-origin:top left;position:absolute;left:0;top:0;background:var(--bg);color:var(--text);font:400 16px/1.5 var(--body);overflow:hidden;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none}
+.notes{font-size:14px;color:var(--text)}
+.notes p{margin:6px 0}
+.notes .t{font-family:var(--display);font-size:19px;color:var(--accent);margin-bottom:4px}
+.notes ul{padding-left:16px}.notes li{font-size:13.5px;margin:3px 0}
+.notes .risk{color:var(--muted);font-size:13px;border-top:1px solid var(--rule);padding-top:8px;margin-top:8px}
+
+/* ===== inside the phones: shared ===== */
+.ph *{-webkit-tap-highlight-color:transparent}
+.ph button{font:500 15px/1.2 var(--body);background:var(--raised);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:9px 12px;cursor:pointer}
+.ph button:disabled{opacity:.35}
+.ph .ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+/* the map behind, dimmed by the sheet */
+.ph .mapwrap{position:absolute;inset:0;background:var(--sea-dark)}
+.ph svg.map{display:block;width:100%;height:100%}
+.ph .land{fill:#2E3238;stroke:rgba(232,223,204,.12);stroke-width:.7;fill-rule:evenodd;vector-effect:non-scaling-stroke}
+/* the band */
+.ph .band{position:relative;z-index:3;flex:none;background:rgba(33,76,88,.84);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:12px 14px 10px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;box-shadow:0 1px 0 var(--rule),0 10px 18px -10px rgba(0,0,0,.6)}
+.ph .year{font:400 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.ph .year::after{content:" ▸";font-size:13px;color:var(--muted);vertical-align:3px}
+.ph .res{text-align:right;font:500 13px/1.5 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;align-self:end}
+.ph .res b{font-weight:500}
+.ph .king{grid-column:1/-1;font-size:13px;opacity:.9;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px}
+.ph .king .tag{margin:0;border-color:rgba(232,223,204,.5);color:var(--text)}
+.ph .king .fork{color:var(--muted)}
+/* the sheet */
+.ph .overlay{position:absolute;inset:0;z-index:10;background:rgba(43,46,51,.55);display:flex;flex-direction:column;justify-content:flex-end}
+.ph .scene{position:relative;background:var(--surface);border-top:1px solid var(--rule);border-radius:var(--r) var(--r) 0 0;padding:0 16px 0;max-height:88%;overflow:auto;display:flex;flex-direction:column;animation:rise .32s var(--ease)}
+@keyframes rise{from{transform:translateY(24px);opacity:0}}
+.ph .scene h1{font:400 26px/1.15 var(--display);color:var(--accent);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:2;background:var(--surface);margin:0 -16px 10px;padding:18px 16px 8px}
+.ph .scene h1 svg{width:22px;height:22px;color:var(--accent)}
+.ph .scene h1 small{margin-left:auto;font:400 12px/1.2 var(--mono);color:var(--muted);letter-spacing:.04em}
+.ph .scene h2{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.ph .scene p{margin:6px 0}
+.ph .exit{position:sticky;bottom:0;z-index:2;background:linear-gradient(to top,var(--surface) 70%,rgba(53,58,64,0));margin:auto -16px 0;padding:14px 16px 20px}
+.ph .exit button{width:100%;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--primary);color:var(--on-primary);border-color:var(--primary);font:500 19px/1.1 var(--display)}
+.ph .exit button small{font:500 11px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.ph .cap{position:absolute;left:0;right:0;bottom:130px;z-index:20;text-align:center;font:400 12.5px/1.4 var(--mono);color:var(--text);pointer-events:none;opacity:0;transition:opacity .3s}
+.ph .cap.show{opacity:1}
+.ph .cap span{background:rgba(43,46,51,.9);padding:6px 10px;border-radius:var(--r);border:1px solid var(--rule)}
+/* rows that arrive one after another, numbers that count */
+.ph .in{animation:linein .45s var(--ease) both}
+@keyframes linein{from{opacity:0;transform:translateY(5px)}}
+.ph .delta{display:inline-block;margin-left:6px;font-weight:500}
+/* events, weighted by kind */
+.ph .ev{display:grid;grid-template-columns:3px 1fr;gap:0 10px;margin:6px 0;padding:2px 0}
+.ph .ev i{display:block;border-radius:1px;background:var(--rule)}
+.ph .ev .t{font:400 16px/1.3 var(--body);color:var(--text)}
+.ph .ev .s{font:400 12.5px/1.4 var(--mono);color:var(--muted)}
+.ph .ev.lost i,.ph .ev.starve i{background:var(--oxblood)}
+.ph .ev.lost .t,.ph .ev.starve .t{font:400 19px/1.2 var(--display);color:var(--oxblood)}
+.ph .ev.new i,.ph .ev.rule i{background:var(--pine)}
+.ph .ev.new .t,.ph .ev.rule .t{color:var(--pine)}
+.ph .ev.hard i{background:var(--chestnut)}.ph .ev.hard .t{color:var(--chestnut)}
+.ph .ev.realm i{background:var(--iron)}.ph .ev.realm .t{color:var(--muted);font-size:15px}
+.ph .quiet{color:var(--muted);font-style:italic;font-size:14.5px}
+/* the market, shared */
+.ph .step{display:flex;align-items:center;justify-content:center;gap:12px;margin:10px 0 8px}
+.ph .step button{width:44px;height:44px;font-size:22px;line-height:1;padding:0}
+.ph .step .n{font:500 26px/1 var(--display);min-width:110px;text-align:center;font-variant-numeric:tabular-nums}
+.ph .step .n small{display:block;font:400 11px/1.6 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.ph .price{font:400 13px/1.4 var(--mono);color:var(--muted);display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ph .price s{color:var(--iron)}
+.ph .price b{color:var(--accent);font-weight:500}
+.ph .teach{font:400 13px/1.45 var(--body);color:var(--muted);border-top:1px solid var(--rule);padding-top:8px;margin-top:10px}
+.ph .buy{width:100%;padding:11px 12px;font:500 16px/1.2 var(--body);background:var(--raised);color:var(--primary);border-color:var(--primary)}
+.ph .buy:disabled{color:var(--muted);border-color:var(--rule)}
+.ph .nomarket{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font:400 14px/1.4 var(--body);color:var(--muted);border:1px dashed var(--rule);border-radius:var(--r);padding:10px 12px;margin-top:4px}
+.ph .nomarket b{font:400 13px/1 var(--mono);color:var(--text)}
+.ph .bought{font:400 13px/1.4 var(--mono);color:var(--pine);margin-top:8px}
+
+/* ===== Option A: the ledger ===== */
+.A .ledger{font:400 14px/1.5 var(--mono);font-variant-numeric:tabular-nums;display:grid;grid-template-columns:1fr auto;gap:2px 14px;background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;margin-top:4px}
+.A .ledger .k{color:var(--text)}
+.A .ledger .k small{display:block;font-size:11.5px;color:var(--muted)}
+.A .ledger .v{text-align:right;color:var(--text);align-self:start}
+.A .ledger .v.up{color:var(--pine)}.A .ledger .v.down{color:var(--oxblood)}.A .ledger .v.nil{color:var(--iron)}
+.A .ledger .tot{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--rule);margin-top:6px;padding-top:8px}
+.A .ledger .tot .k{font:500 11px/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.A .ledger .tot .v{font:400 28px/1 var(--display);color:var(--accent)}
+.A .ledger .tot .v .delta{font:400 13px/1 var(--mono)}
+.A .market{background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;margin-top:4px}
+.A .cons{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font:400 13px/1.5 var(--mono);color:var(--muted);margin:6px 0 10px}
+.A .cons b{color:var(--text);font-weight:500}
+.A .cons .w{grid-column:1/-1;color:var(--chestnut);font-size:12px}
+.A .room{grid-column:1/-1;height:4px;background:var(--rule);border-radius:2px;overflow:hidden;display:flex;margin-top:4px}
+.A .room i{display:block;height:100%}
+.A .room .led{background:var(--primary)}.A .room .add{background:var(--pine);transition:width .25s var(--ease)}
+
+/* ===== Option B: the chest ===== */
+.B .chest{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-top:2px}
+.B .chest .big{font:400 60px/1 var(--display);color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.B .chest .big small{display:block;font:500 11px/1.6 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.B .chest .from{text-align:right;font:400 12.5px/1.5 var(--mono);color:var(--muted)}
+.B .chest .from b{color:var(--text);font-weight:500}
+.B .flow{margin-top:12px}
+.B .track{position:relative;height:18px;background:var(--rule);border-radius:var(--r);overflow:hidden;display:flex}
+.B .track i{display:block;height:100%;transform-origin:left;animation:grow .55s var(--ease) both}
+.B .track .keep{background:var(--iron)}.B .track .loot{background:var(--primary)}.B .track .rent{background:var(--pine)}
+.B .track .ate{position:absolute;top:0;bottom:0;right:0;background:var(--oxblood);transform-origin:right;background-image:repeating-linear-gradient(135deg,rgba(43,46,51,.35) 0 3px,transparent 3px 7px)}
+.B .track .buyseg{position:absolute;top:0;bottom:0;background:var(--chestnut);transform-origin:right;transition:width .25s var(--ease),right .25s var(--ease)}
+@keyframes grow{from{transform:scaleX(0)}}
+.B .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font:400 12px/1.5 var(--mono);color:var(--muted);margin-top:6px;font-variant-numeric:tabular-nums}
+.B .legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:1px;margin-right:6px;vertical-align:0;background:var(--iron)}
+.B .legend .loot::before{background:var(--primary)}.B .legend .rent::before{background:var(--pine)}.B .legend .ate::before{background:var(--oxblood)}.B .legend .buying::before{background:var(--chestnut)}
+.B .market{margin-top:4px}
+.B .cons{font:400 13px/1.5 var(--mono);color:var(--muted);text-align:center;margin:0 0 10px}
+.B .cons b{color:var(--text);font-weight:500}
+.B .cons .w{display:block;color:var(--chestnut);font-size:12px}
+
+/* ===== Option C: the muster ===== */
+.C .acct{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:2px}
+.C .acct div{background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:8px 8px 6px;font:400 11px/1.4 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);min-width:0}
+.C .acct b{display:block;font:400 20px/1.1 var(--display);color:var(--text);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums;margin-top:2px}
+.C .acct .up b{color:var(--pine)}.C .acct .down b{color:var(--oxblood)}.C .acct .sum{border-color:var(--accent)}.C .acct .sum b{color:var(--accent)}
+.C .acct .nil b{color:var(--iron)}
+.C .man{display:grid;grid-template-columns:1fr auto;gap:0 10px;margin:8px 0}
+.C .man .nm{font:400 16px/1.3 var(--display)}
+.C .man .nm .tag{margin-left:6px;font:500 9.5px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--rule);border-radius:var(--r);padding:2px 4px;color:var(--muted);vertical-align:2px}
+.C .man .nm .tag.away{color:var(--primary);border-color:var(--primary)}
+.C .man .cnt{font:400 12.5px/1.4 var(--mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;align-self:end}
+.C .man .cnt b{color:var(--text);font-weight:500}.C .man .cnt .add{color:var(--pine)}
+.C .man .bar{grid-column:1/-1;height:8px;background:var(--rule);border-radius:2px;overflow:hidden;display:flex;margin-top:4px}
+.C .man .bar i{display:block;height:100%}
+.C .man .bar .led{background:var(--primary)}.C .man .bar .add{background:var(--pine);transition:width .25s var(--ease)}
+.C .man .bar .flash{animation:settle .9s var(--ease) both}
+@keyframes settle{from{background:var(--pine)}to{background:var(--primary)}}
+.C .more{font:400 12.5px/1.4 var(--mono);color:var(--muted);margin:4px 0 0}
+.C .market{margin-top:6px}
+.C .cons{font:400 13px/1.5 var(--mono);color:var(--muted);text-align:center;margin:0 0 10px}
+.C .cons b{color:var(--text);font-weight:500}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+<div class="col">
+<div class="eyebrow">Ring Giver · screen audit · 2 of 5</div>
+<h1>The Winter sheet</h1>
+<p class="lede">The second most-seen screen: it rises every autumn, about 270 times in a full dynasty, and it is the only place the year's money is accounted for. Below is what it does to the player now, read against the dopamine mechanisms, then three live alternatives to tap through. Each is better than the original; they differ in what they make the hero.</p>
+
+<div class="five">
+  <div class="done"><span class="k">1 · Spring Map</span>every year, the home screen<span class="n">done · A, The Chart</span></div>
+  <div class="here"><span class="k">2 · Winter sheet</span>every year: land, upkeep, market<span class="n">this page</span></div>
+  <div><span class="k">3 · Winter card</span>every year: one event<span class="n">next</span></div>
+  <div><span class="k">4 · Fight</span>most years, after Sail<span class="n">then</span></div>
+  <div><span class="k">5 · Hall pane</span>most springs: men, holdings, children<span class="n">then</span></div>
+</div>
+
+<h2>What it is now</h2>
+<div class="now">
+  <div class="shots">
+    <figure style="margin:0"><img alt="The Winter sheet in 835: four land lines, the hall eats, the market" src="data:image/png;base64,%%SHOT835%%"><figcaption>835 · a holding lost, a holding won, a realm grows</figcaption></figure>
+    <figure style="margin:0"><img alt="The Winter sheet in 850 with 9 silver: a dead market" src="data:image/png;base64,%%SHOT850%%"><figcaption>850 · 9 silver · nothing to buy</figcaption></figure>
+  </div>
+  <div class="calls">
+    <div><span><b>The money happened offstage.</b> The band says 261 silver. The sheet says Vestfold paid nothing and 47 men ate 47. Nowhere does the chest go from last spring's number to this one: the loot that came home in summer, the rents that came in, the bill that went out. The only place a year's income could be felt is the one screen that never adds it up. <i>visible progress · anticipation</i></span></div>
+    <div><span><b>Every line weighs the same.</b> "Truso rose against Eirik. 3 men dead. The holding is lost." is set exactly like "The King was at sea. Vestfold paid nothing." A lost holding, a new one, a king's realm growing and a routine zero are four sentences in one voice. In 802 the worst thing winter can do, "The hall could not feed everyone. 6 men left.", is a body-text line between two others. <i>proportion · prediction error</i></span></div>
+    <div><span><b>The same sentence, 273 times.</b> "The King was at sea. Vestfold paid nothing." appears every year the King sails. "A man costs 3 silver and eats 1 each winter at home." appears every winter of the dynasty, taught again to a player who learned it in 793. <i>pruning · design law 1</i></span></div>
+    <div><span><b>The titles pay off in silence.</b> Deep-chest halves the bill: "47 men at home ate 24 silver." Hard winter doubles it: "27 men ate 54." Fair-dealer drops the price to 2. Each is a reward the player earned, landing without a word about why. <i>earned, not given</i></span></div>
+    <div><span><b>A dead market fills the screen.</b> With 9 silver the stepper reads 0 men, the sum reads 9 − 0 → 9, and the primary button is a greyed-out "Not enough silver for five men". Three-fifths of the sheet is a shop that cannot sell, with the exit beneath it as the quiet button. <i>pacing · pruning</i></span></div>
+    <div><span><b>Buying has no consequence on screen.</b> The sum shows silver down and men up. It does not say what ten more men do: how much stronger the ship sails next summer, or who will lead them. The one warning it gives is the negative one, "would sit unled". <i>agency · competence</i></span></div>
+    <div><span><b>The exit is the second button.</b> Most winters the player buys nothing, and the action they came to take, moving on, is the grey button under a teal one. After a buy, the sheet re-renders and they still have to find it. The sheet is called Winter, and winter's one card comes after it closes. <i>pacing · the open loop</i></span></div>
+  </div>
+</div>
+
+<h2>Verdict</h2>
+<p class="verdict">The Winter sheet is a receipt with a shop stapled to it. It is honest and it is complete, and it treats the best and worst things that can happen in a year as the same kind of sentence. The year's income, the one number a raiding king lives for, is never shown arriving. The market asks a question without saying what the answer buys. And the way out is the quiet button.</p>
+
+<h2>Top three fixes</h2>
+<div class="fixes">
+  <div class="fix"><h4>1. Account for the year, and let the chest count</h4>
+    <p>Open the sheet on a ledger: the chest in spring, loot in from the summer's raid, rent in from each holding, the hall's bill out, and the chest now. Rows arrive one after another, about 120 ms apart, and the total counts from last spring's number to this one over 650 ms, up in pine or down in oxblood. Routine zeros become quiet rows ("Vestfold · the King was at sea · 0"), so the sentence that repeated 273 times is gone and the number it hid is visible.</p>
+    <p class="m"><span class="tag">visible progress</span><span class="tag">anticipation</span><span class="tag">pruning</span> <span class="mono muted" style="font-size:12px">numbers · motion · nothing new in state: loot, rents and upkeep are already computed</span></p></div>
+  <div class="fix"><h4>2. Weigh the lines by what they cost</h4>
+    <p>A lost holding or a starving hall is set in the display face in oxblood with a stripe; a new holding in pine; a realm's growth as a muted note. Routine lines leave the list entirely. A title's payoff shows where it lands: "47 men ate <s>47</s> 24 · Deep-chest", "27 men ate <s>27</s> 54 · hard winter", "<s>3</s> 2 a man · Fair-dealer". Most years the list is short or empty, so the year something happens, it lands.</p>
+    <p class="m"><span class="tag">proportion</span><span class="tag">prediction error</span><span class="tag">earned, not given</span> <span class="mono muted" style="font-size:12px">visual · color · language</span></p></div>
+  <div class="fix"><h4>3. Make the market a decision, and the exit the hero</h4>
+    <p>The stepper stays. Under it, what the men buy: "+40 ship strength under Ragnar" from the real combat number, and a room bar showing how many more the named men can lead. The lesson about price and upkeep shows in 793 and never again. When silver cannot buy five men, the market collapses to one dashed line and the sheet is short. One primary at the bottom, always on screen: "Into winter · one card turns". Buy is a quiet button inside the market card.</p>
+    <p class="m"><span class="tag">agency</span><span class="tag">pacing</span><span class="tag">the open loop</span> <span class="mono muted" style="font-size:12px">information · layout · the primary names what comes next</span></p></div>
+</div>
+
+<h2>Moment by moment</h2>
+<div class="tbl"><table>
+<tr><th>Moment</th><th>Now</th><th>At stake</th><th>Fix</th></tr>
+<tr><td>The sheet rises</td><td>A title, three grey headings, a wall of body text. The band above already shows the final numbers.</td><td>anticipation, visible progress</td><td>The ledger (fix 1): rows in sequence, the chest counts. The band's silver counts with it.</td></tr>
+<tr><td>Reading the land</td><td>Every holding gets a sentence; routine and catastrophe look alike.</td><td>proportion, prediction error</td><td>Rents into the ledger; only events remain, weighted by kind (fix 2). A quiet year says so in one italic line.</td></tr>
+<tr><td>The hall eats</td><td>"47 men at home ate 24 silver." Halved by Deep-chest, unsaid.</td><td>earned, not given</td><td>The old figure struck through and the title named beside it.</td></tr>
+<tr><td>Starvation</td><td>A body-text line.</td><td>proportion</td><td>Oxblood display line with a stripe: "The hall could not feed everyone. 6 men left."</td></tr>
+<tr><td>The market's lesson</td><td>Taught every winter.</td><td>pruning, design law 1</td><td>Shown in the first winter only. Afterwards the price sits on the card's title line.</td></tr>
+<tr><td>Choosing a count</td><td>Silver and men before and after. Nothing about what they do.</td><td>agency, competence</td><td>Ship strength next summer and who leads them; the room bar (fix 3).</td></tr>
+<tr><td>Nothing to buy</td><td>A zeroed stepper, a dead sum, a disabled primary.</td><td>pacing, pruning</td><td>One dashed line: "9 silver buys no men this winter." The sheet is short.</td></tr>
+<tr><td>Buying</td><td>The sheet re-renders with new numbers. Then find Close.</td><td>congruence, pacing</td><td>Chest and men count in place; a "10 men bought" line; the exit never moved.</td></tr>
+<tr><td>Leaving</td><td>"Close the market", the grey button, second.</td><td>pacing, the open loop</td><td>"Into winter · one card turns", primary, sticky at the sheet's foot.</td></tr>
+</table></div>
+
+<h2>Missing moments</h2>
+<ul>
+  <li><b>The haul.</b> Loot is announced on the fight sheet in summer and never seen again. The autumn account is where it should land in the chest.</li>
+  <li><b>The rent roll.</b> A king with four holdings never sees four rents add up. The ledger gives him a growing column, year on year.</li>
+  <li><b>The title's first payoff.</b> The winter Deep-chest first halves the bill, or Fair-dealer first drops the price, should read as the reward it is.</li>
+  <li><b>A quiet year.</b> When nothing happened on the land, the sheet should be short and say so, so that the loud years are loud.</li>
+  <li><b>The season's name.</b> The sheet is the reckoning before winter; winter is the card that follows. The mock-ups call the sheet Autumn and the exit "Into winter", so the card is something the button promises.</li>
+</ul>
+
+<h2>Needs a human</h2>
+<ul>
+  <li>The ledger's cadence. Rows at 120 ms and a 650 ms count is a breath; 270 times over it must not become a wait. Reduced motion skips it.</li>
+  <li>Option C changes a rule: bought men go straight to the first named man with room. Today they sit unled until Fill. Decide whether the rule or the picture should change.</li>
+  <li>Whether "Autumn" is the right word on a Viking sheet, or whether the sheet should keep "Winter" and the card get a name of its own.</li>
+  <li>The stripe and oxblood on a lost holding: strong enough to land, quiet enough not to feel like an error dialog. Your phone is the judge.</li>
+</ul>
+</div>
+
+<h2 id="options">Three alternatives</h2>
+<p class="col" style="font-size:15px">Each phone is live. Step the count and Buy to see the numbers move. Press the exit to see where the sheet hands off. The year buttons load real saved states from a driven dynasty: 793 is the first winter, 806 a good haul in a hard winter, 835 a busy year on the land, 850 a chest too poor to buy, 802 a hall that could not feed everyone. Replay runs the opening again.</p>
+
+<div class="bench">
+  <div class="opt" id="optA">
+    <header><div><span class="letter">Option A</span> <h3>The Ledger</h3></div><span class="pick">my pick</span></header>
+    <div class="ctrl"></div>
+    <div class="frame"><div class="ph A"></div></div>
+    <div class="notes"><p class="t">The year as an account.</p>
+      <p>The sheet opens on the chest in spring, then loot, rents and the bill arrive as rows, and the chest counts to its new number. Beneath it, only the events that mattered, weighted by kind. The market is one card with the stepper, what the men buy next summer, and the room among the named men. One primary at the foot: Into winter.</p>
+      <ul><li>Routine zeros are rows, not sentences. Titles show where they pay.</li><li>Lost holding or starvation: oxblood, display face, a stripe. New holding: pine.</li><li>Nothing to buy: the market is one dashed line and the sheet is short.</li><li>The first winter teaches price, upkeep and leading once, under the market.</li></ul>
+      <p class="risk">Risk: the most text of the three. The ledger must stay short, so it never shows more than one row per holding.</p></div>
+  </div>
+  <div class="opt" id="optB">
+    <header><div><span class="letter">Option B</span> <h3>The Chest</h3></div></header>
+    <div class="ctrl"></div>
+    <div class="frame"><div class="ph B"></div></div>
+    <div class="notes"><p class="t">One number, and the bar that made it.</p>
+      <p>The chest is the hero: a large count from last spring's silver to now, and under it a bar that draws the year, grey for what was kept, teal for loot, pine for rent, oxblood struck through the right end for what the hall ate. Buying men grows a chestnut segment into the bar live, so the price is felt as a bite out of the year. Events sit below as weighted lines; the exit is the primary.</p>
+      <ul><li>The bar is to scale, so a good year looks long and a poor one short.</li><li>The stepper and the Buy are the same as A; the bar is the sum.</li><li>Quiet years are a single italic line under the chest.</li></ul>
+      <p class="risk">Risk: the bar hides the rent roll by holding; four rents are one pine segment. The year reads at a glance but not per coast.</p></div>
+  </div>
+  <div class="opt" id="optC">
+    <header><div><span class="letter">Option C</span> <h3>The Muster</h3></div></header>
+    <div class="ctrl"></div>
+    <div class="frame"><div class="ph C"></div></div>
+    <div class="notes"><p class="t">The men are the hero; the money is four tiles.</p>
+      <p>The account is four small tiles across the top: loot, rent, ate, chest. Then the named men, each with a bar of his following against what he can lead, the King first. Stepping the count fills the first bar with room in pine, so you see exactly who the new men will follow; Buy settles the pine into teal. Events as weighted lines; Into winter at the foot.</p>
+      <ul><li>Bought men go to the first man with room, King first, as Fill does today. That is a rule change.</li><li>Men away at a holding carry a teal tag with the coast's name.</li><li>Past five men, the rest fold into one line with their shared room.</li></ul>
+      <p class="risk">Risk: the boldest. Winter becomes the muster screen, which overlaps what the Hall pane does in spring. The money is small.</p></div>
+  </div>
+</div>
+
+<p class="col muted" style="margin-top:36px;font-size:14px">Tell me A, B or C, or point at one and say what to borrow from the others. I will build the winner into the game and move to screen 3, the winter card.</p>
+</div>
+
+<script>
+%%COAST%%
+// Real saved states from a driven dynasty (tools/audit/states/winter-*.json), trimmed to what the sheet needs.
+// before = the chest last spring, so the ledger can count from it: silver now + ate − loot − rent.
+const STATES = {
+ '793':{year:793,king:'Ragnar',age:20,titles:[],silver:37,men:31,price:3,first:true,
+   loot:{n:0,why:'Bjorn stayed at Agder; the loot was forfeited'},rents:[{n:'Vestfold',v:0,why:'the King was at sea'},{n:'Agder',v:null,why:'newly ours · pays from next year'}],ate:{men:23,due:23,paid:23,why:''},
+   events:[],men_:[{n:'Ragnar',c:4,f:3,cap:30,men:23,place:'home',king:true},{n:'Bjorn',c:3,f:2,cap:20,men:8,place:'Agder'}]},
+ '806':{year:806,king:'Ragnar',age:33,titles:['ironside'],silver:263,men:27,price:3,
+   loot:{n:120,why:'Lindisfarne plundered'},rents:[{n:'Vestfold',v:0,why:'the King was at sea'}],ate:{men:27,due:27,paid:54,why:'hard winter · doubled'},
+   events:[{k:'hard',t:'Hard winter.',s:'The ice came early. The hall ate double.'}],men_:[{n:'Ragnar',c:5,f:5,cap:50,men:26,place:'home',king:true},{n:'Bjorn',c:5,f:3,cap:30,men:1,place:'home'},{n:'Arne',c:5,f:4,cap:40,men:0,place:'home'}]},
+ '835':{year:835,king:'Bjorn',age:32,titles:[],silver:261,men:63,price:3,
+   loot:{n:0,why:'Leif stayed at Gotland; the loot was forfeited'},rents:[{n:'Vestfold',v:0,why:'the King was at sea'},{n:'Gotland',v:null,why:'newly ours · pays from next year'},{n:'Truso',v:0,why:'lost'}],ate:{men:47,due:47,paid:47,why:''},
+   events:[{k:'lost',t:'Truso rose against Eirik.',s:'3 men dead · the holding is lost'},{k:'new',t:'Gotland is ours.',s:'Leif holds it · unrest 44 · pays 23 a year'},{k:'realm',t:"Ælla's reach grows.",s:'Hedeby is his now'}],
+   men_:[{n:'Bjorn',c:5,f:5,cap:50,men:41,place:'home',king:true},{n:'Leif',c:5,f:5,cap:50,men:16,place:'Gotland'},{n:'Eirik',c:5,f:5,cap:50,men:6,place:'home'},{n:'Frodi',c:5,f:5,cap:50,men:0,place:'home'},{n:'Asmund',c:5,f:5,cap:50,men:0,place:'home'}]},
+ '850':{year:850,king:'Bjorn',age:47,titles:['ringgiver','deepchest'],silver:9,men:47,price:3,
+   loot:{n:0,why:'Frodi stayed at Hordaland; the loot was forfeited'},rents:[{n:'Vestfold',v:0,why:'the King was at sea'},{n:'Hordaland',v:null,why:'newly ours · pays from next year'}],ate:{men:47,due:47,paid:24,why:'Deep-chest · halved'},
+   events:[{k:'new',t:'Hordaland is ours.',s:'Frodi holds it · unrest 39 · pays 21 a year'}],
+   men_:[{n:'Bjorn',c:5,f:5,cap:60,men:47,place:'home',king:true},{n:'Frodi',c:5,f:5,cap:60,men:0,place:'Hordaland'},{n:'Asmund',c:5,f:5,cap:60,men:0,place:'home'},{n:'Hastein',c:5,f:5,cap:60,men:0,place:'home'},{n:'Ragnvald',c:5,f:4,cap:50,men:0,place:'home'},{n:'Bjorn',c:5,f:5,cap:60,men:0,place:'home'},{n:'Eirik',c:4,f:4,cap:50,men:0,place:'home'},{n:'Leif',c:5,f:5,cap:60,men:0,place:'home'}]},
+ '802':{year:802,king:'Ragnar',age:29,titles:['ironside'],silver:0,men:22,price:3,
+   loot:{n:0,why:'Arne stayed at Rogaland; the loot was forfeited'},rents:[{n:'Vestfold',v:0,why:'the King was at sea'},{n:'Rogaland',v:null,why:'newly ours · pays from next year'},{n:'Shetland',v:0,why:'lost'}],ate:{men:22,due:22,paid:15,why:'only 15 in the chest',starve:6},
+   events:[{k:'starve',t:'The hall could not feed everyone.',s:'6 men left'},{k:'lost',t:'Shetland rose against Bjorn.',s:'no men dead · the holding is lost'},{k:'new',t:'Rogaland is ours.',s:'Arne holds it · unrest 55 · pays 28 a year'},{k:'realm',t:'Gudrød kneels.',s:'his realm is yours'}],
+   men_:[{n:'Ragnar',c:5,f:3,cap:30,men:21,place:'home',king:true},{n:'Bjorn',c:4,f:2,cap:20,men:1,place:'home'},{n:'Arne',c:4,f:2,cap:20,men:0,place:'Rogaland'}]},
+};
+const YEARS=['793','806','835','850','802'];
+const TITLE={ironside:'Ironside',ringgiver:'Ring-giver',deepchest:'Deep-chest',beloved:'Beloved',fairdealer:'Fair-dealer'};
+const ICONS={
+  land:'<path d="M3 16h14 M5 16V9l5-5 5 5v7 M3 7l2 2 M17 7l-2 2"/>',
+  silver:'<path d="M10 3a7 7 0 1 0 0 14"/><path d="M10 3a7 7 0 0 1 0 14" stroke-dasharray="2 2.6"/>',
+  men:'<circle cx="7" cy="7" r="2.5"/><circle cx="14" cy="8" r="2"/><path d="M2.5 17c0-3 2-5 4.5-5s4.5 2 4.5 5 M11.5 16c.3-2.3 1.4-3.8 3-4 1.6.2 2.8 1.7 3 4"/>',
+};
+const ico=k=>`<svg class="ico" viewBox="0 0 20 20" aria-hidden="true">${ICONS[k]}</svg>`;
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const rentSum=s=>s.rents.reduce((a,r)=>a+(r.v||0),0);
+const before=s=>s.silver+s.ate.paid-s.loot.n-rentSum(s)+s.bought*s.price;
+const room=s=>s.men_.reduce((a,m)=>a+m.cap-m.men,0)-s.unled;
+const maxBuy=s=>Math.floor(s.silver/s.price/5)*5;
+function model(key){const s=JSON.parse(JSON.stringify(STATES[key]));s.key=key;s.bought=0;s.unled=0;s.buy=Math.min(10,maxBuy(s));return s}
+function clampBuy(s){const mx=maxBuy(s);s.buy=Math.max(0,Math.min(s.buy,mx));if(mx>=5&&s.buy<5)s.buy=5;if(mx<5)s.buy=0}
+// where bought men go: the first man with room, the King first (what Fill does today)
+function placement(s,n){const out=[];let left=n;const order=[...s.men_].sort((a,b)=>(b.king?1:0)-(a.king?1:0)||(a.place==='home'?0:1)-(b.place==='home'?0:1));for(const m of order){if(left<=0)break;const r=m.cap-m.men;if(r<=0)continue;const take=Math.min(r,left);out.push({m,take});left-=take}return {out,unled:left}}
+function buy(s){const n=s.buy;if(n<=0)return;s.silver-=n*s.price;s.men+=n;s.bought+=n;s.lastBuy=n;const p=placement(s,n);for(const {m,take} of p.out)m.men+=take;s.unled+=p.unled;s.buy=Math.min(10,maxBuy(s));clampBuy(s)}
+function countUp(root){if(reduced)return;for(const el of root.querySelectorAll('[data-count]')){const to=+el.dataset.count,from=+el.dataset.from,dl=+(el.dataset.delay||0),dur=+(el.dataset.dur||650);if(from===to){el.textContent=to;continue}el.textContent=from;const t0=performance.now()+dl;const step=t=>{if(t<t0){requestAnimationFrame(step);return}const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=Math.round(from+(to-from)*e);if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step);setTimeout(()=>{el.textContent=to},dl+dur+80)}}
+const num=(v,from,beat,delay,dur)=>`<b data-count="${v}" data-from="${beat?from:v}" data-delay="${delay||0}" data-dur="${dur||650}">${beat?from:v}</b>`;
+// the chest counts from last spring on the beat, and from its last value after a buy
+const silverNum=(s,beat,delay,dur)=>beat?num(s.silver,before(s),true,delay,dur):s.prev?num(s.silver,s.prev.silver,true,0,500):num(s.silver,s.silver,false);
+const menNum=(s)=>s.prev?num(s.men,s.prev.men,true,0,500):num(s.men,s.men,false);
+// shared pieces
+function bandHTML(s,beat){const tags=s.titles.map(t=>`<span class="tag">${TITLE[t]||t}</span>`).join('');const b=before(s);
+  return `<div class="band"><div class="year">${s.year}</div><div class="res">${silverNum(s,beat,900,650)} silver<br>${menNum(s)} men · ${s.unled} unled</div>
+  <div class="king">${esc(s.king)}, ${s.age}${tags}<span class="fork">· fork at ${[25,35,45,55].find(a=>a>s.age)||'—'}</span></div></div>`}
+const mapHTML=()=>`<div class="mapwrap"><svg class="map" viewBox="40 -30 330 714" preserveAspectRatio="xMidYMid slice"><path class="land" d="${COAST_PATH}"/></svg></div>`;
+const exitHTML=()=>`<div class="exit"><button data-act="exit"><span>Into winter</span><small>one card turns</small></button></div>`;
+function eventsHTML(s,beat,delay){if(!s.events.length)return `<p class="quiet ${beat?'in':''}" style="animation-delay:${delay}ms">A quiet summer on the land.</p>`;
+  return s.events.map((e,i)=>`<div class="ev ${e.k} ${beat?'in':''}" style="animation-delay:${delay+i*110}ms"><i></i><div><div class="t">${esc(e.t)}</div><div class="s">${esc(e.s)}</div></div></div>`).join('')}
+function ateHTML(s){const a=s.ate;const struck=a.paid!==a.due?`<s>${a.due}</s> `:'';return `${a.men} men ate ${struck}${a.paid}${a.why?` · ${esc(a.why)}`:''}`}
+function priceHTML(s){const p=s.price;return p===2?`<s>3</s> <b>2</b> silver a man · Fair-dealer`:`<b>${p}</b> silver a man`}
+const teach=s=>s.first?`<div class="teach">Men at home eat 1 silver a winter. Men aboard raid. A named man leads F × 10; past that, they sit unled.</div>`:'';
+function stepHTML(s){const mx=maxBuy(s);return `<div class="step"><button data-act="dec" ${s.buy<=5?'disabled':''}>−</button><span class="n">${s.buy}<small>men</small></span><button data-act="inc" ${s.buy+5>mx?'disabled':''}>+</button></div>`}
+function consequence(s){const p=placement(s,s.buy);const lead=p.out[0]?p.out[0].m:null;const str=p.out.reduce((a,x)=>a+x.m.c*x.take,0);
+  return {lead,str,unled:p.unled,who:p.out.map(x=>`${x.m.n} ${x.take}`).join(' · ')}}
+function bought(s){return s.lastBuy?`<div class="bought">${s.lastBuy} men bought. ${s.men} men now${s.unled?` · ${s.unled} unled`:''}.</div>`:''}
+
+// ---- Option A: the ledger ----
+function renderA(ph,s,o={}){const beat=!!o.beat,b=before(s),rs=rentSum(s),a=s.ate,mx=maxBuy(s);
+  let i=0;const row=(k,sub,v,cls)=>{const d=beat?`style="animation-delay:${120*i++}ms"`:'';return `<span class="k ${beat?'in':''}" ${d}>${k}${sub?`<small>${sub}</small>`:''}</span><span class="v ${cls} ${beat?'in':''}" ${d}>${v}</span>`};
+  let rows=row('Chest in spring','',b,'');
+  rows+=row('Loot',esc(s.loot.why),s.loot.n?`+${s.loot.n}`:'0',s.loot.n?'up':'nil');
+  for(const r of s.rents)rows+=row(`Rent · ${esc(r.n)}`,esc(r.why),r.v===null?'—':r.v?`+${r.v}`:'0',r.v?'up':'nil');
+  rows+=row(`The hall ate · ${a.men} men`,a.why?esc(a.why):'',`${a.paid!==a.due?`<s>−${a.due}</s> `:''}−${a.paid}`,'down');
+  if(s.bought)rows+=row(`Men bought · ${s.bought}`,'',`−${s.bought*s.price}`,'down');
+  const total=`<div class="tot"><span class="k">Chest</span><span class="v">${silverNum(s,beat,120*i+150,700)}${s.silver!==b?`<span class="delta ${s.silver>b?'up':'down'}" style="color:var(--${s.silver>b?'pine':'oxblood'})">${s.silver>b?'+':''}${s.silver-b}</span>`:''}</span></div>`;
+  const c=consequence(s),rm=room(s),led=s.men-s.unled,capAll=s.men_.reduce((x,m)=>x+m.cap,0);
+  const market=mx<5?`<div class="nomarket"><span>${s.silver} silver buys no men this winter.</span><b>${s.price} each</b></div>`
+   :`<div class="market"><div class="price"><span>The market</span><span>${priceHTML(s)}</span></div>${stepHTML(s)}
+     <div class="cons"><span>Silver</span><b>${s.silver} → ${s.silver-s.buy*s.price}</b><span>Men</span><b>${s.men} → ${s.men+s.buy}</b>
+       ${c.lead?`<span>Aboard under ${esc(c.lead.n)}</span><b>+${c.str} ship strength</b>`:''}
+       ${c.unled?`<span class="w">${c.unled} of them would sit unled: fed, no use, until another named man comes to the hall.</span>`:''}
+       <div class="room"><i class="led" style="width:${100*led/capAll}%"></i><i class="add" style="width:${100*Math.min(s.buy,rm)/capAll}%"></i></div>
+       <span style="grid-column:1/-1">room for ${rm} more under the named men</span></div>
+     <button class="buy" data-act="buy" ${s.buy<=0?'disabled':''}>Buy ${s.buy} men for ${s.buy*s.price} silver</button>${bought(s)}${teach(s)}</div>`;
+  ph.className='ph A';
+  ph.innerHTML=`${mapHTML()}${bandHTML(s,beat)}<div class="overlay"><div class="scene"><h1>${ico('land')}Autumn ${s.year}</h1>
+    <div class="ledger">${rows}${total}</div>
+    <h2>The land</h2>${eventsHTML(s,beat,120*i+200)}
+    <h2>The market</h2>${market}
+    ${exitHTML()}</div></div><div class="cap"><span></span></div>`;
+  countUp(ph);
+}
+// ---- Option B: the chest ----
+function renderB(ph,s,o={}){const beat=!!o.beat,b=before(s),rs=rentSum(s),a=s.ate,mx=maxBuy(s);
+  const peak=Math.max(1,b+s.loot.n+rs),sc=100/peak,keep=Math.max(0,b),ate=a.paid,buyCost=s.buy*s.price;
+  const seg=(cls,v,d)=>v>0?`<i class="${cls}" style="width:${(v*sc).toFixed(2)}%;animation-delay:${d}ms"></i>`:'';
+  const spent=s.bought*s.price;
+  const bar=`<div class="track">${seg('keep',keep,0)}${seg('loot',s.loot.n,250)}${seg('rent',rs,450)}
+    <i class="ate" style="width:${((ate+spent)*sc).toFixed(2)}%;animation-delay:650ms"></i>
+    ${mx>=5?`<i class="buyseg" style="right:${((ate+spent)*sc).toFixed(2)}%;width:${(buyCost*sc).toFixed(2)}%"></i>`:''}</div>
+    <div class="legend"><span>spring ${b}</span>${s.loot.n?`<span class="loot">loot +${s.loot.n}</span>`:''}${rs?`<span class="rent">rent +${rs}</span>`:''}<span class="ate">ate −${ate}${a.paid!==a.due?` (<s>${a.due}</s>)`:''}</span>${spent?`<span class="ate">men −${spent}</span>`:''}${mx>=5&&buyCost?`<span class="buying">buying −${buyCost}</span>`:''}</div>`;
+  const c=consequence(s),rm=room(s);
+  const market=mx<5?`<div class="nomarket"><span>${s.silver} silver buys no men this winter.</span><b>${s.price} each</b></div>`
+   :`<div class="market"><div class="price"><span>The market</span><span>${priceHTML(s)}</span></div>${stepHTML(s)}
+     <div class="cons">Chest <b>${s.silver} → ${s.silver-buyCost}</b> · men <b>${s.men} → ${s.men+s.buy}</b>${c.lead?`<br>under ${esc(c.lead.n)} <b>+${c.str}</b> strength · room for ${rm}`:''}${c.unled?`<span class="w">${c.unled} would sit unled until another named man comes.</span>`:''}</div>
+     <button class="buy" data-act="buy" ${s.buy<=0?'disabled':''}>Buy ${s.buy} men for ${buyCost} silver</button>${bought(s)}${teach(s)}</div>`;
+  ph.className='ph B';
+  ph.innerHTML=`${mapHTML()}${bandHTML(s,beat)}<div class="overlay"><div class="scene"><h1>${ico('silver')}Autumn ${s.year}</h1>
+    <div class="chest"><div class="big">${silverNum(s,beat,250,900)}<small>silver in the chest</small></div><div class="from">last spring <b>${b}</b><br>${a.men} men ate ${a.paid!==a.due?`<s>${a.due}</s> `:''}${a.paid}${a.why?`<br>${esc(a.why)}`:''}</div></div>
+    <div class="flow">${bar}</div>
+    <h2>The land</h2>${eventsHTML(s,beat,700)}
+    <h2>The market</h2>${market}
+    ${exitHTML()}</div></div><div class="cap"><span></span></div>`;
+  countUp(ph);
+}
+// ---- Option C: the muster ----
+function renderC(ph,s,o={}){const beat=!!o.beat,b=before(s),rs=rentSum(s),a=s.ate,mx=maxBuy(s);
+  const tile=(k,v,cls,d)=>`<div class="${cls} ${beat?'in':''}" style="animation-delay:${d}ms">${k}<b>${v}</b></div>`;
+  const acct=`<div class="acct">${tile('Loot',s.loot.n?`+${s.loot.n}`:'0',s.loot.n?'up':'nil',0)}${tile('Rent',rs?`+${rs}`:'0',rs?'up':'nil',120)}${tile('Ate',`−${a.paid}`,'down',240)}<div class="sum ${beat?'in':''}" style="animation-delay:360ms">Chest<b>${silverNum(s,beat,500,700)}</b></div></div>`;
+  const p=placement(s,s.buy),add=new Map(p.out.map(x=>[x.m,x.take]));const capMax=Math.max(...s.men_.map(m=>m.cap));
+  const show=s.men_.slice(0,5),rest=s.men_.slice(5);
+  const man=m=>{const ad=add.get(m)||0,justIn=s.flashFor&&s.flashFor.get(m);return `<div class="man"><div class="nm">${esc(m.n)}${m.king?'<span class="tag">King</span>':''}${m.place!=='home'?`<span class="tag away">${esc(m.place)}</span>`:''}</div>
+    <div class="cnt"><b>${m.men}</b>${ad?`<span class="add"> +${ad}</span>`:''} of ${m.cap}</div>
+    <div class="bar" style="width:${100*m.cap/capMax}%"><i class="led ${justIn?'flash':''}" style="width:${100*m.men/m.cap}%"></i><i class="add" style="width:${100*ad/m.cap}%"></i></div></div>`};
+  const restRoom=rest.reduce((x,m)=>x+m.cap-m.men,0),restAdd=rest.reduce((x,m)=>x+(add.get(m)||0),0);
+  const more=rest.length?`<p class="more">and ${rest.length} more at home with room for ${restRoom}${restAdd?` · <span style="color:var(--pine)">+${restAdd}</span>`:''}</p>`:'';
+  const c=consequence(s),rm=room(s);
+  const market=mx<5?`<div class="nomarket"><span>${s.silver} silver buys no men this winter.</span><b>${s.price} each</b></div>`
+   :`<div class="market"><div class="price"><span>The market</span><span>${priceHTML(s)}</span></div>${stepHTML(s)}
+     <div class="cons">${c.who?`They follow <b>${esc(c.who)}</b>`:''}${c.unled?`<br><span style="color:var(--chestnut)">${c.unled} would sit unled.</span>`:''}<br>${c.lead?`aboard next summer <b>+${c.str}</b> strength · `:''}chest <b>${s.silver} → ${s.silver-s.buy*s.price}</b></div>
+     <button class="buy" data-act="buy" ${s.buy<=0?'disabled':''}>Buy ${s.buy} men for ${s.buy*s.price} silver</button>${bought(s)}${teach(s)}</div>`;
+  ph.className='ph C';
+  ph.innerHTML=`${mapHTML()}${bandHTML(s,beat)}<div class="overlay"><div class="scene"><h1>${ico('men')}Autumn ${s.year}<small>${s.men} men · room for ${rm}</small></h1>
+    ${acct}
+    <h2>The muster</h2>${show.map(man).join('')}${more}
+    ${market}
+    <h2>The land</h2>${eventsHTML(s,beat,600)}
+    ${exitHTML()}</div></div><div class="cap"><span></span></div>`;
+  countUp(ph);
+}
+// ---- wire the three phones ----
+const OPTS=[{el:'#optA',r:renderA},{el:'#optB',r:renderB},{el:'#optC',r:renderC}];
+for(const o of OPTS){
+  const opt=document.querySelector(o.el),ph=opt.querySelector('.ph'),ctrl=opt.querySelector('.ctrl');
+  ctrl.innerHTML=`<button data-act="beat">Replay</button>`+YEARS.map((y,i)=>`<button data-act="year" data-y="${y}" class="${i===0?'on':''}">${y}</button>`).join('');
+  let s=model('793');const draw=(x={})=>o.r(ph,s,x);
+  const say=t=>{const cap=ph.querySelector('.cap');cap.querySelector('span').textContent=t;cap.classList.add('show');setTimeout(()=>cap.classList.remove('show'),1500)};
+  ctrl.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.act==='beat'){draw({beat:true});return}
+    s=model(b.dataset.y);ctrl.querySelectorAll('[data-act=year]').forEach(x=>x.classList.toggle('on',x===b));draw({beat:true})});
+  ph.addEventListener('click',e=>{const act=e.target.closest('[data-act]');if(!act)return;const a=act.dataset.act;const top=ph.querySelector('.scene')?.scrollTop||0;
+    if(a==='inc'){s.buy+=5;clampBuy(s);draw()}else if(a==='dec'){s.buy-=5;clampBuy(s);draw()}
+    else if(a==='buy'){const p=placement(s,s.buy);s.flashFor=new Map(p.out.map(x=>[x.m,true]));s.prev={silver:s.silver,men:s.men};buy(s);draw();s.flashFor=null;s.prev=null}
+    else if(a==='exit'){say('…the winter card turns, then spring');setTimeout(()=>{s=model(s.key);draw({beat:true})},1500);return}
+    const sc=ph.querySelector('.scene');if(sc)sc.scrollTop=top});
+  draw({beat:true});
+}
+function fit(){for(const f of document.querySelectorAll('.frame')){const w=f.clientWidth,k=w/390;f.style.height=(844*k)+'px';f.querySelector('.ph').style.transform=`scale(${k})`}}
+fit();addEventListener('resize',fit);
+</script>

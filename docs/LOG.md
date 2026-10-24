@@ -2,6 +2,21 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-23 (session 8, screen audit 2: the Winter sheet)
+
+Round 2 of the five-screen audit. Audit page with the critique and three live mock-ups: https://claude.ai/artifact/DSHVXj6S2YXbbcTWg4fDri . Awaiting Levi's pick.
+
+**The critique, in short.** A receipt with a shop stapled to it. The year's money happens offstage: the band shows the final silver, the sheet names rent and upkeep, nothing adds loot, rents and the bill into the chest. Every line weighs the same (a lost holding and "Vestfold paid nothing" in one voice; starvation as body text). The same two sentences repeat every winter for 273 years (the King at sea; the market's lesson). Titles pay off in silence (Deep-chest halves the bill, hard winter doubles it, Fair-dealer drops the price, none named). A dead market fills three-fifths of the screen when silver cannot buy five men. Buying shows no consequence (no ship strength, no leader). The exit is the grey second button, and the sheet is called Winter though the winter card comes after it.
+
+**Three options, all with:** a counted ledger or chest on open, events weighted by kind (oxblood display line with a stripe for a lost holding or starvation, pine for a new holding, muted for a realm's growth, routine lines gone), title payoffs shown as the struck-through old figure beside the title's name, the market collapsing to one dashed line when nothing can be bought, the price-and-upkeep lesson in the first winter only, and one sticky primary "Into winter · one card turns". The sheet is titled Autumn in the mocks.
+- **A, The Ledger (my pick):** chest in spring, loot, rent per holding, the hall's bill, the chest now, rows arriving 120 ms apart and the total counting over 650 ms; market card with the stepper, "+N ship strength under <leader>", and a room bar.
+- **B, The Chest:** one big counted number and a to-scale waterfall bar (kept, loot, rent, ate; buying eats a chestnut bite live).
+- **C, The Muster:** four account tiles, then each named man's following as a bar against his cap; stepping fills the first man with room in pine. Changes a rule: bought men go to the first man with room, King first.
+
+**Kit notes.** A stale `http.server` from a past job still owned :8766 and served old states; `shoot.sh setup` now needs the old one killed first (check `/proc/<pid>/cwd`). Headless stills freeze CSS animations and rAF counts at an arbitrary frame; for layout checks inject `*{animation:none!important;transition:none!important}` and ignore the counted numbers. Nine winter states added under `tools/audit/states/`.
+
+**Next:** Levi picks A, B or C; build it into the game (`overlayHTML` winter branch, `marketHTML`, `marketNums` in `ui.js`; `resolveLand`/`upkeep` already carry the numbers, loot comes from the year's fight scene and would need stamping into the winter scene); then round 3, the winter card.
+
 ## 2026-10-23 (session 7, screen audit 1: the spring Map screen)
 
 Levi: audit the five most-used screens one at a time, three live alternatives each, he picks. Screen 1 is the spring Map pane. Audit page with the critique and the three mock-ups: https://claude.ai/artifact/BZLsmsJppbmJz16RN1pBJb . He chose **A, The Chart**, and agreed with the whole critique.
