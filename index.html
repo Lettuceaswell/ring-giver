@@ -294,6 +294,71 @@ details summary::after{content:' ▸'}details[open] summary::after{content:' ▾
 .imprint{display:flex;align-items:center;gap:10px;margin-top:40px;color:var(--muted);font:500 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase}
 .imprint::before{content:"";width:28px;height:var(--strand);background:var(--accent)}
 
+/* the winter card (audit 3, option A: the Turn): one card on the winter night, face down, then turned; its kind sets its tone */
+.overlay.night{background:rgba(21,46,54,.8);justify-content:flex-start}
+.night .stage{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:14px;padding:calc(96px + env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) 8px max(20px,env(safe-area-inset-left))}
+.night .tone-blood{--t:var(--oxblood)}.night .tone-boon,.night .tone-held{--t:var(--pine)}.night .tone-omen{--t:var(--chestnut)}.night .tone-quiet{--t:var(--iron)}
+.tc,.rollc{width:100%;max-width:360px;perspective:1100px}
+.tc .flip,.rollc .flip{position:relative;transform-style:preserve-3d;transition:transform .52s cubic-bezier(.3,.1,.2,1)}
+.tc .flip.down,.rollc .flip.down{transform:rotateY(180deg)}
+.night .face,.night .back{backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:6px}
+.night .face{background:var(--surface);border:1px solid var(--rule);border-top:4px solid var(--t);padding:16px 18px 18px;box-shadow:0 18px 40px -16px rgba(0,0,0,.7)}
+.night .back{position:absolute;inset:0;transform:rotateY(180deg);background:var(--fjord);border:1px solid rgba(232,223,204,.25);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  background-image:repeating-linear-gradient(45deg,rgba(232,223,204,.05) 0 2px,transparent 2px 12px),repeating-linear-gradient(-45deg,rgba(232,223,204,.05) 0 2px,transparent 2px 12px)}
+.night .back .cyr{font:400 44px/1 var(--display);color:var(--text)}
+.night .back small{font:500 10.5px/1 var(--body);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.tc .ctop{display:flex;align-items:center;justify-content:space-between;color:var(--t)}
+.tc .ctop .ico{width:30px;height:30px}
+.tc .ctop small{font:400 11.5px/1 var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.tc h3{font:400 27px/1.12 var(--display);color:var(--text);margin:10px 0 6px;text-wrap:balance}
+.tc .tone-blood h3{color:var(--oxblood)}
+.tc .lead{font-size:16px;line-height:1.45;margin:0}
+.cchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cchip{font:400 12.5px/1.2 var(--mono);color:var(--text);background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:5px 7px;font-variant-numeric:tabular-nums}
+.cchip s{color:var(--iron)}.cchip b{font-weight:500;color:var(--accent)}
+.cchip.down{color:var(--oxblood);border-color:rgba(176,122,124,.5)}.cchip.up{color:var(--pine);border-color:rgba(143,167,147,.5)}
+.cnote{font:400 12px/1.4 var(--mono);color:var(--muted);margin-top:5px}
+.vs{margin-top:12px}
+.vs .lab{display:flex;justify-content:space-between;gap:8px;font:400 12px/1.3 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.vs .lab b{color:var(--text);font-weight:500}
+.vs .track{height:8px;background:var(--rule);border-radius:var(--r);overflow:hidden;display:flex;margin-top:4px}
+.vs .h{background:var(--pine);transform-origin:left;animation:vsgrow .6s var(--ease) both}.vs .f{background:var(--oxblood);margin-left:auto;transform-origin:right;animation:vsgrow .6s var(--ease) both}
+@keyframes vsgrow{from{transform:scaleX(0)}}
+.vs.fell .h{background:var(--iron)}.vs.held .f{background:var(--iron)}
+.suitor{background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;margin-top:10px;display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center}
+.suitor .nm{font:400 17px/1.2 var(--display)}.suitor .tag{margin:0}
+.suitor .st{grid-column:1/-1;font:400 12.5px/1.4 var(--mono);color:var(--muted)}
+.crows{width:100%;max-width:360px;display:grid;gap:8px}
+.crow{display:grid;grid-template-columns:3px 1fr;gap:0 10px}
+.crow i{display:block;border-radius:1px;background:var(--t)}
+.crow .t{font:400 15px/1.3 var(--body);color:var(--text)}
+.crow .s{font:400 12.5px/1.45 var(--mono);color:var(--muted)}
+.crow.tone-blood .t{color:var(--oxblood)}.crow.tone-omen .t{color:var(--chestnut)}.crow.tone-boon .t{color:var(--pine)}
+.rollc .face{border-top-width:1px;padding:12px 14px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 10px;box-shadow:none}
+.rollc .back{flex-direction:row;justify-content:space-between;padding:0 14px}
+.rollc .cwho{font:400 17px/1.2 var(--display);color:var(--text)}
+.rollc .back .p{font:400 22px/1 var(--display);color:var(--accent)}
+.rollc .face .p{font:400 12px/1 var(--mono);color:var(--muted)}
+.rollc .tone-blood .cwho{color:var(--oxblood)}.rollc .tone-boon .cwho{color:var(--pine)}
+.rollc .strand{grid-column:1/-1;height:2px;background:var(--rule);border-radius:1px;overflow:hidden}
+.rollc .strand i{display:block;height:100%;background:var(--accent)}
+.night .in{animation:rise .45s var(--ease) both}
+.dead{width:100%;max-width:360px;background:var(--surface);border-radius:6px;border-top:4px solid var(--oxblood);padding:16px 18px 18px;box-shadow:0 18px 40px -16px rgba(0,0,0,.7)}
+.dead h3{font:400 27px/1.12 var(--display);color:var(--oxblood);display:flex;align-items:center;gap:10px}
+.dead h3 svg{width:22px;height:22px;flex:none}
+.dead .cause{font:400 20px/1.3 var(--display);color:var(--text);margin:8px 0 6px}
+.dead .meta{font:400 13px/1.5 var(--mono);color:var(--muted)}
+.dead p{font-size:15px;margin:10px 0 0}
+.dead .heir{margin-top:12px;padding:10px 12px;border:1px solid var(--rule);border-radius:var(--r);background:var(--bg);font-size:15px}
+.dead .heir.broken{border-color:var(--oxblood);color:var(--oxblood);font:400 18px/1.3 var(--display)}
+.dead .heir small{display:block;font:400 12px/1.4 var(--mono);color:var(--muted);margin-top:4px}
+.cardfoot{flex:none;width:100%;max-width:520px;margin:0 auto;padding:12px max(16px,env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.cardfoot button{width:100%;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font:500 19px/1.1 var(--display)}
+.cardfoot button small{font:500 11px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.cardfoot button.roll{background:var(--raised);color:var(--text);border-color:var(--accent)}
+.cardfoot button.grave{background:var(--oxblood);border-color:var(--oxblood);color:var(--on-primary)}
+.cardfoot.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cardfoot.two button{justify-content:center;font-size:17px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>

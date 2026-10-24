@@ -17,6 +17,12 @@ const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const has = (s, t) => s.king.titles.includes(t);
 
+// a name no living man or child of the hall carries, so no card says "Odo died" twice (audit 3); when the list is spent, "Odo of Rouen"
+function freshName(s, list, r, at) { const used = new Set([...s.notables.map(m => m.name), ...s.children.map(c => c.name)]), free = list.filter(n => !used.has(n)); return free.length ? r.pick(free) : `${r.pick(list)} of ${at || 'Vestfold'}`; }
+// " 5 men walk home unled." / " One man walks home unled." / "" (audit 3: no more "His 0 men")
+const unled = n => n ? ` ${n === 1 ? 'One man walks' : `${n} men walk`} home unled.` : '';
+// the King's winter past fifty: the chance this winter takes him
+const deathOdds = s => s.king.age > 50 ? 0.05 * (s.king.age - 50) * (has(s,'oldwise') ? 0.5 : 1) : 0;
 function makeMan(name, c, r, f, extra = {}) {
   return { id: uid(), name, combat: clamp(c,1,5), rule: clamp(r,1,5), follow: clamp(f,1,5), place: 'home', men: 0, age: 25,
     kin: false, raids: 0, heldRun: 0, stance: 0, why: [], ...extra };
@@ -239,11 +245,11 @@ function chooseTarget(s, id) {
   if (canStay) s.queue.splice(1, 0, { t:'stay', shore: id, loot, walked: !!sh.walked });
   else if (win) { plunder(s, loot, id); }
   if (fallen.length) {
-    const lines = fallen.map(m => m.isKing ? `${m.name} went down in the shield wall at ${sh.name}. The ship brings him home on his shield.` : `${m.name} went down at ${sh.name}. ${m.men ? `His ${m.men} men come home unled.` : ''}`.trim());
+    const lines = fallen.map(m => m.isKing ? `${m.name} went down in the shield wall at ${sh.name}. The ship brings him home on his shield.` : `${m.name} went down at ${sh.name}.${unled(m.men)}`);
     for (const m of fallen) if (!m.isKing) { s.notables = s.notables.filter(x => x !== m); log(s, `${m.name} fell at ${sh.name}.`); }
     const king = fallen.find(m => m.isKing), at = canStay ? 2 : 1;
     s.queue.splice(at, 0, { t:'summary', title: fallen.length > 1 ? `The fallen of ${sh.name}` : `${fallen[0].name} falls`, lines });
-    if (king) { log(s, `${king.name} fell at ${sh.name}.`); s.queue.splice(at + 1, 0, { t:'death' }); }
+    if (king) { log(s, `${king.name} fell at ${sh.name}.`); s.queue.splice(at + 1, 0, { t:'death', cause: 'fell', at: sh.name }); }
   }
   save(s);
 }
@@ -310,7 +316,7 @@ function resolveLand(s) {
         events.push({ k:'empty', t:`${h.name} stirs.`, s:`unrest ${h.unrest} next summer · ${n} holdings is a long reach for one hall` });
       }
       if (h.quiet > 0 && h.quiet % T.quietYears === 0 && benchRoom(s)) {
-        const sh = s.shores[h.id], nm = rng(s.day + h.id + s.year).pick(LOCAL_NAMES[sh.culture]);
+        const sh = s.shores[h.id], nm = freshName(s, LOCAL_NAMES[sh.culture], rng(s.day + h.id + s.year), sh.name);
         s.notables.push(makeMan(nm, 1 + r.int(0, 1), 3 + r.int(0, 2), 2 + r.int(0, 1), { age: 22 + r.int(0, 15) }));
         lines.push(`Five quiet years at ${h.name}. ${nm} comes to the hall.`); events.push({ k:'new', t:`${nm} comes to the hall.`, s:`five quiet years at ${h.name}` });
       }
@@ -425,53 +431,61 @@ function winterCard(s) {
   for (const [e, w] of deck) { roll -= w; if (roll <= 0) { ev = e; break; } }
   const sc = { t:'event', ev, lines: [] };
   if (ev === 'birth') {
-    const sex = r() < 0.5 ? 'm' : 'f', name = r.pick(sex === 'm' ? MALE_NAMES : FEMALE_NAMES);
+    const sex = r() < 0.5 ? 'm' : 'f', name = freshName(s, sex === 'm' ? MALE_NAMES : FEMALE_NAMES, r);
     s.children.push({ id: uid(), name, sex, age: 0, born: s.year });
-    sc.title = sex === 'm' ? 'A son is born' : 'A daughter is born'; sc.lines.push(`${name}, child of ${k.name}.`);
+    sc.title = sex === 'm' ? 'A son is born' : 'A daughter is born'; sc.lines.push(`${name}, ${sex === 'm' ? 'son' : 'daughter'} of ${k.name}.`); sc.kid = { name, sex }; s.winterKid = { y: s.year, name };
   } else if (ev === 'jarlDeath') {
     const old = s.notables.filter(m => !m.isKing && m.age > 45).sort((a, b) => b.age - a.age)[0];
     s.notables = s.notables.filter(m => m !== old);
-    sc.title = `${old.name} is dead`; sc.lines.push(`He was ${old.age}. His ${old.men} men walk home unled.`);
+    sc.title = `${old.name} is dead`; sc.lines.push(`He was ${old.age}.${unled(old.men)}`); sc.dead = { n: old.name, a: old.age, m: old.men };
   } else if (ev === 'wanderer') {
     s.flags.wanderer = true; sc.title = 'The Wanderer at the door'; sc.lines.push('He winters in the hall. Rumors are half price in spring.');
   } else if (ev === 'rival') {
     const foe = foes.length ? r.pick(foes) : null, whose = foe ? `${foe.name}'s fleet` : 'A strange fleet';
     const D = r.int(20, 80) + (foe ? 30 : 0), homeS = (s.guard ?? s.notables.filter(m => m.place === 'home').reduce((a, m) => a + m.rule * m.men, 0)) * (has(s,'hallward') ? 2 : 1);
     sc.title = foe ? `${foe.name}'s sail sighted` : 'A rival sail sighted';
-    if (homeS * (0.85 + r() * 0.3) > D) sc.lines.push(`${whose} came up the fjord. The hall held (${Math.round(homeS)} vs ${D}).`);
+    const held = homeS * (0.85 + r() * 0.3) > D; sc.fight = { h: Math.round(homeS), f: D, fell: !held, foe: foe ? foe.name : null };
+    if (held) sc.lines.push(`${whose} came up the fjord. The hall held (${Math.round(homeS)} vs ${D}).`);
     else { const lostS = Math.round(s.silver * 0.3), lostM = Math.round(s.men * 0.1); s.silver -= lostS; s.men -= lostM; trimMen(s);
-      sc.lines.push(`${whose} came up the fjord and the hall fell (${Math.round(homeS)} vs ${D}). ${lostS} silver and ${lostM} men gone.`);
+      sc.lines.push(`${whose} came up the fjord and the hall fell (${Math.round(homeS)} vs ${D}). ${lostS} silver and ${lostM} men gone.`); sc.lost = { silver: lostS, men: lostM };
       // a thin hall is a deadly one: someone dies in the door, by lot, the likelier the thinner the guard (TODO 25)
       if (r() < T.hallSlay * clamp(1 - T.guardSave * homeS / D, 0, 1) * clamp(s.silver / T.richHall, foe ? 1 : 0, 2)) { // a king's fleet comes for blood; a strange one kills for a rich chest; a rich chest behind a thin guard is deadlier still
         const v = r() < clamp(s.silver / T.richHall * T.richKing, 0, 0.75) ? k : r.pick(s.notables.filter(m => !s.holdings.some(h => h.id === m.place))); // they came for the King's silver: the richer the chest, the likelier it is him; else by lot
-        if (v && v.isKing) { s.kingSlain = true; sc.lines.push(`${k.name} died in the door of his hall.`); }
-        else if (v) { s.notables = s.notables.filter(m => m !== v); sc.lines.push(`${v.name} died in the door of the hall.${v.men ? ` His ${v.men} men are unled.` : ''}`); }
+        if (v && v.isKing) { s.kingSlain = true; sc.kingSlain = true; sc.lines.push(`${k.name} died in the door of his hall.`); }
+        else if (v) { s.notables = s.notables.filter(m => m !== v); sc.lines.push(`${v.name} died in the door of the hall.${unled(v.men)}`); sc.slain = { n: v.name, m: v.men }; }
       } }
-    if (foe) sc.lines.push(`${foe.name} is hostile. This is what that costs.`);
+    if (foe) sc.lines.push(held ? `${foe.name} is hostile. His fleets keep coming.` : `${foe.name} is hostile. This is what that costs.`);
   } else if (ev === 'hardWinter') { s.flags.hardWinter = true; sc.title = 'Hard winter'; sc.lines.push('The ice came early. Upkeep is doubled next winter.'); }
   else if (ev === 'harvest') { s.flags.harvest = true; sc.title = 'Good harvest'; sc.lines.push('The land is kind. Holdings pay double next summer.'); }
   else if (ev === 'seaman') {
-    const nm = r.pick(MALE_NAMES.filter(n => !s.notables.some(m => m.name === n)));
+    const nm = freshName(s, MALE_NAMES, r);
     s.notables.push(makeMan(nm, 3 + r.int(0, 2), 1 + r.int(0, 1), 1 + r.int(0, 2), { age: 20 + r.int(0, 12) }));
-    sc.title = `${nm} comes from the sea`; sc.lines.push('A fighter looking for a lord. He waits at home.');
+    sc.title = `${nm} comes from the sea`; sc.lines.push('A fighter looking for a lord. He waits at home.'); sc.man = s.notables[s.notables.length - 1].id;
   } else if (ev === 'suitor') {
     const d = s.children.find(c => c.sex === 'f' && c.age >= 16 && !c.married), j = r.pick(s.notables.filter(m => !m.isKing && !m.kin));
     sc.title = `${j.name} asks for ${d.name}`; sc.lines.push('Give her, and he is kin. Kin kneel.'); sc.choice = { d: d.id, j: j.id };
   } else if (ev === 'feud') {
     const js = s.notables.filter(m => !m.isKing), a = r.pick(js), b = r.pick(js.filter(x => x !== a));
-    b.follow = clamp(b.follow - 1, 1, 5); moveStance(s, b, -10, `shamed at the King's table by ${a.name}`); sc.title = 'A feud in the hall'; sc.lines.push(`${a.name} shamed ${b.name} at the table. Men drift from ${b.name}.`);
+    b.follow = clamp(b.follow - 1, 1, 5); moveStance(s, b, -10, `shamed at the King's table by ${a.name}`); sc.title = 'A feud in the hall'; sc.lines.push(`${a.name} shamed ${b.name} at the table. Men drift from ${b.name}.`); sc.feud = { a: a.id, b: b.id };
   } else { sc.title = 'A quiet winter'; sc.lines.push('Snow on the roof. Nothing stirs.'); }
   log(s, ev === 'quiet' ? 'A quiet winter.' : `${sc.title}. ${sc.lines[0]}`);
-  for (const m of aged) { const t = `${m.name} died in his bed, ${m.age} winters old.${m.men ? ` His ${m.men} men walk home unled.` : ''}`; sc.lines.push(t); log(s, t); }
+  for (const m of aged) { const t = `${m.name} died in his bed, ${m.age} winters old.${unled(m.men)}`; sc.lines.push(t); log(s, t); }
+  sc.aged = aged.map(m => ({ n: m.name, a: m.age, m: m.men }));
+  // what is coming (audit 3, TODO 26 and 27): a king's fleet that began to gather this winter, and benches that just filled
+  sc.gather = Object.values(s.rulers).filter(x => x.wroth === s.year).map(x => x.name);
+  const full = !benchRoom(s); sc.benchFull = full && !s.benchFull; s.benchFull = full;
+  // the King's winter past fifty is turned on the card, not after it: the same seed endWinter used, so the same fate (audit 3)
+  const p = deathOdds(s); s.rolled = null;
+  if (p > 0 && !s.kingSlain) { s.rolled = s.year; s.oldDeath = rng(s.day + ':death:' + s.year)() < p; sc.roll = { p, dies: s.oldDeath }; }
   s.queue.push(sc);
 }
-function acceptSuitor(s, yes) { const sc = s.queue[0]; if (yes) marry(s, sc.choice.d, sc.choice.j); next(s); }
+function answerSuitor(s, yes) { const sc = s.queue[0]; if (sc.answer) return; if (yes) marry(s, sc.choice.d, sc.choice.j); sc.answer = yes ? 'yes' : 'no'; }
+function acceptSuitor(s, yes) { answerSuitor(s, yes); next(s); }
 
 // mortality, then the new year
 function endWinter(s) {
-  const k = s.king, r = rng(s.day + ':death:' + s.year);
-  const p = k.age > 50 ? 0.05 * (k.age - 50) * (has(s,'oldwise') ? 0.5 : 1) : 0;
-  if (s.kingSlain || (p > 0 && r() < p)) { s.kingSlain = false; s.queue.push({ t:'death' }); return; }
+  const p = deathOdds(s), dies = s.rolled === s.year ? s.oldDeath : p > 0 && rng(s.day + ':death:' + s.year)() < p; // turned on the winter card, or (an envoy's winter) here
+  if (s.kingSlain || dies) { const kid = s.winterKid && s.winterKid.y === s.year ? s.winterKid.name : null; s.queue.push({ t:'death', cause: s.kingSlain ? 'slain' : 'age', kid }); s.kingSlain = false; return; }
   newYear(s);
 }
 function newYear(s) {

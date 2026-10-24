@@ -1,6 +1,6 @@
 let S = migrate(load());
 // screen state that is not game state: which pane, the picker, the open Man card, the Saga sheet, the two-tap arm, and what changed since the band last showed it
-const UI = { pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10, beatYear: 0, routeDrawn: null, winterYear: 0, winterBeat: false };
+const UI = { pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10, beatYear: 0, routeDrawn: null, winterYear: 0, winterBeat: false, cardYear: 0, cardBeat: false, rolled: 0 };
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = sel => document.querySelector(sel);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
@@ -22,6 +22,9 @@ const ICONS = {
   oath: '<path d="M10 3a7 7 0 1 0 0 14 M10 3a7 7 0 0 1 6 3.5 M10 17a7 7 0 0 0 6-3.5 M16 6.5l-1 1 M16 13.5l-1-1"/>',
   axe: '<path d="M5 17L15 7 M12 4c3 0 5 2 5 5-2 0-4-1-5-2-1-1-2-3 0-3z"/>',
   crown: '<path d="M4 15h12 M4 15L3 7l4 3 3-5 3 5 4-3-1 8"/>',
+  babe: '<path d="M3 11h14 M4 11c0 3.5 2.7 6 6 6s6-2.5 6-6 M12.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>',
+  sail: '<path d="M10 3v12 M10 4c3 2 5 5 5 9h-5 M3 15c2 2 4 2.5 7 2.5s5-.5 7-2.5"/>',
+  snow: '<path d="M10 2v16 M3 6l14 8 M3 14l14-8 M8 3l2 2 2-2 M8 17l2-2 2 2"/>',
 };
 // the stance word as a tag, with an arrow for one turn after it moved (TODO 21); pine / chestnut / oxblood for warm / cool / cold
 const stanceTag = m => { const w = stanceWord(m.stance), a = stanceMoved(S, m); return `<span class="tag st-${w}">${w}${a ? `<i class="arr ${a > 0 ? 'up' : 'down'}">${a > 0 ? '↑' : '↓'}</i>` : ''}</span>`; };
@@ -43,6 +46,7 @@ function render() {
   if ($('#bn')) marketNums();
   fitMap(); if (beat) countUp(app);
   if (UI.winterBeat) { UI.winterBeat = false; const sc = $('.scene'); if (sc) countUp(sc); } // the autumn ledger counts the chest on its first showing
+  if (UI.cardBeat) { UI.cardBeat = false; const f = $('.tc .flip'); if (f) setTimeout(() => f.classList.remove('down'), 380); } // the winter card lies face down a breath, then turns
   if (UI.pane === 'map') UI.routeDrawn = S.destination;
 }
 // the map behind the band and the commit sheet: crop to the known world, match the screen's shape, and sit the world in the free water between the two
@@ -185,7 +189,7 @@ function marketNums() {
 // ---- The band: year, king, silver and men; tap it for the Saga. What changed shows once, when the band is in view (TODO 21) ----
 function bandHTML(quiet, beat) {
   const k = S.king, titles = k.titles.map(t => `<span class="tag">${TITLES[t].name}</span>`).join('');
-  const nextFork = T.forkAges.find(a => a > k.age), death = k.age > 50 ? Math.round(5 * (k.age - 50) * (has(S,'oldwise') ? .5 : 1)) : 0;
+  const nextFork = T.forkAges.find(a => a > k.age), death = Math.round(100 * deathOdds(S));
   const show = quiet || UI.man || UI.saga, d = UI.pend;
   const delta = v => show && v ? `<span class="delta ${v > 0 ? 'up' : 'down'}">${v > 0 ? '+' : ''}${v}</span>` : '';
   const n = (v, dv) => `<b data-count="${v}">${beat && dv ? v - dv : v}</b>`; // counts up to v on the beat
@@ -454,8 +458,82 @@ function rulerSheet(k) {
     <div class="actions"><button onclick="UI.man=null;render()">Back</button></div></div></div>`;
 }
 
+// ---- The winter card (audit 3, option A: the Turn) ----------------------------------------
+// One card lies face down on the winter night, turns, and takes the tone of what it says: grave (oxblood), good (pine), warning (chestnut), routine (iron).
+// Under it, the rest of the winter as weighted rows; past fifty, the King's own card, which the button turns.
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+function cardRead(sc) {
+  const k = S.king, o = { tone: 'quiet', glyph: 'hall', title: sc.title, lead: sc.lines[0] || '', chips: [], rows: [], note: '' };
+  const kids = S.children.filter(c => !c.ofAge), ofAge = S.notables.filter(m => m.son && !m.isKing).length;
+  if (sc.ev === 'birth') { const son = sc.kid ? sc.kid.sex === 'm' : /son/.test(sc.title); o.tone = 'boon'; o.glyph = 'babe';
+    o.chips.push(son ? `The line · <b>${plural(ofAge + kids.filter(c => c.sex === 'm').length, 'son')}</b> · ${ofAge || 'none'} of age` : `<b>${plural(kids.filter(c => c.sex === 'f' && !c.married).length, 'daughter')}</b> · at sixteen a jarl may ask`); }
+  else if (sc.ev === 'jarlDeath') { o.tone = 'blood'; o.glyph = 'death'; if (sc.dead) { o.lead = `He was ${sc.dead.a}.`; if (sc.dead.m) o.chips.push({ h: `${sc.dead.m} men unled`, cls: 'down' }); } }
+  else if (sc.ev === 'wanderer') { o.glyph = 'wanderer'; o.lead = 'He winters in the hall and talks of far coasts.'; if (!has(S, 'silvertongue')) o.chips.push(`Rumor in spring <s>${T.rumor}</s> <b>${rumorPrice(S)}</b> silver`); }
+  else if (sc.ev === 'hardWinter') { o.tone = 'omen'; o.glyph = 'snow'; o.lead = 'The ice came early and lies long.';
+    const home = S.notables.filter(m => m.place === 'home').reduce((a, m) => a + m.men, 0) + unledMen(S), b = Math.round(home * T.upkeep * (has(S, 'deepchest') ? 0.5 : 1));
+    o.chips.push({ h: `Next autumn's bill <s>${b}</s> <b>${b * 2}</b> silver`, cls: 'down' }); o.note = `at today's ${home} men at home`; }
+  else if (sc.ev === 'harvest') { o.tone = 'boon'; o.glyph = 'land'; o.lead = 'The land is kind.'; const r = S.holdings.reduce((a, h) => a + h.pay, 0); if (r) o.chips.push({ h: `Rents next summer <s>${r}</s> <b>${r * 2}</b>`, cls: 'up' }); }
+  else if (sc.ev === 'seaman') { o.tone = 'boon'; o.glyph = 'men'; const m = sc.man && notable(sc.man); if (m) o.chips.push(`Combat ${m.combat} · Rule ${m.rule} · Follow ${m.follow} · ${m.age}`); }
+  else if (sc.ev === 'suitor') { o.tone = 'boon'; o.glyph = 'oath'; o.lead = 'Give her, and he is kin. Kin kneel to your heir without a price.'; }
+  else if (sc.ev === 'feud') { o.tone = 'omen'; o.glyph = 'axe'; const b = sc.feud && notable(sc.feud.b); if (b) o.chips.push(`${esc(b.name)} · ${stanceWord(b.stance)} · Follow ${b.follow}`); }
+  else if (sc.ev === 'quiet') { o.lead = 'Snow on the roof. Nothing stirs.'; }
+  else if (sc.ev === 'rival' && sc.fight) { const f = sc.fight, whose = f.foe ? `${f.foe}'s fleet` : 'A strange fleet'; o.glyph = 'sail';
+    o.title = f.foe ? `${f.foe}'s fleet` : 'A strange sail'; o.tone = f.fell ? 'blood' : f.foe ? 'omen' : 'held';
+    o.lead = `${whose} came up the fjord. The hall ${f.fell ? 'fell' : 'held'}.`; o.fight = f;
+    if (sc.lost) { if (sc.lost.silver) o.chips.push({ h: `−${sc.lost.silver} silver`, cls: 'down' }); if (sc.lost.men) o.chips.push({ h: `−${sc.lost.men === 1 ? '1 man' : `${sc.lost.men} men`}`, cls: 'down' }); }
+    if (sc.kingSlain) { o.title = `${k.name} is slain`; o.glyph = 'death'; o.lead = `${whose} came up the fjord. The hall fell, and ${k.name} died in its door.`; }
+    if (sc.slain) o.rows.push({ tone: 'blood', t: `${sc.slain.n} died in the door.`, s: sc.slain.m ? `${sc.slain.m} men unled` : '' });
+    if (f.foe) o.rows.push({ tone: 'omen', t: `${f.foe} is hostile.`, s: 'His fleets keep coming while he stays hostile. Gift silver in spring to warm him.' }); }
+  else if (sc.ev === 'rival') { o.glyph = 'sail'; o.tone = /fell/.test(o.lead) ? 'blood' : 'quiet'; o.lead = sc.lines.join(' '); } // a save from before the card carried its fight
+  const aged = sc.aged || [];
+  if (aged.length === 1) { const a = aged[0]; o.rows.push({ tone: 'quiet', t: `${a.n}, ${a.a}, died in his bed.`, s: a.m ? `${a.m} men walk home unled` : '' }); }
+  else if (aged.length > 1) { const sum = aged.reduce((x, a) => x + a.m, 0); o.rows.push({ tone: 'quiet', t: `${aged.length} old men died in their beds.`, s: aged.map(a => `${a.n} ${a.a}`).join(' · ') + (sum ? ` · ${sum} men unled` : '') }); }
+  for (const n of sc.gather || []) o.rows.push({ tone: 'omen', t: `${n}'s fleet is gathering.`, s: 'It sails on the hall next winter if he is still hostile. Warm him with silver in spring, or leave men home.' });
+  if (sc.benchFull) o.rows.push({ tone: 'quiet', t: 'The benches are full.', s: `${T.benches} named men sit without land. No new man comes until one is given a holding.` });
+  if (sc.answer) { const j = notable(sc.choice.j), d = S.children.find(c => c.id === sc.choice.d); o.rows.unshift(sc.answer === 'yes' ? { tone: 'boon', t: `${j ? j.name : 'He'} is kin.`, s: 'He kneels to your heir without a price.' } : { tone: 'quiet', t: `${d ? d.name : 'She'} stays in the hall.`, s: `${j ? j.name : 'He'} says nothing at the table.` }); }
+  return o;
+}
+const cardRows = (rows, d0, beat) => rows.map((r, i) => `<div class="crow tone-${r.tone}${beat ? ' in' : ''}" style="animation-delay:${beat ? d0 + 120 * i : 0}ms"><i></i><div><div class="t">${esc(r.t)}</div>${r.s ? `<div class="s">${esc(r.s)}</div>` : ''}</div></div>`).join('');
+const vsHTML = f => { const t = f.h + f.f || 1; return `<div class="vs ${f.fell ? 'fell' : 'held'}"><div class="lab"><span>Guard <b>${f.h}</b></span><span>the hall ${f.fell ? 'fell' : 'held'}</span><span>Fleet <b>${f.f}</b></span></div><div class="track"><i class="h" style="width:${100 * f.h / t}%"></i><i class="f" style="width:${100 * f.f / t}%"></i></div></div>`; };
+const cardFoot = (label, small, cls, fn) => `<div class="cardfoot"><button class="${cls}" onclick="${fn}"><span>${esc(label)}</span><small>${esc(small)}</small></button></div>`;
+function winterCardHTML(sc) {
+  const k = S.king, o = cardRead(sc), beat = UI.cardYear !== S.year && !reducedMotion; if (UI.cardYear !== S.year) { UI.cardYear = S.year; UI.cardBeat = beat; }
+  const j = sc.choice && notable(sc.choice.j), r = sc.roll, rolled = UI.rolled === S.year, d0 = beat ? 950 : 0;
+  const suitor = j ? `<div class="suitor"><span class="nm">${esc(j.name)}, ${j.age}</span>${stanceTag(j)}<span class="st">Combat ${j.combat} · Rule ${j.rule} · Follow ${j.follow} · ${j.men} of ${fCap(S, j)} men</span></div>` : '';
+  const chips = o.chips.length ? `<div class="cchips">${o.chips.map(c => typeof c === 'string' ? `<span class="cchip">${c}</span>` : `<span class="cchip ${c.cls || ''}">${c.h}</span>`).join('')}</div>${o.note ? `<div class="cnote">${esc(o.note)}</div>` : ''}` : '';
+  const card = `<div class="tc"><div class="flip${beat ? ' down' : ''}" onclick="this.classList.remove('down')"><div class="face tone-${o.tone}"><div class="ctop">${ico(o.glyph)}<small>Winter ${S.year}</small></div>
+    <h3>${esc(o.title)}</h3><p class="lead">${esc(o.lead)}</p>${suitor}${o.fight ? vsHTML(o.fight) : ''}${chips}</div>
+    <div class="back"><span class="cyr">${S.year}</span><small>one card turns</small></div></div></div>`;
+  const rows = o.rows.length ? `<div class="crows">${cardRows(o.rows, d0, beat)}</div>` : '';
+  const roll = r ? `<div class="rollc${beat ? ' in' : ''}" style="animation-delay:${d0 + 120 * o.rows.length}ms"><div class="flip${rolled ? '' : ' down'}"><div class="face tone-${r.dies ? 'blood' : 'boon'}"><span class="cwho">${esc(k.name)} ${r.dies ? 'dies in his sleep.' : 'sees the spring.'}</span><span class="p">${Math.round(100 * r.p)}%</span><div class="strand"><i style="width:${100 - 100 * r.p}%"></i></div></div>
+    <div class="back"><span class="cwho">${esc(k.name)}, ${k.age} · his winter</span><span class="p">${Math.round(100 * r.p)}%</span></div></div></div>` : '';
+  let foot;
+  if (j && !sc.answer) foot = `<div class="cardfoot two"><button class="primary" onclick="act(()=>answerSuitor(S,true))">Give her</button><button onclick="act(()=>answerSuitor(S,false))">Refuse</button></div>`;
+  else if (r && !rolled) foot = cardFoot('Turn his card', `${Math.round(100 * r.p)}% · ${k.name}, ${k.age}`, 'roll', 'turnRoll(this)');
+  else if (sc.kingSlain || (r && r.dies)) foot = cardFoot(`${k.name} is dead`, 'his saga', 'grave', 'act(()=>next(S))');
+  else foot = cardFoot('Spring', String(S.year + 1), 'primary', 'act(()=>next(S))');
+  return `<div class="overlay night"><div class="stage">${card}${rows}${roll}</div>${foot}</div>`;
+}
+// the King's card turns in place; the button names what follows once it has
+function turnRoll(b) { UI.rolled = S.year; b.disabled = true; const f = $('.rollc .flip'); if (f) f.classList.remove('down'); setTimeout(render, reducedMotion ? 0 : 650); }
+// the death card names how he died and who takes the hall, or that no one can (audit 3, TODO 29)
+function deathHTML(sc) {
+  const k = S.king, r = S.reign, sons = S.notables.filter(m => m.son && !m.isKing), inlaw = !sons.length && S.notables.filter(m => m.kin && !m.son && !m.isKing).sort((a, b) => a.age - b.age)[0];
+  const cause = sc.cause === 'slain' ? 'Slain in the door of his hall.' : sc.cause === 'fell' ? `Fell in the shield wall at ${esc(sc.at)}.` : sc.kid ? `Died in his bed, the winter ${esc(sc.kid)} was born.` : sc.cause === 'age' ? 'Died in his bed.' : '';
+  const boys = S.children.filter(c => c.sex === 'm' && !c.ofAge);
+  const heir = sons.length ? `<div class="heir">${sons.length === 1 ? 'His heir' : 'His sons'}: <b>${sons.map(m => `${esc(m.name)}, ${m.age}`).join(' · ')}</b></div>`
+    : inlaw ? `<div class="heir">No son of age. <b>${esc(inlaw.name)}</b>, married into the line, takes the hall.</div>`
+    : `<div class="heir broken">No son of age. No kin to take the hall. The line is broken.${boys.length ? `<small>${boys.map(c => `${esc(c.name)} is ${c.age}`).join(' · ')}</small>` : ''}</div>`;
+  const card = `<div class="dead in"><h3>${ico('death')}${esc(k.name)} is dead</h3>${cause ? `<div class="cause">${cause}</div>` : ''}<div class="meta">${k.age} winters · king ${r.start}–${S.year}${r.title ? ` · ${esc(r.title)}` : ''}</div>
+    <p>${r.bestRaid ? `The year ${r.bestRaid.year}: ${esc(r.bestRaid.shore)} fell and the ship came home with ${r.bestRaid.loot} silver.` : 'He never took a shore.'} ${r.bestHoldings ? `At most ${plural(r.bestHoldings, 'holding')} answered to him.` : 'No holding ever answered to him.'}</p>${heir}</div>`;
+  const foot = sons.length ? cardFoot('The heir', 'the jarls weigh him', 'primary', 'act(()=>startSuccession(S))') : inlaw ? cardFoot(`${inlaw.name} takes the hall`, 'a new king', 'primary', 'act(()=>startSuccession(S))') : cardFoot('The line is broken', 'the dynasty saga', 'grave', 'act(()=>startSuccession(S))');
+  return `<div class="overlay night"><div class="stage">${card}</div>${foot}</div>`;
+}
+
 // ---- Scenes -------------------------------------------------------------------------------
 function overlayHTML(sc) {
+  if (sc.t === 'event') return winterCardHTML(sc); // the winter card turns on the night (audit 3)
+  if (sc.t === 'death') return deathHTML(sc);
   const btn = (t, fn, cls = 'primary') => `<button class="${cls}" onclick="act(()=>${fn})">${t}</button>`;
   let h = '';
   if (sc.t === 'intro') h = `<h1>${ico('hall')}${S.year}. Spring.</h1><p>You are ${esc(S.king.name)}, twenty, with a hall, forty men, and one ship.</p><p><b>Tap a coast. Put men aboard. Press Sail.</b></p><p>Men on the ship raid. Men on the land hold. Men at home eat. Each named man leads F × 10.</p><p>Every summer the fleet sails. Every winter one card turns. Past fifty, every winter rolls against you. The year, up top, opens the Saga.</p><div class="actions">${btn('Begin', 'next(S)')}</div>`;
@@ -483,9 +561,6 @@ function overlayHTML(sc) {
     ${ship.map(who).join('') || (sc.walked ? '' : '<div class="empty">The King cannot stay. Only another jarl can hold a shore.</div>')}`; }
   else if (sc.t === 'summary') h = `<h1>${esc(sc.title)}</h1>${sc.lines.map(l => `<p>${esc(l)}</p>`).join('')}<div class="actions">${btn('On', 'next(S)')}</div>`;
   else if (sc.t === 'winter') h = winterHTML(sc); // the autumn ledger and the market (TODO 20, audit 2)
-  else if (sc.t === 'event') h = `<h1>${esc(sc.title)}</h1>${sc.lines.map(l => `<p>${esc(l)}</p>`).join('')}<div class="actions">${sc.choice ? btn('Give her', 'acceptSuitor(S,true)') + btn('Refuse', 'acceptSuitor(S,false)', '') : btn('On', 'next(S)')}</div>`;
-  else if (sc.t === 'death') { const r = S.reign;
-    h = `<h1>${ico('death')}${esc(S.king.name)} is dead</h1><p>${S.king.age} winters. King ${r.start}–${S.year}.</p><h2>The Saga</h2>${r.bestRaid ? `<p>The year ${r.bestRaid.year}: ${esc(r.bestRaid.shore)} fell and the ship came home with ${r.bestRaid.loot} silver.</p>` : '<p>He never took a shore.</p>'}<p>At most ${r.bestHoldings} holdings answered to him.${r.title ? ` Men called him ${r.title}.` : ''}</p><div class="actions">${btn('The heir', 'startSuccession(S)')}</div>`; }
   else if (sc.t === 'heir') h = `<h1>${ico('men')}The Heir</h1><p>Pick a son. The jarls will weigh his Rule against their own following.</p>${sc.sons.map(id => { const m = notable(id); return `<div class="pick" onclick="act(()=>chooseHeir(S,'${id}'))"><span class="name">${esc(m.name)}</span><br>${statLine(m)}</div>`; }).join('')}`;
   else if (sc.t === 'oath') { const j = notable(sc.jarl), h2 = S.holdings.find(h => h.id === j.place);
     h = `<h1>${ico('oath')}${esc(j.name)} of ${esc(h2.name)}</h1><p>${statLine(j)} · ${j.men} men</p>${sc.kneels ? `<p class="rich">He kneels${j.kin ? ' — he is kin' : ''}.</p><div class="actions">${btn('On', 'oathPay(S,false)')}</div>`

@@ -116,7 +116,7 @@ Five screens, one round each, in order of use: spring Map pane · Winter sheet �
 **Round 1 decided:** A, The Chart (full-bleed fogged map, commit sheet with the odds' temperature, arrival beat, departure). Built. Left over from it: label pile-up on the Channel coast by 900 and 7.5 px king names, which pinch-zoom (15) should fix; realm tints still read as pills.
 **Also decided mid-round (Levi):** no sheet should need a scroll to the bottom to leave. Every dismissible sheet has a sticky title row with an ×. Keep this rule for every new sheet.
 **Round 2 decided (2026-10-23):** A, The Ledger. The Winter sheet is "Autumn N": a counted account of the year (chest in spring, loot, a rent row per holding, the hall's bill with the plain figure struck through when a title or a hard winter changed it), events weighted by kind, the market as one card with what the men buy ("+37 ship strength under Ragnar") and the room among the named men, collapsing to one line when nothing can be bought, and a sticky "Into winter · one card turns". Built session 8. Not taken from B or C: the waterfall bar; bought men going straight to a leader (they still sit unled until Fill).
-**Round 3 published (2026-10-24, session 10):** the winter card. Audit page https://claude.ai/artifact/HCnFYiyjm25E4SSc3oozDd with three live options on real playtest saves: A, The Turn (my pick: a face-down card that turns, toned by kind; the King's roll as a second card you turn); B, The Hall at Night (a drawing of the fjord, high seat, benches and children that the card acts on); C, The Saga Page (the winter as a saga sentence, Ahead, and a strip of the reign's winters). Shared by all three: the fight as Guard vs Fleet, effects in numbers, deaths in bed grouped, the gathering fleet (27) and the full bench (26) as rows, the King's old-age roll on the card, and a death card that names the cause and the heir or the broken line (29). Waiting on Levi's pick. Found on the way: duplicate names among named men (two Odos, two Osrics in one hall), "His 0 men" / "His 1 men", "This is what that costs." printed when the hall held, and the death card's "At most 0 holdings".
+**Round 3 published (2026-10-24, session 10):** the winter card. Audit page https://claude.ai/artifact/HCnFYiyjm25E4SSc3oozDd with three live options on real playtest saves: A, The Turn (my pick: a face-down card that turns, toned by kind; the King's roll as a second card you turn); B, The Hall at Night (a drawing of the fjord, high seat, benches and children that the card acts on); C, The Saga Page (the winter as a saga sentence, Ahead, and a strip of the reign's winters). Shared by all three: the fight as Guard vs Fleet, effects in numbers, deaths in bed grouped, the gathering fleet (27) and the full bench (26) as rows, the King's old-age roll on the card, and a death card that names the cause and the heir or the broken line (29). **Decided: A, The Turn. Built session 10.** Found on the way (all fixed in the build): duplicate names among named men (two Odos, two Osrics in one hall), "His 0 men" / "His 1 men", "This is what that costs." printed when the hall held, and the death card's "At most 0 holdings".
 
 ---
 
@@ -128,11 +128,13 @@ Levi's first full run: never lost a battle, never short of men or silver, expand
 
 ## 26. The bench cap is silent
 Wanderers and locals stop coming when 8 named men sit without holdings (`T.benches`). Nothing in the UI says the hall is full. Say so where the player would expect the man: the winter card and the quiet-years line.
+**Half done session 10:** the winter card says "The benches are full" the winter they fill. The quiet-years line on the Autumn sheet still says nothing.
 
 ---
 
 ## 27. A king's fleet is announced by nothing but the word
 A hostile king's fleet comes only after a full year hostile (`wroth`), but only the word "hostile" tells the player. Round 3, the winter event card, is the place to warn ("his fleet is gathering").
+**Done session 10:** the winter card carries "X's fleet is gathering" the winter he turns wroth, and every king's fleet card says his fleets keep coming while he stays hostile.
 
 ---
 
@@ -143,6 +145,7 @@ Past ten holdings each stirs at a small chance, about one ledger event a year la
 
 ## 29. Check the new deaths on the real cards
 Named men falling in fights (the summary card) and the King slain in the hall door are checked headlessly only. Play both in the real UI and read the cards.
+**Session 10:** the death card now names the cause (slain in the door, fell in the shield wall at X, died in his bed, the winter a child was born), the heir or the in-law, or "The line is broken". Checked in headless shots; still to be played by hand.
 
 ---
 

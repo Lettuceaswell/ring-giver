@@ -26,7 +26,7 @@ function drive() {
   else if (sc.t === 'fight') { fights++; act(() => next(S)); }
   else if (sc.t === 'stay') { const ship = S.notables.filter(m => m.place === 'ship' && !m.isKing); if (ship.length && r() < 0.6) { stays++; act(() => chooseStay(S, ship[0].id)); } else if (sc.walked && r() < 0.5) { act(() => chooseStay(S, 'walked')); } else act(() => choosePlunder(S)); }
   else if (sc.t === 'winter') { winters++; if (S.silver > 60 && r() < 0.7) act(() => buyMen(S, 10)); check('winter'); act(() => closeWinter(S)); }
-  else if (sc.t === 'event') { act(() => sc.choice ? acceptSuitor(S, r() < 0.5) : next(S)); }
+  else if (sc.t === 'event') { if (sc.choice) { act(() => answerSuitor(S, r() < 0.5)); check('event answered'); } if (sc.roll) { UI.rolled = S.year; render(); check('event rolled'); } act(() => next(S)); } // the winter card: answer, turn the King's card, move on
   else if (sc.t === 'fork') act(() => takeTitle(S, sc.offers[r() < 0.5 ? 0 : 1]));
   else if (sc.t === 'death') { deaths++; act(() => startSuccession(S)); }
   else if (sc.t === 'heir') act(() => chooseHeir(S, sc.sons[0]));
