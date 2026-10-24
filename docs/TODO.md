@@ -108,3 +108,10 @@ The story lives in six log lines at the foot of the page and in winter cards tha
 **Build order:** 19 first (every other item hangs on where things sit) → 18 → 20 → 22 → 21. 19 and 18 are one session; 20 wants a playtest after.
 
 **Decided 2026-10-23 (Levi):** all five approved as recommended. One save at a time (18). **Built 2026-10-23 (session 5)**, plus the market's frame of reference on the Winter sheet and the real coastline from Natural Earth (closes the coastline-art line of TODO 15). Open from 15: pinch-zoom and pan, tap a holding for its details. See LOG.
+
+---
+
+## 24. The screen audit (started 2026-10-23)
+Five screens, one round each, in order of use: spring Map pane · Winter sheet · winter event card · Fight sheet · Hall pane. Each round: every state screenshotted (`tools/audit/shoot.sh`), a dopamine-audit critique, three live alternatives in one artifact, Levi's pick built before the next screen. Tracker: `docs/audits/README.md`.
+**Round 1 decided:** A, The Chart (full-bleed fogged map, commit sheet with the odds' temperature, arrival beat, departure). Built. Left over from it: label pile-up on the Channel coast by 900 and 7.5 px king names, which pinch-zoom (15) should fix; realm tints still read as pills.
+**Also decided mid-round (Levi):** no sheet should need a scroll to the bottom to leave. Every dismissible sheet has a sticky title row with an ×. Keep this rule for every new sheet.

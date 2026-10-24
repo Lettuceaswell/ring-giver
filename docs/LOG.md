@@ -23,7 +23,13 @@ Levi: audit the five most-used screens one at a time, three live alternatives ea
 
 **Open from the audit, not built:** label pile-up on the Channel coast by 900 and 7.5 px king names (pinch-zoom is the real fix, TODO 15); the realm tints as pills.
 
-**Next:** screens 2–5 in order: the Winter sheet, the winter card, the Fight sheet, the Hall pane. Same method: a harness page that loads a saved state from the hash, headless screenshots, one artifact with three live options.
+**The audit kit, committed** (`tools/audit/`, `docs/audits/`), so the next round starts cold:
+- `tools/audit/shoot.sh setup` builds a harness dir (symlinks to the game, a driver copy of `index.html` that loads a saved state from the URL hash, the states folder) and serves it on :8766. `tools/audit/shoot.sh NAME 'state=spring-815&pane=hall'` shoots it at 390×844, 2×, to `tools/audit/out/NAME.png`. Hash keys are listed at the top of the script. Re-run setup after editing `index.html`.
+- `node tools/audit/gen-states.js` drives a dynasty headlessly and dumps saves at chosen moments: spring 793/800/815/850/900, landfall, fight-win, fight-lose, stay, winter, an event, a death. Edit the `dump()` calls for the states a screen needs.
+- The Chrome extension was not connected this session; the kit needs only Chromium and Node. Levi's phone is still the final judge of timing.
+- `docs/audits/README.md` tracks the five rounds. `1-spring-map.template.html` is the audit page's source with its data; the published page is the artifact linked there.
+
+**Next:** round 2, the Winter sheet. Screenshot its states (land lines, hall eats, market at 0 / some / max silver, the unled warning, Fair-dealer price), critique, three live options in one artifact, Levi picks.
 
 ## 2026-10-23 (session 6, the landing screen)
 

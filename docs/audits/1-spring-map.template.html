@@ -1,0 +1,487 @@
+<title>Spring Map Screen</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a reading column for the audit, then three phones side by side on a dark bench. Single theme by choice: the game's own Forge palette (House Hansen), so the mock-ups sit in their real colors. */
+:root{
+  --bg:#2B2E33; --surface:#353A40; --raised:#3D434A; --rule:#4A4F55; --deep:#24272C;
+  --text:#E8DFCC; --muted:#C9A58E; --iron:#8A9096;
+  --primary:#5A95A6; --on-primary:#2B2E33; --fjord:#214C58; --sea:#1B3C46; --sea-dark:#152E36;
+  --accent:#C9A58E; --chestnut:#A47159; --pine:#8FA793; --oxblood:#B07A7C;
+  --display:"Fraunces","Iowan Old Style",Georgia,serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:2px; --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 80px}
+.col{max-width:720px}
+h1,h2,h3,h4{font-weight:400;margin:0;text-wrap:balance}
+.eyebrow{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:28px;height:1.5px;background:var(--accent)}
+h1{font:400 44px/1.05 var(--display);margin:14px 0 12px}
+h2{font:500 11px/1.4 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:48px 0 14px;padding-top:14px;border-top:1px solid var(--rule)}
+h3{font:400 24px/1.2 var(--display);color:var(--accent);margin:0 0 8px}
+p{margin:8px 0}
+.lede{font-size:18px;color:var(--text);max-width:62ch}
+.muted{color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+b{font-weight:600}
+a{color:var(--primary)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th{text-align:left;font:500 10.5px/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:6px 10px 6px 0;border-bottom:1px solid var(--rule)}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td:first-child{font-family:var(--display);font-size:16px;white-space:nowrap}
+.tbl{overflow-x:auto}
+.tag{display:inline-block;font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--muted);border-radius:var(--r);padding:3px 5px;margin:0 3px 3px 0;white-space:nowrap;vertical-align:1px}
+.tag.up{color:var(--pine);border-color:var(--pine)}.tag.down{color:var(--oxblood);border-color:var(--oxblood)}
+.five{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:16px 0 0}
+.five div{background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;font-size:13.5px;line-height:1.4}
+.five .k{font-family:var(--display);font-size:17px;display:block;color:var(--text)}
+.five .n{font-family:var(--mono);color:var(--muted);font-size:12px;display:block;margin-top:4px}
+.five .here{border-color:var(--primary)}
+/* the original, with callouts */
+.now{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:24px;align-items:start;margin-top:14px}
+.now img{width:100%;border:1px solid var(--rule);border-radius:var(--r);display:block}
+.shots{display:grid;gap:12px}
+.shots figcaption{font:400 12px/1.4 var(--mono);color:var(--muted);margin-top:6px}
+.calls{counter-reset:c;display:grid;gap:10px;align-content:start}
+.calls div{display:grid;grid-template-columns:26px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
+.calls div::before{counter-increment:c;content:counter(c);width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--bg);font:600 12px/22px var(--mono);text-align:center}
+.calls i{font-style:normal;color:var(--muted);font-family:var(--mono);font-size:12px}
+@media (max-width:700px){.now{grid-template-columns:1fr}}
+/* verdict and fixes */
+.verdict{font-family:var(--display);font-size:21px;line-height:1.4;color:var(--text);max-width:60ch}
+.fixes{display:grid;gap:12px;margin-top:14px}
+.fix{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:var(--r);padding:14px 16px}
+.fix h4{font:400 20px/1.25 var(--display);color:var(--text);margin-bottom:6px}
+.fix p{font-size:14.5px;margin:4px 0}
+.fix .m{margin-top:8px}
+ul{padding-left:18px;margin:8px 0}li{margin:4px 0;font-size:15px}
+/* the bench */
+.bench{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:18px;align-items:start}
+@media (max-width:980px){.bench{grid-template-columns:1fr;max-width:460px}}
+.opt{display:grid;gap:10px}
+.opt header{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.opt .letter{font:400 13px/1 var(--mono);color:var(--muted);letter-spacing:.14em;text-transform:uppercase}
+.opt .pick{font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--pine);border:1px solid var(--pine);border-radius:var(--r);padding:4px 6px}
+.ctrl{display:flex;gap:6px;flex-wrap:wrap}
+.ctrl button{font:500 12px/1 var(--body);background:var(--raised);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:8px 10px;cursor:pointer;letter-spacing:.04em}
+.ctrl button.on{border-color:var(--primary);color:var(--primary)}
+.ctrl button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.frame{width:100%;position:relative;background:var(--deep);border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.ph{width:390px;height:844px;transform-origin:top left;position:absolute;left:0;top:0;background:var(--bg);color:var(--text);font:400 16px/1.5 var(--body);overflow:hidden;display:flex;flex-direction:column;-webkit-user-select:none;user-select:none}
+.notes{font-size:14px;color:var(--text)}
+.notes p{margin:6px 0}
+.notes .t{font-family:var(--display);font-size:19px;color:var(--accent);margin-bottom:4px}
+.notes ul{padding-left:16px}.notes li{font-size:13.5px;margin:3px 0}
+.notes .risk{color:var(--muted);font-size:13px;border-top:1px solid var(--rule);padding-top:8px;margin-top:8px}
+
+/* ===== inside the phones: shared ===== */
+.ph *{-webkit-tap-highlight-color:transparent}
+.ph button{font:500 15px/1.2 var(--body);background:var(--raised);color:var(--text);border:1px solid var(--rule);border-radius:var(--r);padding:9px 12px;cursor:pointer}
+.ph .ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ph .tabs{display:flex;flex:none;background:var(--bg);border-top:1px solid var(--rule)}
+.ph .tabs button{flex:1;background:none;border:0;border-radius:0;padding:7px 0 9px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font:500 10.5px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;box-shadow:inset 0 2px 0 transparent}
+.ph .tabs button svg{width:20px;height:20px}
+.ph .tabs button.on{color:var(--text);box-shadow:inset 0 2px 0 var(--primary)}.ph .tabs button.on svg{color:var(--primary)}
+.ph .tabs .cnt{font:400 10px/1 var(--mono);color:var(--muted);letter-spacing:0}
+/* the map */
+.ph svg.map{display:block;width:100%;height:100%}
+.ph .land{fill:#3A3F46;stroke:rgba(232,223,204,.30);stroke-width:.7;fill-rule:evenodd;vector-effect:non-scaling-stroke}
+.ph .land.dark{fill:#2E3238;stroke:rgba(232,223,204,.10)}
+.ph .seaLit{fill:#1F4551}.ph .seaDark{fill:var(--sea-dark)}
+.ph .edge{stroke:var(--text);stroke-opacity:.18;stroke-width:1}
+.ph .realm{opacity:.28}.ph .realm circle{fill:currentColor}.ph .realm line{stroke:currentColor;stroke-width:24;stroke-linecap:round}
+.ph .coast{fill:var(--text)}.ph .coast.unseen{fill:var(--iron)}.ph .coast.home{fill:var(--accent)}.ph .coast.hold{fill:var(--primary)}.ph .coast.nohold{fill:var(--sea);stroke:var(--text);stroke-width:1.2}
+.ph .coast.dark{fill:var(--iron);opacity:.5}
+.ph .lbl{font:10px var(--body);fill:var(--text);opacity:.88;pointer-events:none}
+.ph .lbl.l{text-anchor:end}.ph .lbl.c{text-anchor:middle}
+.ph .lbl.king{font:500 7.5px var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+.ph .hit{fill:transparent;cursor:pointer}
+.ph .ring{fill:none;stroke:var(--primary);stroke-width:1.6}
+.ph .pulse{fill:none;stroke:var(--accent);stroke-width:1.5;animation:pulse 1.6s var(--ease) infinite}
+@keyframes pulse{0%{stroke-opacity:1;r:7}100%{stroke-opacity:.15;r:14}}
+.ph .route{fill:none;stroke:var(--primary);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
+.ph .route.draw{animation:draw .8s var(--ease) both}
+@keyframes draw{from{stroke-dasharray:1;stroke-dashoffset:1}to{stroke-dasharray:1;stroke-dashoffset:0}}
+.ph .shipdot{fill:var(--text)}
+.ph .bloom{animation:bloom .9s var(--ease) both}
+@keyframes bloom{0%{opacity:0;transform:scale(.5)}60%{opacity:1;transform:scale(1.25)}100%{opacity:1;transform:scale(1)}}
+.ph .fogin{animation:fogin 1s var(--ease) both}
+@keyframes fogin{from{transform:scale(.72)}to{transform:scale(1)}}
+.ph g.c{transform-box:fill-box;transform-origin:center}
+.ph mask g.fogin{transform-box:view-box}
+/* numbers that count */
+.ph .delta{display:inline-block;margin-right:6px;font-weight:500;animation:delta 2.6s var(--ease) forwards}
+.ph .delta.up{color:var(--pine)}.ph .delta.down{color:var(--oxblood)}
+@keyframes delta{0%,60%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-6px)}}
+/* odds temperature */
+.t-sure{--temp:var(--pine)}.t-likely{--temp:var(--primary)}.t-even{--temp:var(--chestnut)}.t-long{--temp:var(--oxblood)}.t-hopeless{--temp:var(--oxblood)}
+.ph .bar{height:6px;background:var(--rule);border-radius:var(--r);overflow:hidden;display:flex}
+.ph .bar i{display:block;height:100%;transition:width .5s var(--ease)}
+.ph .bar .s{background:var(--primary)}.ph .bar .d{background:var(--chestnut)}
+.ph .odds{font:12px/1.4 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.ph .odds b{font-weight:500}.ph .odds .us{color:var(--primary)}.ph .odds .them{color:var(--chestnut)}
+.ph .cap{position:absolute;left:0;right:0;bottom:118px;text-align:center;font:400 12px/1.4 var(--mono);color:var(--muted);pointer-events:none;opacity:0;transition:opacity .3s}
+.ph .cap.show{opacity:1}
+.ph .sailing{animation:leave .9s var(--ease) both}
+@keyframes leave{to{opacity:0;transform:translateY(12px)}}
+
+/* ===== Option A: the chart ===== */
+.A .mapwrap{position:absolute;inset:0}
+.A .band{position:relative;z-index:3;flex:none;background:rgba(33,76,88,.84);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:12px 14px 10px;display:grid;grid-template-columns:1fr auto;gap:2px 10px;box-shadow:0 1px 0 var(--rule),0 10px 18px -10px rgba(0,0,0,.6)}
+.A .year{font:400 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.A .year::after{content:" ▸";font-size:13px;color:var(--muted);vertical-align:3px}
+.A .res{text-align:right;font:500 13px/1.5 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;align-self:end}
+.A .res b{font-weight:500}
+.A .king{grid-column:1/-1;font-size:13px;opacity:.9;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px}
+.A .king .tag{margin:0;border-color:rgba(232,223,204,.5);color:var(--text)}
+.A .king .fork{color:var(--muted)}.A .king .death{color:var(--oxblood)}
+.A .life{grid-column:1/-1;height:2px;background:var(--rule);margin-top:6px;border-radius:1px;overflow:hidden}
+.A .life i{display:block;height:100%;background:var(--accent)}
+.A .chips{position:absolute;z-index:3;left:12px;right:12px;bottom:0;display:flex;justify-content:space-between;gap:8px;align-items:flex-end;padding-bottom:10px}
+.A .chip{background:rgba(43,46,51,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid var(--rule);border-radius:var(--r);padding:7px 10px;font:500 12.5px/1 var(--body);display:flex;align-items:center;gap:7px;color:var(--text)}
+.A .chip .ico{width:14px;height:14px;color:var(--muted)}
+.A .chip small{font:400 11px/1 var(--mono);color:var(--muted)}
+.A .chip.hint{border-color:var(--accent);animation:chipglow 1.6s var(--ease) infinite}
+@keyframes chipglow{0%,100%{box-shadow:0 0 0 0 rgba(201,165,142,0)}50%{box-shadow:0 0 0 4px rgba(201,165,142,.25)}}
+.A .free{flex:1;position:relative;z-index:2}
+.A .sheet{position:relative;z-index:3;flex:none;background:var(--surface);border-top:1px solid var(--rule);padding:12px 14px 0;box-shadow:0 -14px 24px -16px rgba(0,0,0,.7)}
+.A .dest{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.A .dname{font:400 23px/1.15 var(--display)}
+.A .dsub{font:12.5px/1.4 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.A .plank{margin:10px 0 10px;width:100%;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--primary);color:var(--on-primary);border:1px solid var(--primary);box-shadow:inset 0 -3px 0 var(--temp);font:500 19px/1.1 var(--display);transition:box-shadow .3s}
+.A .plank small{font:500 11px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.A .plank.ask{background:var(--raised);color:var(--primary);box-shadow:none}
+.A .plank:disabled{opacity:.45}
+
+/* ===== Option B: the plank ===== */
+.B .band{flex:none;background:var(--fjord);padding:12px 14px 10px;display:grid;grid-template-columns:1fr auto;gap:0 10px;box-shadow:0 1px 0 var(--rule),0 10px 18px -10px rgba(0,0,0,.6);z-index:3;position:relative}
+.B .year{font:400 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.B .year::after{content:" ▸";font-size:13px;color:var(--muted);vertical-align:3px}
+.B .res{text-align:right;font:500 13px/1.5 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;align-self:end}
+.B .res b{font-weight:500}
+.B .who{grid-column:1/-1;font-size:13px;opacity:.9;margin-top:4px;display:flex;gap:8px;align-items:baseline}
+.B .who .fork{color:var(--muted);margin-left:auto}.B .who .death{color:var(--oxblood);margin-left:auto}
+.B .tags{grid-column:1/-1;margin-top:5px;display:flex;gap:4px}.B .tags .tag{margin:0;border-color:rgba(232,223,204,.5);color:var(--text)}
+.B .pane{flex:1;min-height:0;padding:10px 12px 0;display:flex;flex-direction:column;gap:8px}
+.B .mapbox{flex:1 1 0;min-height:200px;border:1px solid var(--rule);border-radius:var(--r);overflow:hidden;background:var(--sea-dark);position:relative}
+.B .card{flex:none;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px}
+.B .drow{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+.B .dname{font:400 20px/1.15 var(--display)}
+.B .dsub{font:12px/1.4 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.B .chev{color:var(--primary);font-size:18px}
+.B .crew{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.B .crew span{font:500 12px/1 var(--body);border:1px solid var(--rule);border-radius:var(--r);padding:6px 8px;color:var(--text);display:flex;gap:6px;align-items:center}
+.B .crew span small{font:400 11px/1 var(--mono);color:var(--muted)}
+.B .crew span.home{color:var(--muted);border-style:dashed}
+.B .crew button{font:500 12px/1 var(--body);padding:6px 9px;color:var(--primary);border-color:var(--primary);background:var(--surface)}
+.B .crew button.hint{animation:chipglow 1.6s var(--ease) infinite}
+.B .wand{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:10px;padding-top:8px;border-top:1px solid var(--rule)}
+.B .wand b{font-weight:500;color:var(--text)}
+.B .wand .ico{width:14px;height:14px}
+.B .sail{flex:none;padding:8px 12px 6px}
+.B .plank{position:relative;width:100%;height:58px;border:1px solid var(--temp);border-radius:var(--r);overflow:hidden;background:var(--raised);padding:0;display:block}
+.B .plank .fill{position:absolute;inset:0;display:flex}
+.B .plank .fill i{display:block;height:100%;transition:width .5s var(--ease)}
+.B .plank .fill .s{background:var(--primary)}.B .plank .fill .d{background:var(--chestnut);opacity:.75}
+.B .plank .txt{position:relative;display:flex;justify-content:space-between;align-items:center;gap:8px;height:100%;padding:0 14px;color:var(--on-primary);font:500 17.5px/1.1 var(--display);white-space:nowrap}
+.B .plank .txt small{font:500 11px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--bg);opacity:.85}
+.B .plank.ask{border-color:var(--primary)}.B .plank.ask .txt{color:var(--primary)}.B .plank.ask .fill{display:none}
+.B .plank:disabled{opacity:.45}
+.B .flash{animation:flash 1.2s var(--ease) both}
+@keyframes flash{0%{fill:var(--accent);r:7}100%{r:3}}
+
+/* ===== Option C: the saga page ===== */
+.C .page{flex:1;min-height:0;overflow:hidden;padding:0 16px;display:flex;flex-direction:column}
+.C .head{padding:14px 0 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.C .season{font:400 11px/1.4 var(--body);letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.C .year{font:400 46px/1 var(--display);font-variant-numeric:tabular-nums;margin-top:2px}
+.C .year::after{content:" ▸";font-size:14px;color:var(--muted);vertical-align:6px}
+.C .res{text-align:right;font:500 13px/1.6 var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;margin-top:22px}
+.C .res b{font-weight:500}
+.C .prose{font:400 16.5px/1.5 var(--display);color:var(--text);margin:12px 0 0;min-height:100px}
+.C .prose p{margin:0 0 6px}
+.C .prose .n{color:var(--accent);font-variant-numeric:tabular-nums}
+.C .prose .place{color:var(--primary);text-decoration:underline;text-decoration-color:rgba(90,149,166,.4);text-underline-offset:4px;cursor:pointer}
+.C .prose .line{animation:linein .5s var(--ease) both}
+@keyframes linein{from{opacity:0;transform:translateY(4px)}}
+.C .inset{flex:1 1 0;min-height:160px;margin-top:10px;border:1px solid var(--accent);outline:1px solid var(--rule);outline-offset:3px;border-radius:var(--r);overflow:hidden;background:var(--sea-dark);position:relative}
+.C .capn{display:flex;justify-content:space-between;font:400 11px/1.4 var(--mono);color:var(--muted);margin:10px 0 0;letter-spacing:.04em}
+.C .sail{flex:none;padding:10px 16px 6px}
+.C .plank{width:100%;background:var(--surface);border:1px solid var(--temp);border-left:4px solid var(--temp);border-radius:var(--r);padding:11px 14px;text-align:left;display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--text)}
+.C .plank .v{font:400 21px/1.1 var(--display)}
+.C .plank .v em{font-style:italic;color:var(--accent)}
+.C .plank small{font:400 11.5px/1.4 var(--mono);color:var(--muted);text-align:right;white-space:nowrap}
+.C .plank.ask{border-color:var(--primary);border-left-color:var(--primary)}
+.C .plank.ask .v{color:var(--primary)}
+.C .plank:disabled{opacity:.45}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+<div class="col">
+<div class="eyebrow">Ring Giver · screen audit · 1 of 5</div>
+<h1>The spring Map screen</h1>
+<p class="lede">The most-seen screen in the game: a player who reaches 1066 looks at it about 270 times. Below is what it does to the player now, read against the dopamine mechanisms, then three live alternatives to tap through. Each is better than the original; they differ in taste.</p>
+
+<div class="five">
+  <div class="here"><span class="k">1 · Spring Map</span>every year, the home screen<span class="n">this page</span></div>
+  <div><span class="k">2 · Winter sheet</span>every year: land, upkeep, market<span class="n">next</span></div>
+  <div><span class="k">3 · Winter card</span>every year: one event<span class="n">then</span></div>
+  <div><span class="k">4 · Fight</span>most years, after Sail<span class="n">then</span></div>
+  <div><span class="k">5 · Hall pane</span>most springs: men, holdings, children<span class="n">then</span></div>
+</div>
+<p class="muted" style="font-size:13.5px;margin-top:10px">Ranked by how often a hand lands on them across a dynasty. The Ship pane, picker, Landfall, Stay and Man card are each used less than any of these.</p>
+
+<h2>What it is now</h2>
+<div class="now">
+  <div class="shots">
+    <figure style="margin:0"><img alt="The spring Map screen in 815 with Shetland as destination" src="data:image/png;base64,%%SHOT815%%"><figcaption>815 · destination standing · 38 aboard</figcaption></figure>
+    <figure style="margin:0"><img alt="The first spring, 793" src="data:image/png;base64,%%SHOT793%%"><figcaption>793 · the first spring after the intro</figcaption></figure>
+  </div>
+  <div class="calls">
+    <div><span><b>The map is a picture of Europe, not of your world.</b> In 793 the player sees Italy and the Black Sea under five dots in Scandinavia. The SVG is taller than its viewBox, so land outside the crop leaks into the letterbox. Fog, the thing the design doc calls the map's best trick, is invisible: unknown coastline is drawn as brightly as known coastline. <i>visible progress · pruning</i></span></div>
+    <div><span><b>The band wraps badly.</b> Tags and "fork at 45" break across lines and leave a stray dot at a line start. "10 unled / 48 men" is a ratio in jargon on the most-looked-at pixels. The death percentage, the one line that builds dread, is the smallest thing in the band. <i>agency · anticipation</i></span></div>
+    <div><span><b>The commit is split from the odds.</b> The target name, the odds bar and the Sail button live in three places. The button looks identical at "sure · clean" and at "hopeless" (see 850 in the screenshots folder: a confident teal "Sail for Truso again" over a hopeless bar). <i>congruence · proportion</i></span></div>
+    <div><span><b>Three cards compete under the map.</b> Destination, Everyone aboard with its rules footnote, the Wanderer with the same sentence for 273 years. Each is a card of equal weight. Nothing is the hero. <i>pruning · prediction error</i></span></div>
+    <div><span><b>Spring arrives without a beat.</b> The screen after Winter looks like the screen before Sail. The only change is a small ±number that fades in 2.4 seconds. Coasts discovered last summer were lit offstage, in Landfall; the home map never shows them arriving. <i>anticipation · visible progress</i></span></div>
+    <div><span><b>The first spring teaches nothing.</b> The intro sheet says "Tap a coast. Put men aboard. Press Sail." and vanishes. Then the primary button says "Stay home this year." Nothing on the map says it can be tapped. <i>design law 1: the active user</i></span></div>
+    <div><span><b>Late-game legibility.</b> By 900, labels pile up on the Channel coast and king names at 7.5px are unreadable on a phone. Realm tints read as smudges rather than territory. A holding (teal dot) disappears inside a teal realm blob. <i>pruning · competence</i></span></div>
+  </div>
+</div>
+
+<h2>Verdict</h2>
+<p class="verdict">The spring screen is honest and flat. It shows the right facts in the same voice every year, so nothing on it ever beats expectation. It has no arrival, no departure, and no sense of distance travelled across the centuries. The one surface that could carry all three, the map, is drawn as a static chart with dots on it. The commit, Sail, is a plain button far from the odds it commits to. The player reads, taps, and leaves; the screen never says "you have come far" or "this one matters."</p>
+
+<h2>Top three fixes</h2>
+<div class="fixes">
+  <div class="fix"><h4>1. Make the fog real, and let the crop follow it</h4>
+    <p>Light the known world: a soft pool of brighter sea and coastline around every known coast, dimmer land and deeper sea everywhere else. Crop to the lit pool with the aspect ratio matched to the container so nothing leaks. In 793 the lit world is one fjord; by 900 it is the whole North Sea. Progress across a dynasty becomes something you see, not count.</p>
+    <p class="m"><span class="tag">visible progress</span><span class="tag">goal gradient</span><span class="tag">pruning</span> <span class="mono muted" style="font-size:12px">visual · one SVG mask with a blur, no new state</span></p></div>
+  <div class="fix"><h4>2. Put the odds inside the commit</h4>
+    <p>One object does the committing: the target's name, the odds in words, and the verb, with the odds' temperature on the button itself (pine for sure, teal for likely, chestnut for even, oxblood for long odds). What you are doing, how likely, and go, in one glance and one tap. The separate odds card and destination card go.</p>
+    <p class="m"><span class="tag">congruence</span><span class="tag">agency</span><span class="tag">proportion</span> <span class="mono muted" style="font-size:12px">visual · color · information</span></p></div>
+  <div class="fix"><h4>3. Give spring an arrival beat</h4>
+    <p>When the year turns and the Map pane comes into view, about 800ms of motion with nothing to dismiss: silver and men count from last year's number to this one, coasts first seen last summer bloom out of the fog, the route to the standing destination draws itself from Vestfold. Then the screen is still. The same beat, smaller, when a coast is tapped: the route redraws, the odds bar slides.</p>
+    <p class="m"><span class="tag">anticipation</span><span class="tag">visible progress</span><span class="tag">pacing</span> <span class="mono muted" style="font-size:12px">motion · numbers · 600 to 900ms, then rest</span></p></div>
+</div>
+
+<h2>Moment by moment</h2>
+<div class="tbl"><table>
+<tr><th>Moment</th><th>Now</th><th>At stake</th><th>Fix</th></tr>
+<tr><td>Spring opens</td><td>Same screen as last autumn. A small ± fades in the band.</td><td>anticipation, visible progress</td><td>The arrival beat (fix 3). Numbers count, new coasts bloom, route draws.</td></tr>
+<tr><td>First glance at the map</td><td>All of Europe; the known world is a cluster in the top third. Fog not visible.</td><td>visible progress, pruning</td><td>Lit pool and tight crop (fix 1). Realms as a soft tint under the coastline, not pills.</td></tr>
+<tr><td>Reading the band</td><td>Tags wrap; stray dot; "10 unled / 48 men"; death % is tiny.</td><td>agency, anticipation</td><td>Name and age on one line, tags on the next. "48 men · 10 unled". Past fifty, a thin life strand under the king that shortens each winter.</td></tr>
+<tr><td>Choosing a coast</td><td>Tap works; the only feedback is a thin ring. Odds update in another card.</td><td>congruence, agency</td><td>Route line from home; ring; the plank re-labels and changes temperature in the same 300ms.</td></tr>
+<tr><td>Everyone aboard</td><td>A button and a rules footnote, every spring, forever.</td><td>pruning, prediction error</td><td>A chip with the count aboard. The footnote shows once, then never.</td></tr>
+<tr><td>The Wanderer</td><td>Same sentence 273 times; only the price changes.</td><td>prediction error, pruning</td><td>One quiet line with the price. It grows into a card only when he has a name to sell or news to tell.</td></tr>
+<tr><td>Pressing Sail</td><td>A cut to Landfall or the fight. The button looks the same at any odds.</td><td>proportion, agency, anticipation</td><td>Temperature on the plank (fix 2). On press, the ship dot leaves along the route before the sheet rises.</td></tr>
+<tr><td>The first spring</td><td>Primary says "Stay home this year". Nothing says the map is tappable.</td><td>design law 1</td><td>Primary reads "Choose a coast" and points up. The nearest rich coast pulses until the first tap, then the aboard chip pulses until the first boarding.</td></tr>
+</table></div>
+
+<h2>Missing moments</h2>
+<ul>
+  <li><b>Arrival.</b> No ceremony marks a new year on the screen where the year is lived.</li>
+  <li><b>Departure.</b> Sail is a cut. The fleet never visibly leaves.</li>
+  <li><b>Fog lifting at home.</b> Coasts are revealed in Landfall and simply exist afterwards. The home map never shows the world growing.</li>
+  <li><b>The centuries.</b> Nothing at 900 says the world has opened since 793. One line, "18 of 48 coasts known", or the lit pool itself, would.</li>
+  <li><b>Distance to the end.</b> "fork at 45" and "death 15%" are facts. Neither reads as a thing approaching.</li>
+</ul>
+
+<h2>Needs a human</h2>
+<ul>
+  <li>The length of the arrival beat. The mock-ups use 800ms. It has to feel like a breath, not a wait, 270 times over.</li>
+  <li>Whether the route should animate every spring or only draw once and then sit still until the target changes.</li>
+  <li>Option C's prose: does reading one sentence a year become a chore by turn 100?</li>
+  <li>Label size and the fog blur on your actual phone. The blur is a filter on an SVG mask; it should be fine, but older iPhones are the test.</li>
+</ul>
+</div>
+
+<h2 id="options">Three alternatives</h2>
+<p class="col" style="font-size:15px">Each phone is live. Tap any coast to change the destination. Press Sail to see the departure. Use the buttons above each phone to replay the arrival beat and to switch between 793 (the first spring) and 815. Ship and Hall tabs are not built here.</p>
+
+<div class="bench">
+  <div class="opt" id="optA">
+    <header><div><span class="letter">Option A</span> <h3>The Chart</h3></div><span class="pick">my pick</span></header>
+    <div class="ctrl"><button data-act="beat">Replay spring</button><button data-act="year" data-y="815" class="on">815</button><button data-act="year" data-y="793">793</button></div>
+    <div class="frame"><div class="ph A"></div></div>
+    <div class="notes"><p class="t">The map is the screen.</p>
+      <p>The map runs edge to edge behind a translucent band and a single commit sheet. The known world is a lit pool; everything else is in fog. Rumor and the crew are two chips over the water. The hero is the lit world itself, which grows for 273 years.</p>
+      <ul><li>Band: year, silver and men; name, age and tags on the next line; a life strand past fifty.</li><li>Commit sheet: target, loot and defenders, odds bar, one plank with the odds words and temperature.</li><li>Arrival beat: numbers count, fog expands, new coasts bloom, route draws.</li><li>First spring: the plank says "Choose a coast", Agder pulses, then the crew chip pulses.</li></ul>
+      <p class="risk">Risk: a full-bleed map leaves less room for text; the crop has to be good every year. Pinch-zoom belongs here when it lands.</p></div>
+  </div>
+  <div class="opt" id="optB">
+    <header><div><span class="letter">Option B</span> <h3>The Plank</h3></div></header>
+    <div class="ctrl"><button data-act="beat">Replay spring</button><button data-act="year" data-y="815" class="on">815</button><button data-act="year" data-y="793">793</button></div>
+    <div class="frame"><div class="ph B"></div></div>
+    <div class="notes"><p class="t">The current shape, with one hero.</p>
+      <p>Band, framed map, one card, Sail bar, tabs, as today. Three changes: the map has fog and a tight crop; the three cards under it become one; and the Sail button is a plank whose fill is the odds bar. The commit and the odds are literally the same object.</p>
+      <ul><li>One card: the target row, a crew strip (who sails, who stays, All aboard), the Wanderer as a single line.</li><li>The plank: teal to the odds, chestnut past them; the label sits on the bar.</li><li>Arrival beat: numbers count and last summer's new coasts flash once.</li></ul>
+      <p class="risk">Risk: the safest of the three. It fixes every finding but keeps the map as a picture in a frame.</p></div>
+  </div>
+  <div class="opt" id="optC">
+    <header><div><span class="letter">Option C</span> <h3>The Saga Page</h3></div></header>
+    <div class="ctrl"><button data-act="beat">Replay spring</button><button data-act="year" data-y="815" class="on">815</button><button data-act="year" data-y="793">793</button></div>
+    <div class="frame"><div class="ph C"></div></div>
+    <div class="notes"><p class="t">The year as a page of the saga.</p>
+      <p>The screen reads like a chronicle entry: a big year, three written lines from the state of the world, a framed chart beneath, and the commit as a sentence. The words change every year because the world does, so the screen is never the same twice. Numbers are set in accent inside the prose.</p>
+      <ul><li>Prose from state: the king's age, the chest and the hall, the standing target with its spears and silver, the Wanderer at the door.</li><li>Tapping a place name in the prose or a coast on the chart sets the target.</li><li>Arrival beat: the lines come in one after another, then the chart.</li></ul>
+      <p class="risk">Risk: the boldest. It asks the player to read a sentence a year; on turn 200 that may be a chore. The chart is smaller.</p></div>
+  </div>
+</div>
+
+<p class="col muted" style="margin-top:36px;font-size:14px">Tell me A, B or C, or point at one and say what to borrow from the others. I will build the winner into the game and move to screen 2, the Winter sheet.</p>
+</div>
+
+<script>
+%%COAST%%
+const STATES = %%STATES%%;
+const EDGES = [['vestfold','agder'],['vestfold','skane'],['vestfold','hordaland'],['agder','rogaland'],['rogaland','hordaland'],['hordaland','shetland'],['rogaland','lindisfarne'],['agder','jutland'],['skane','jutland'],['skane','gotland'],['gotland','birka'],['gotland','truso'],['birka','ladoga'],['jutland','saxony'],['saxony','frisia'],['frisia','flanders'],['flanders','seine'],['seine','rouen'],['rouen','paris'],['flanders','kent'],['seine','brittany'],['brittany','loire'],['loire','tours'],['brittany','galicia'],['galicia','lisbon'],['kent','london'],['kent','eastanglia'],['eastanglia','humber'],['humber','york'],['humber','lindisfarne'],['lindisfarne','pictland'],['pictland','orkney'],['orkney','shetland'],['pictland','hebrides'],['hebrides','ulster'],['ulster','dublin'],['dublin','munster'],['dublin','man'],['man','wales'],['wales','cornwall'],['cornwall','wessex'],['wessex','kent'],['wales','dublin'],['frisia','eastanglia'],['jutland','eastanglia']];
+const TITLE = {landtaker:'Land-taker',ironside:'Ironside',ringgiver:'Ring-giver',beloved:'Beloved',oldwise:'Old-wise',deepchest:'Deep-chest',seawolf:'Sea-wolf',fairdealer:'Fair-dealer',farsailor:'Far-sailor',lawgiver:'Lawgiver',hallward:'Hall-ward',silvertongue:'Silver-tongue'};
+const ICONS = {
+  ship:'<path d="M3 13c2 3 4 4 7 4s5-1 7-4l-1-1H4z M10 12V4 M10 4c3 1 5 3 6 7 M10 4c-3 1-5 3-6 7"/>',
+  hall:'<path d="M3 10l7-6 7 6 M5 9v8h10V9 M9 17v-4h2v4"/>',
+  map:'<path d="M3 14c2-2 4-2 7 0s5 2 7 0 M3 9c2-2 4-2 7 0s5 2 7 0 M3 4c2-2 4-2 7 0s5 2 7 0"/>',
+  men:'<circle cx="7" cy="7" r="2.5"/><circle cx="14" cy="8" r="2"/><path d="M2.5 17c0-3 2-5 4.5-5s4.5 2 4.5 5 M11.5 16c.3-2.3 1.4-3.8 3-4 1.6.2 2.8 1.7 3 4"/>',
+  wanderer:'<path d="M8 17V5a2 2 0 0 1 4 0v1 M8 9h3 M12 17l1-6"/>',
+};
+const ico = k => `<svg class="ico" viewBox="0 0 20 20" aria-hidden="true">${ICONS[k]}</svg>`;
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function winOdds(S,D){return clamp((S*1.15-D)/(S*0.3),0,1)}
+function odds(S,D){const p=winOdds(S,D),q=S>0?D/S:9;const chance=p>=.97?'sure':p>=.7?'likely':p>=.4?'even':p>0?'long odds':'hopeless';const cost=q<.4?'clean':q<.65?'fair':'bloody';return {chance,cost,words:p>0?`${chance} · ${cost}`:chance,cls:'t-'+(chance==='long odds'?'long':chance)}}
+// a per-phone model: a copy of the state the player can poke at
+function model(key){const s=JSON.parse(JSON.stringify(STATES[key]));s.key=key;s.first=key==='s793';s.taughtCoast=!s.first;s.taughtCrew=!s.first;return s}
+const shipStrength=s=>s.men_.filter(m=>m.place==='ship').reduce((a,m)=>a+m.c*m.men,0);
+const aboard=s=>s.men_.filter(m=>m.place==='ship').reduce((a,m)=>a+m.men,0);
+const shore=(s,id)=>s.shores.find(x=>x.id===id);
+function boardAll(s){for(const m of s.men_)if(m.place==='home')m.place='ship';let pool=s.unled;for(const m of s.men_.filter(m=>m.place==='ship').sort((a,b)=>(b.king?1:0)-(a.king?1:0)||b.c-a.c)){const cap=m.f*10,add=Math.min(cap-m.men,pool);m.men+=add;pool-=add}s.unled=pool;s.taughtCrew=true}
+// the graph route from home to the target, for the line the ship follows
+function route(s,to){const adj={};for(const [a,b] of EDGES){(adj[a]=adj[a]||[]).push(b);(adj[b]=adj[b]||[]).push(a)}const prev={vestfold:null},q=['vestfold'];while(q.length){const c=q.shift();if(c===to)break;for(const n of adj[c]||[])if(!(n in prev)){prev[n]=c;q.push(n)}}if(!(to in prev))return [ 'vestfold',to];const p=[];for(let c=to;c;c=prev[c])p.unshift(c);return p}
+// the map: fog as a lit pool, the crop matched to the box
+function mapSVG(s,o){
+  const id=o.id, known=s.shores, pos={};for(const x of known)pos[x.id]=x;for(const d of s.dark)pos[d.id]=d;
+  const pts=[...known,...s.dark];let x0=Math.min(...pts.map(p=>p.x))-(o.pad||22),x1=Math.max(...pts.map(p=>p.x))+(o.pad||22)+14,y0=Math.min(...pts.map(p=>p.y))-22,y1=Math.max(...pts.map(p=>p.y))+22;
+  if(x1-x0<200){const c=(x0+x1)/2;x0=c-100;x1=c+100}
+  // match the box aspect: widen or heighten around the center, and shift the center if asked (A keeps the sheet clear)
+  const want=o.w/o.h;let w=x1-x0,h=y1-y0;if(w/h>want){h=w/want}else{w=h*want}
+  const cx=(x0+x1)/2, cy=(y0+y1)/2+(o.shift||0)*h; x0=cx-w/2;y0=cy-h/2;
+  const edges=EDGES.filter(([a,b])=>pos[a]&&pos[b]&&(known.some(k=>k.id===a)||known.some(k=>k.id===b))).map(([a,b])=>`<line class="edge" x1="${pos[a].x}" y1="${pos[a].y}" x2="${pos[b].x}" y2="${pos[b].y}"/>`).join('');
+  const realms=s.rulers.map(k=>`<g class="realm" style="color:var(--${k.tint})">${EDGES.filter(([a,b])=>k.coasts.includes(a)&&k.coasts.includes(b)).map(([a,b])=>`<line x1="${pos[a].x}" y1="${pos[a].y}" x2="${pos[b].x}" y2="${pos[b].y}"/>`).join('')}${k.coasts.filter(c=>pos[c]).map(c=>`<circle cx="${pos[c].x}" cy="${pos[c].y}" r="12"/>`).join('')}</g>`).join('');
+  const fog=known.map(x=>`<circle cx="${x.x}" cy="${x.y}" r="${x.seen?46:30}" fill="#fff"/>`).join('');
+  const rt=s.dest&&pos[s.dest]?route(s,s.dest).map(c=>pos[c]):null;
+  const routeEl=rt?`<polyline pathLength="1" class="route${o.beat?' draw':''}" points="${rt.map(p=>p.x+','+p.y).join(' ')}"/>`:'';
+  const dots=known.map(x=>{const home=x.id==='vestfold',hold=s.holdings.includes(x.id),mine=home||hold;
+    const cls=home?'home':hold?'hold':!x.seen?'unseen':x.hold?'':'nohold';const r=mine?4:x.seen?2.5+Math.min(3,x.loot/80):3;
+    const L=x.side==='l',AB=x.side==='a'||x.side==='b',lx=L?x.x-r-3:AB?x.x:x.x+r+3,ly=x.side==='a'?x.y-r-4:x.side==='b'?x.y+r+11:x.y+3;
+    const ruler=s.rulers.find(k=>k.anchor===x.id);
+    const kn=ruler?`<text class="lbl king${L?' l':AB?' c':''}" x="${lx}" y="${x.side==='a'?ly-9:ly+10}">${esc(ruler.n)}</text>`:'';
+    const isNew=o.beat&&o.newIds&&o.newIds.includes(x.id);
+    const hint=o.hintCoast===x.id?`<circle class="pulse" cx="${x.x}" cy="${x.y}" r="7"/>`:'';
+    const dest=s.dest===x.id?`<circle class="ring" cx="${x.x}" cy="${x.y}" r="${(r+4).toFixed(1)}"/>`:'';
+    return `<g class="c${isNew?' bloom':''}" ${isNew?`style="animation-delay:${.35+ (o.newIds.indexOf(x.id)*.12)}s"`:''}>${mine?'':`<circle class="hit" cx="${x.x}" cy="${x.y}" r="14" data-id="${x.id}"/>`}<circle class="coast ${cls}${o.flash&&isNew?' flash':''}" cx="${x.x}" cy="${x.y}" r="${r.toFixed(1)}"/>${dest}${hint}<text class="lbl${L?' l':AB?' c':''}" x="${lx}" y="${ly}">${esc(x.n)}</text>${kn}</g>`}).join('')
+    +s.dark.map(d=>`<circle class="coast dark" cx="${d.x}" cy="${d.y}" r="2"/>`).join('');
+  const shipDot=rt&&o.sailing?`<circle class="shipdot" r="3"><animateMotion dur="0.9s" fill="freeze" path="M${rt.map((p,i)=>(i?'L':'')+p.x+' '+p.y).join('')}"/></circle>`:'';
+  return `<svg class="map" viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}" preserveAspectRatio="xMidYMid slice">
+  <defs><filter id="bl${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="11"/></filter>
+  <mask id="fog${id}" maskUnits="userSpaceOnUse" x="${x0-200}" y="${y0-200}" width="${w+400}" height="${h+400}"><rect x="${x0-200}" y="${y0-200}" width="${w+400}" height="${h+400}" fill="#000"/><g filter="url(#bl${id})" class="${o.beat?'fogin':''}" style="transform-origin:${cx}px ${cy}px">${fog}</g></mask></defs>
+  <rect class="seaDark" x="${x0-50}" y="${y0-50}" width="${w+100}" height="${h+100}"/>
+  <path class="land dark" d="${COAST_PATH}"/>
+  <g mask="url(#fog${id})"><rect class="seaLit" x="${x0-50}" y="${y0-50}" width="${w+100}" height="${h+100}"/><path class="land" d="${COAST_PATH}"/>${realms}</g>
+  ${edges}${routeEl}${dots}${shipDot}</svg>`;
+}
+function num(v,delta,show){return (show&&delta?`<span class="delta ${delta>0?'up':'down'}">${delta>0?'+':''}${delta}</span>`:'')+`<b data-count="${v}">${show&&delta?v-delta:v}</b>`}
+function countUp(root){if(reduced)return;for(const el of root.querySelectorAll('[data-count]')){const to=+el.dataset.count,from=+el.textContent;if(from===to)continue;const t0=performance.now(),dur=650;const step=t=>{const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,3);el.textContent=Math.round(from+(to-from)*e);if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step)}}
+const tabs=(s)=>`<nav class="tabs"><button class="on">${ico('map')}<span>Map</span></button><button>${ico('ship')}<span>Ship${aboard(s)?` · ${aboard(s)}`:''}</span></button><button>${ico('hall')}<span>Hall${s.holdings.length?` · ${s.holdings.length}`:''}</span></button></nav>`;
+const sub=(s,x)=>x?`loot ${x.loot} · ${x.def} defenders · ${x.hold?'holdable':'cannot hold'}`:'';
+const plankState=(s)=>{const Sh=shipStrength(s),x=s.dest?shore(s,s.dest):null;if(!s.dest)return {kind:'ask',label:'Choose a coast',sm:'tap one on the map',cls:''};if(!Sh)return {kind:'ask',label:'No one aboard',sm:'tap the crew',cls:''};const o=odds(Sh,x.def);return {kind:'go',label:`Sail for ${x.n}${s.key==='s815'&&x.id==='shetland'?' again':''}`,sm:o.words,cls:o.cls,o,Sh,x}};
+// last summer's new coasts, for the bloom: in 815 the Shetland run lit Orkney and Pictland; in 793 nothing yet
+const NEW={s815:['shetland','orkney','pictland'],s793:[]};
+const DELTA={s815:{silver:85,men:-9},s793:{silver:0,men:0}};
+
+// ---- Option A ----
+function renderA(ph,s,o={}){
+  const d=DELTA[s.key],beat=!!o.beat,p=plankState(s),Sh=shipStrength(s);
+  const hintCoast=s.first&&!s.dest?'agder':null, hintCrew=s.first&&s.dest&&!Sh;
+  const tags=s.titles.map(t=>`<span class="tag">${TITLE[t]||t}</span>`).join('');
+  const life=s.age>50?`<div class="life"><i style="width:${Math.max(6,100-(s.age-50)*7)}%"></i></div>`:'';
+  ph.className='ph A '+(p.cls||'');
+  ph.innerHTML=`<div class="mapwrap">${mapSVG(s,{id:'A'+s.key,w:390,h:844,shift:.07,beat,newIds:NEW[s.key],hintCoast,sailing:o.sailing})}</div>
+  <div class="band"><div class="year">${s.year}</div><div class="res">${num(s.silver,d.silver,beat)} silver<br>${num(s.men,d.men,beat)} men · ${s.unled} unled</div>
+   <div class="king">${esc(s.king)}, ${s.age}${tags}${s.age>50?`<span class="death">· death ${5*(s.age-50)}%</span>`:`<span class="fork">· fork at ${[25,35,45,55].find(a=>a>s.age)}</span>`}</div>${life}</div>
+  <div class="free"><div class="chips"><div class="chip" data-act="rumor">${ico('wanderer')}Rumor <small>${s.key==='s815'?10:20} silver</small></div><div class="chip${hintCrew?' hint':''}" data-act="board">${ico('men')}${aboard(s)} aboard${aboard(s)<s.men?` <small>all aboard</small>`:''}</div></div></div>
+  <div class="sheet"><div class="dest" data-act="pick"><div><div class="dname">${p.x?esc(p.x.n):s.dest?esc(shore(s,s.dest).n):'Where this year?'}</div><div class="dsub">${p.x?sub(s,p.x):s.dest?sub(s,shore(s,s.dest)):(s.first?'Tap a coast. Rich ones are bigger dots.':'Richest known: Vestfold pays, Agder 110.')}</div></div></div>
+   ${p.kind==='go'?`<div class="bar" style="margin-top:8px"><i class="s" style="width:${100*p.Sh/(p.Sh+p.x.def)}%"></i><i class="d" style="width:${100*p.x.def/(p.Sh+p.x.def)}%"></i></div><div class="odds" style="margin-top:4px">Ship <b class="us">${p.Sh}</b> vs Defenders <b class="them">${p.x.def}</b></div>`:''}
+   <button class="plank${p.kind==='ask'?' ask':''}" data-act="sail"><span>${p.label}</span><small>${p.sm}</small></button>${tabs(s)}</div>
+  <div class="cap"></div>`;
+  if(beat)countUp(ph);
+}
+// ---- Option B ----
+function renderB(ph,s,o={}){
+  const d=DELTA[s.key],beat=!!o.beat,p=plankState(s),Sh=shipStrength(s);
+  const hintCoast=s.first&&!s.dest?'agder':null, hintCrew=s.first&&s.dest&&!Sh;
+  const tags=s.titles.map(t=>`<span class="tag">${TITLE[t]||t}</span>`).join('');
+  const crew=s.men_.map(m=>`<span class="${m.place==='home'?'home':''}">${esc(m.n)} <small>${m.place==='home'?'home':m.men+' men'}</small></span>`).join('');
+  ph.className='ph B '+(p.cls||'');
+  ph.innerHTML=`<div class="band"><div class="year">${s.year}</div><div class="res">${num(s.silver,d.silver,beat)} silver<br>${num(s.men,d.men,beat)} men · ${s.unled} unled</div>
+   <div class="who">${esc(s.king)}, ${s.age}${s.age>50?`<span class="death">death ${5*(s.age-50)}%</span>`:`<span class="fork">fork at ${[25,35,45,55].find(a=>a>s.age)}</span>`}</div>${tags?`<div class="tags">${tags}</div>`:''}</div>
+  <div class="pane"><div class="mapbox">${mapSVG(s,{id:'B'+s.key,w:366,h:360,beat,flash:true,newIds:NEW[s.key],hintCoast,sailing:o.sailing})}</div>
+   <div class="card"><div class="drow" data-act="pick"><div><div class="dname">${s.dest?esc(shore(s,s.dest).n):'Where this year?'}</div><div class="dsub">${s.dest?sub(s,shore(s,s.dest)):(s.first?'Tap a coast on the map. Rich ones are bigger dots.':'Tap a coast, or open the list.')}</div></div><span class="chev">▸</span></div>
+    <div class="crew">${crew}${aboard(s)<s.men?`<button data-act="board" class="${hintCrew?'hint':''}">All aboard</button>`:''}</div>
+    <div class="wand">${ico('wanderer')}<span style="flex:1">The Wanderer has a name to sell</span><b>${s.key==='s815'?10:20} silver</b></div></div></div>
+  <div class="sail"><button class="plank${p.kind==='ask'?' ask':''}" data-act="sail">${p.kind==='go'?`<div class="fill"><i class="s" style="width:${100*p.Sh/(p.Sh+p.x.def)}%"></i><i class="d" style="width:${100*p.x.def/(p.Sh+p.x.def)}%"></i></div>`:''}<div class="txt"><span>${p.label}</span><small>${p.kind==='go'?`${p.sm} · ${p.Sh} vs ${p.x.def}`:p.sm}</small></div></button></div>${tabs(s)}<div class="cap"></div>`;
+  if(beat)countUp(ph);
+}
+// ---- Option C ----
+const WORDS=['','one','two','three','four','five','six','seven','eight','nine','ten'];
+function proseC(s){
+  const x=s.dest?shore(s,s.dest):null,Sh=shipStrength(s),ab=aboard(s);
+  const l1=s.first?`${s.king} is twenty, with a hall at Vestfold, <span class="n">${s.men}</span> men, and one ship.`:`${s.king} is ${s.age}. <span class="n">${s.silver}</span> silver in the chest; <span class="n">${s.men}</span> men, ${s.unled?`<span class="n">${s.unled}</span> of them unled`:'all of them led'}.`;
+  const l2=x?(Sh?`The ship points at <span class="place" data-id="${x.id}">${x.n}</span>: <span class="n">${x.def}</span> spears on the beach, <span class="n">${x.loot}</span> silver behind them. ${ab} men aboard.`:`<span class="place" data-id="${x.id}">${x.n}</span> is chosen: <span class="n">${x.def}</span> spears, <span class="n">${x.loot}</span> silver. No one is aboard yet.`):`No coast is chosen. <span class="place" data-id="agder">Agder</span> lies a day south, <span class="n">90</span> spears; <span class="place" data-id="hordaland">Hordaland</span> is Gudrød's.`;
+  const l3=`The Wanderer waits at the door with a name, for <span class="n">${s.key==='s815'?10:20}</span> silver.`;
+  return [l1,l2,l3];
+}
+function renderC(ph,s,o={}){
+  const d=DELTA[s.key],beat=!!o.beat,p=plankState(s),Sh=shipStrength(s);
+  const hintCoast=s.first&&!s.dest?'agder':null;
+  const lines=proseC(s).map((t,i)=>`<p class="${beat?'line':''}" style="animation-delay:${.15+i*.28}s">${t}</p>`).join('');
+  ph.className='ph C '+(p.cls||'');
+  ph.innerHTML=`<div class="page"><div class="head"><div><div class="season">Spring · ${esc(s.king)}${s.titles.length?' '+TITLE[s.titles[s.titles.length-1]]:''}</div><div class="year">${s.year}</div></div><div class="res">${num(s.silver,d.silver,beat)} silver<br>${num(s.men,d.men,beat)} men</div></div>
+   <div class="prose">${lines}</div>
+   <div class="inset">${mapSVG(s,{id:'C'+s.key,w:356,h:300,pad:40,beat,newIds:NEW[s.key],hintCoast,sailing:o.sailing})}</div>
+   <div class="capn"><span>The known seas</span><span>${s.shores.length} of 48 coasts</span></div></div>
+  <div class="sail"><button class="plank${p.kind==='ask'?' ask':''}" data-act="sail"><span class="v">${p.kind==='go'?`Sail for <em>${esc(p.x.n)}</em>`:p.label}</span><small>${p.kind==='go'?`${p.sm}<br>${p.Sh} against ${p.x.def}`:p.sm}</small></button></div>${tabs(s)}<div class="cap"></div>`;
+  if(beat)countUp(ph);
+}
+// ---- wire the three phones ----
+const OPTS=[{el:'#optA',r:renderA},{el:'#optB',r:renderB},{el:'#optC',r:renderC}];
+for(const o of OPTS){
+  const first=location.hash==='#first';const opt=document.querySelector(o.el),ph=opt.querySelector('.ph');let s=model(first?'s793':'s815');if(first)opt.querySelectorAll('[data-act=year]').forEach(x=>x.classList.toggle('on',x.dataset.y==='793'));
+  const draw=(x={})=>o.r(ph,s,x);
+  opt.querySelectorAll('.ctrl button').forEach(b=>b.addEventListener('click',()=>{
+    if(b.dataset.act==='beat')draw({beat:true});
+    else{s=model(b.dataset.y==='793'?'s793':'s815');opt.querySelectorAll('[data-act=year]').forEach(x=>x.classList.toggle('on',x===b));draw({beat:true})}
+  }));
+  ph.addEventListener('click',e=>{
+    const hit=e.target.closest('.hit'),place=e.target.closest('.place'),act=e.target.closest('[data-act]');
+    if(hit||place){s.dest=(hit||place).dataset.id;s.taughtCoast=true;draw({beat:false});ph.querySelector('.route')?.classList.add('draw');return}
+    if(!act)return;
+    const a=act.dataset.act;
+    if(a==='board'){boardAll(s);draw()}
+    else if(a==='sail'){const p=plankState(s);if(p.kind!=='go'){const cap=ph.querySelector('.cap');cap.textContent=p.kind==='ask'&&!s.dest?'Tap a coast on the map':'Tap the crew to board';cap.classList.add('show');setTimeout(()=>cap.classList.remove('show'),1600);return}
+      draw({sailing:true});ph.querySelector('.plank').disabled=true;const cap=ph.querySelector('.cap');setTimeout(()=>{cap.textContent='…then the fight sheet rises';cap.classList.add('show')},900);setTimeout(()=>{cap.classList.remove('show');draw()},2400)}
+    else if(a==='pick'){const cap=ph.querySelector('.cap');cap.textContent='The picker opens here, as today';cap.classList.add('show');setTimeout(()=>cap.classList.remove('show'),1400)}
+    else if(a==='rumor'){const cap=ph.querySelector('.cap');cap.textContent='He names a rich coast; the chip becomes it';cap.classList.add('show');setTimeout(()=>cap.classList.remove('show'),1600)}
+  });
+  draw({beat:true});
+}
+// scale the phones to their frames
+function fit(){for(const f of document.querySelectorAll('.frame')){const w=f.clientWidth,k=w/390;f.style.height=(844*k)+'px';f.querySelector('.ph').style.transform=`scale(${k})`}}
+fit();addEventListener('resize',fit);
+</script>
