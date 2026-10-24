@@ -208,10 +208,12 @@ function gift(s, id) {
   log(s, `${m.name} takes ${cost} silver from the King's hand.`);
 }
 function rumorPrice(s) { return has(s,'silvertongue') ? 0 : (s.flags.wanderer ? T.rumor / 2 : T.rumor); }
+// what the Wanderer could name: a rich coast within reach not yet on the map, never one a king's realm or an earlier rumor already named (session 13)
+const rumorCands = s => Object.values(s.shores).filter(x => !x.known && x.baseLoot >= 100 && reachable(s, x.id) && !isHolding(s, x.id));
 function buyRumor(s) {
   const price = rumorPrice(s); if (s.silver < price) return;
   const r = rng(s.day + ':rumor:' + s.year);
-  const cands = Object.values(s.shores).filter(x => !x.seen && x.baseLoot >= 100 && reachable(s, x.id) && !isHolding(s, x.id));
+  const cands = rumorCands(s);
   if (!cands.length) { s.rumorOffer = 'none'; return; }
   const pick = r.pick(cands); pick.known = true; pick.rumored = true;
   s.silver -= price; s.deeds.rumors++; s.rumorOffer = pick.id;

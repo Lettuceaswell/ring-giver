@@ -189,3 +189,8 @@ Levi: tapping a jarl's name on Plunder or stay left him there at once, no undo. 
 
 ## 37. New dynasty sat at the foot of the Saga (decided and built session 13)
 Levi: the button was at the bottom; the first tap re-drew the sheet at the top, and he had to scroll back down inside three seconds for the second tap. **Built:** New dynasty sits under the title; the sheet also keeps its scroll on a re-draw (36).
+
+---
+
+## 38. The Wanderer names a coast already named (fixed session 13)
+Levi: a rumor named a place already on the map, and he paid for it. `buyRumor` drew from every coast not yet *seen*, so a coast named only by a king's realm (Birka, Ladoga) or by an earlier rumor could be sold again: 13 of the 35 rumors bought across the saved audit states. **Fixed:** the Wanderer names only a coast not yet on the map (`rumorCands`), and the chip reads "Nothing new within reach" before the tap when he has none.

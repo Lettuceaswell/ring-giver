@@ -230,7 +230,7 @@ function paneHTML(beat) {
 function chipsHTML(ship) {
   if (S.phase !== 'spring') return '';
   const p = rumorPrice(S), off = S.rumorOffer;
-  const rumor = off === 'none' ? `<div class="chip dim">${ico('wanderer')}Nothing new within reach</div>`
+  const rumor = off === 'none' || (!off && !rumorCands(S).length) ? `<div class="chip dim">${ico('wanderer')}Nothing new within reach</div>`
     : off ? `<div class="chip" onclick="act(()=>setDestination(S,'${off}'))">${ico('wanderer')}He names <b class="rich">${esc(shoreOf(off).name)}</b></div>`
     : `<div class="chip${S.silver < p ? ' dim' : ''}" onclick="act(()=>buyRumor(S))">${ico('wanderer')}Rumor <small>${p ? `${p} silver` : 'free'}</small></div>`;
   const ab = ship.reduce((a, m) => a + m.men, 0), atHome = S.notables.some(m => m.place === 'home');

@@ -14,6 +14,8 @@ Levi asked whether a high-Rule King matters (it didn't), and reported two things
 
 **Saga (TODO 37).** New dynasty sits under the title.
 
+**The Wanderer (TODO 38).** A rumor could name a coast already on the map (a known king's realm, or an earlier rumor) and charge for it: 13 of 35 rumors over the saved states. `rumorCands` now takes only coasts not yet known; the chip says "Nothing new within reach" up front when there are none.
+
 **Verified:** `node tools/smoke.js` OK (fails 0); default playtest md5 is now `b9aa68cc75b2104229ad388318115d55` (the own arm and the hall pay change every fate). Screens at 390 px: the picker, the Saga, Plunder or stay with a jarl picked (`shoot.sh` learned `click=` and `scroll=`). sw `seaking-v8`.
 
 **Next:** round 5, the Hall pane. Feel on the phone whether Rollo's hall pay makes sitting home a real summer.
