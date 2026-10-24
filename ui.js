@@ -1,6 +1,6 @@
 let S = migrate(load());
 // screen state that is not game state: which pane, the picker, the open Man card, the Saga sheet, the two-tap arm, and what changed since the band last showed it
-const UI = { pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10, beatYear: 0, routeDrawn: null };
+const UI = { pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10, beatYear: 0, routeDrawn: null, winterYear: 0, winterBeat: false };
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = sel => document.querySelector(sel);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
@@ -42,6 +42,7 @@ function render() {
   const p = $('.pane'); if (p && UI.pane !== 'map') p.scrollTop = UI.scroll[UI.pane] || 0;
   if ($('#bn')) marketNums();
   fitMap(); if (beat) countUp(app);
+  if (UI.winterBeat) { UI.winterBeat = false; const sc = $('.scene'); if (sc) countUp(sc); } // the autumn ledger counts the chest on its first showing
   if (UI.pane === 'map') UI.routeDrawn = S.destination;
 }
 // the map behind the band and the commit sheet: crop to the known world, match the screen's shape, and sit the world in the free water between the two
@@ -127,23 +128,55 @@ const cust = { c: 3, r: 3, f: 3 };
 const ptsLine = () => { const left = 9 - cust.c - cust.r - cust.f; return left ? `${left} point${left === 1 ? '' : 's'} left to spend` : 'All nine placed'; };
 function bump(k, d) { const v = cust[k] + d, sum = cust.c + cust.r + cust.f + d; if (v < 1 || v > 5 || sum > 9) return; cust[k] = v;
   $('#' + k).innerHTML = dots(v); $('#' + k + 'w').textContent = STAT_WORDS[k](v); $('#pts').textContent = ptsLine(); }
-function startGame(k) { S = newGame(k); UI.pane = 'map'; save(S); render(); }
-function startCustom() { const name = $('#cname').value.trim() || 'Halfdan'; S = newGame('custom', Object.assign([cust.c, cust.r, cust.f], { name })); UI.pane = 'map'; save(S); render(); }
+function startGame(k) { S = migrate(newGame(k)); UI.pane = 'map'; save(S); render(); }
+function startCustom() { const name = $('#cname').value.trim() || 'Halfdan'; S = migrate(newGame('custom', Object.assign([cust.c, cust.r, cust.f], { name }))); UI.pane = 'map'; save(S); render(); }
 
-// ---- The market (Winter sheet): pick how many, read the sum, then one Buy that names the deal. Numbers update in place; the sheet does not jump ----
-function marketHTML(p, room) {
+// ---- The autumn ledger and the market (Winter sheet, audit 2 option A): the year as an account, events weighted by kind, one card for the market, the way on at the foot ----
+function winterHTML(sc) {
+  const beat = UI.winterYear !== S.year; if (beat) { UI.winterYear = S.year; UI.winterBeat = true; }
+  const p = has(S,'fairdealer') ? 2 : T.manPrice, mx = Math.floor(S.silver / p / 5) * 5, first = S.year === T.startYear;
+  const rows = sc.rows || [], events = sc.events || (sc.land || []).map(t => ({ k:'note', t, s:'' })), eat = sc.eat, lo = sc.loot, spring = sc.spring;
+  let i = 0; const d = () => beat ? ` style="animation-delay:${120 * i++}ms"` : '';
+  const row = (k, sub, v, cls) => { const a = d(); return `<span class="k${beat ? ' in' : ''}"${a}>${k}${sub ? `<small>${sub}</small>` : ''}</span><span class="v ${cls}${beat ? ' in' : ''}"${a}>${v}</span>`; };
+  let L = '';
+  if (spring != null) L += row('Chest in spring', '', spring, '');
+  if (lo) L += row('Loot', lo.n ? `${esc(lo.from)} plundered` : lo.forfeit ? `${esc(lo.forfeit.jarl)} stayed at ${esc(lo.forfeit.shore)}; the loot was forfeited` : lo.beaten ? `driven back at ${esc(lo.beaten)}` : 'the ship stayed home', lo.n ? `+${lo.n}` : '0', lo.n ? 'up' : 'nil');
+  for (const r of rows) L += row(`Rent · ${esc(r.n)}`, esc(r.why), r.v === null ? '—' : r.v ? `+${r.v}` : '0', r.v ? 'up' : 'nil');
+  if (eat) { const struck = eat.paid !== eat.due ? eat.due : eat.due !== eat.base ? eat.base : null; L += row(`The hall ate · ${eat.men} men`, esc(eat.why), `${struck !== null ? `<s>−${struck}</s> ` : ''}−${eat.paid}`, 'down'); }
+  else for (const t of sc.hall || []) L += row(esc(t), '', '', '');
+  if (S.yr && S.yr.bought) L += row(`Men bought · ${S.yr.bought}`, '', `−${S.yr.bought * p}`, 'down');
+  const from = beat && spring != null ? spring : S.silver, delta = spring != null ? S.silver - spring : 0;
+  L += `<div class="tot"><span class="k">Chest</span><span class="v"><b id="btot" data-count="${S.silver}">${from}</b>${delta ? `<span class="d ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '+' : ''}${delta}</span>` : ''}</span></div>`;
+  const ev = events.length ? events.map((e, j) => `<div class="ev ${e.k}${beat ? ' in' : ''}"${beat ? ` style="animation-delay:${120 * i + 110 * j}ms"` : ''}><i></i><div><div class="t">${esc(e.t)}</div>${e.s ? `<div class="s">${esc(e.s)}</div>` : ''}</div></div>`).join('') : `<p class="quiet">A quiet summer on the land.</p>`;
+  const market = mx < 5 ? `<div class="nomarket"><span>${S.silver} silver buys no men this winter.</span><b>${p} each</b></div>`
+    : `<div class="market"><div class="price"><span>The market</span><span>${p === 2 ? '<s>3</s> <b>2</b> silver a man · Fair-dealer' : `<b>${p}</b> silver a man`}</span></div>${marketHTML()}${first ? '<div class="teach">Men at home eat 1 silver a winter. Men aboard raid. A named man leads F × 10; past that, they sit unled.</div>' : ''}</div>`;
+  return `<h1>${ico('land')}Autumn ${S.year}</h1><div class="ledger">${L}</div><h2>The land</h2>${ev}<h2>The market</h2>${market}
+    <div class="exit"><button class="primary" onclick="act(()=>closeWinter(S))"><span>Into winter</span><small>one card turns</small></button></div>`;
+}
+// pick how many, read what they buy, then one Buy that names the deal. Numbers update in place; the sheet does not jump
+function marketHTML() {
+  const unled = unledMen(S);
   return `<div class="step"><button id="bdec" onclick="setBuy(-5)">−</button><span class="n"><span id="bn"></span><small>men</small></span><button id="binc" onclick="setBuy(5)">+</button></div>
-  <div class="sum"><span class="k">Silver</span><span class="v"><span>${S.silver}</span> <span class="op">−</span> <span class="out" id="bcost"></span> <span class="op">→</span> <b id="bleft"></b></span>
-    <span class="k">Men</span><span class="v"><span>${S.men}</span> <span class="op">+</span> <span class="in" id="bn2"></span> <span class="op">→</span> <b id="bmen"></b></span>
-    <span class="w" id="bwarn" hidden></span></div>`;
+  <div class="cons"><span>Silver</span><b id="bsil"></b><span>Men</span><b id="bmen"></b><span id="bleadk"></span><b id="bleadv"></b><span class="w" id="bwarn" hidden></span>
+    <div class="room"><i class="led" id="bled"></i><i class="add" id="badd"></i></div><span class="full" id="broom"></span></div>
+  <button class="buy" id="bbuy" onclick="buyNow()"></button>${S.yr && S.yr.bought ? `<div class="bought">${S.yr.bought} men bought this winter. ${S.men} men now${unled ? ` · ${unled} unled` : ''}.</div>` : ''}`;
 }
 function setBuy(d) { if (d) UI.buy += d; marketNums(); }
+function buyNow() { const t = $('#btot'), from = t ? t.textContent : null; act(() => buyMen(S, UI.buy)); const e = $('#btot'); if (e && from !== null) { e.textContent = from; countUp(e.closest('.scene')); } }
 function marketNums() {
   const p = has(S,'fairdealer') ? 2 : T.manPrice, room = menRoom(S), max = Math.floor(S.silver / p / 5) * 5;
-  const n = UI.buy = Math.max(0, Math.min(UI.buy, max)), cost = n * p, over = n - room;
-  const set = (id, v) => { const e = $('#' + id); if (e) e.textContent = v; };
-  set('bn', n); set('bn2', n); set('bcost', cost); set('bleft', S.silver - cost); set('bmen', S.men + n);
+  const n = UI.buy = Math.max(0, Math.min(UI.buy, max)), cost = n * p, over = Math.max(0, n - room);
+  const set = (id, v) => { const e = $('#' + id); if (e) e.innerHTML = v; };
+  set('bn', n); set('bsil', `${S.silver} → ${S.silver - cost}`); set('bmen', `${S.men} → ${S.men + n}`);
+  // who would lead them: the King first, then the named men at home, as Fill does in spring (bought men wait unled until placed)
+  let left = n, lead = null, str = 0;
+  for (const m of [...S.notables].sort((a, b) => (b.isKing ? 1 : 0) - (a.isKing ? 1 : 0) || (a.place === 'home' ? 0 : 1) - (b.place === 'home' ? 0 : 1))) {
+    if (left <= 0) break; const r = fCap(S, m) - m.men; if (r <= 0) continue; const take = Math.min(r, left); if (!lead) lead = m; str += m.combat * take; left -= take; }
+  set('bleadk', lead ? `Aboard under ${esc(lead.name)}` : ''); set('bleadv', lead ? `+${str} ship strength` : '');
   const w = $('#bwarn'); if (w) { w.hidden = over <= 0; w.textContent = over > 0 ? `${over} of these would sit unled: fed, no use, until another named man comes to the hall.` : ''; }
+  const capAll = S.notables.reduce((a, m) => a + fCap(S, m), 0) || 1, led = S.men - unledMen(S);
+  const bl = $('#bled'), ba = $('#badd'); if (bl) bl.style.width = `${100 * Math.min(1, led / capAll)}%`; if (ba) ba.style.width = `${100 * Math.min(n, room) / capAll}%`;
+  set('broom', `room for ${room} more under the named men`);
   const dec = $('#bdec'), inc = $('#binc'), buy = $('#bbuy');
   if (dec) dec.disabled = n <= 5; if (inc) inc.disabled = n + 5 > max;
   if (buy) { buy.disabled = n <= 0; buy.textContent = n > 0 ? `Buy ${n} men for ${cost} silver` : 'Not enough silver for five men'; }
@@ -449,15 +482,7 @@ function overlayHTML(sc) {
     ${sc.walked ? `<div class="pick" onclick="act(()=>chooseStay(S,'walked'))"><div class="row"><div><span class="name">${esc(x.walked.name)} kneels and keeps it</span><br>${statLine(x.walked)}</div><span class="stats">no men yet</span></div><div class="hint">He brings no men. Send him some in spring or it revolts.</div></div>` : ''}
     ${ship.map(who).join('') || (sc.walked ? '' : '<div class="empty">The King cannot stay. Only another jarl can hold a shore.</div>')}`; }
   else if (sc.t === 'summary') h = `<h1>${esc(sc.title)}</h1>${sc.lines.map(l => `<p>${esc(l)}</p>`).join('')}<div class="actions">${btn('On', 'next(S)')}</div>`;
-  // one sheet for the turn of the year: what the land did, what the hall ate, and the market with its frame of reference (TODO 20)
-  else if (sc.t === 'winter') { const p = has(S,'fairdealer') ? 2 : T.manPrice, room = menRoom(S);
-    h = `<h1>${ico('silver')}Winter ${S.year}</h1>
-    ${sc.land.length ? `<h2>The land</h2>${sc.land.map(l => `<p>${esc(l)}</p>`).join('')}` : ''}
-    ${sc.hall.length ? `<h2>The hall eats</h2>${sc.hall.map(l => `<p>${esc(l)}</p>`).join('')}` : ''}
-    <h2>The market</h2>
-    <p>A man costs <b class="rich">${p}</b> silver and eats 1 each winter at home.</p>
-    ${marketHTML(p, room)}
-    <div class="actions"><button class="primary" id="bbuy" onclick="act(()=>buyMen(S,UI.buy))"></button>${btn('Close the market', 'closeWinter(S)', '')}</div>`; }
+  else if (sc.t === 'winter') h = winterHTML(sc); // the autumn ledger and the market (TODO 20, audit 2)
   else if (sc.t === 'event') h = `<h1>${esc(sc.title)}</h1>${sc.lines.map(l => `<p>${esc(l)}</p>`).join('')}<div class="actions">${sc.choice ? btn('Give her', 'acceptSuitor(S,true)') + btn('Refuse', 'acceptSuitor(S,false)', '') : btn('On', 'next(S)')}</div>`;
   else if (sc.t === 'death') { const r = S.reign;
     h = `<h1>${ico('death')}${esc(S.king.name)} is dead</h1><p>${S.king.age} winters. King ${r.start}–${S.year}.</p><h2>The Saga</h2>${r.bestRaid ? `<p>The year ${r.bestRaid.year}: ${esc(r.bestRaid.shore)} fell and the ship came home with ${r.bestRaid.loot} silver.</p>` : '<p>He never took a shore.</p>'}<p>At most ${r.bestHoldings} holdings answered to him.${r.title ? ` Men called him ${r.title}.` : ''}</p><div class="actions">${btn('The heir', 'startSuccession(S)')}</div>`; }

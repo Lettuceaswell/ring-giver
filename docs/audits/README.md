@@ -7,7 +7,7 @@ Each round: screenshot every state of the screen (`tools/audit/shoot.sh`), criti
 | # | Screen | Audit page | Decision |
 |---|---|---|---|
 | 1 | Spring Map pane | https://claude.ai/artifact/BZLsmsJppbmJz16RN1pBJb (source: `1-spring-map.template.html`, data `1-spring-map.states.json`) | A, The Chart. Built 2026-10-23, commit 3c87a1d |
-| 2 | Winter sheet | https://claude.ai/artifact/DSHVXj6S2YXbbcTWg4fDri (source: `2-winter-sheet.template.html`; states are inline, taken from `tools/audit/states/winter-*.json`) | pending |
+| 2 | Winter sheet | https://claude.ai/artifact/DSHVXj6S2YXbbcTWg4fDri (source: `2-winter-sheet.template.html`; states are inline, taken from `tools/audit/states/winter-*.json`) | A, The Ledger. Built 2026-10-23 (session 8) |
 | 3 | Winter event card | | |
 | 4 | Fight sheet | | |
 | 5 | Hall pane | | |

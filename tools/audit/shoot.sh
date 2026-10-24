@@ -3,7 +3,7 @@
 #   tools/audit/shoot.sh setup            builds the harness dir (symlinks to the game, a driver page, saved states) and starts a server on :8766
 #   tools/audit/shoot.sh NAME 'HASH'      shoots http://127.0.0.1:8766/index.html#HASH to tools/audit/out/NAME.png at 390x844, 2x
 # HASH keys (driver page): state=<name from states/>  pane=map|ship|hall  saga=1  picker=1  man=<index into S.notables>  ruler=1
-#   dest=<coast id or empty>  board=1  unboard=1  rumor=<coast id>  delta=<silver>&dmen=<men>  nobeat=1  fresh=1&start=ragnar  shift=1 (drop queue[0])
+#   dest=<coast id or empty>  board=1  unboard=1  rumor=<coast id>  delta=<silver>&dmen=<men>  nobeat=1 (skips the arrival and ledger beats)  buy=<n> (buy n men on the Winter sheet)  fresh=1&start=ragnar  shift=1 (drop queue[0])
 set -e
 ROOT=$(cd "$(dirname "$0")/../.." && pwd); H=$ROOT/tools/audit/harness; OUT=$ROOT/tools/audit/out
 if [ "$1" = setup ]; then
@@ -26,7 +26,8 @@ driver='''<script>window.onerror=(m,s,l)=>{document.title="ERR "+m+" "+l};
   if(h.get('board')){boardAll(S);} if(h.get('unboard')){for(const m of S.notables)m.place='home';}
   if(h.get('rumor')){S.rumorOffer=h.get('rumor');}
   if(h.get('delta')){UI.pend={silver:+h.get('delta'),men:+(h.get('dmen')||0)};}
-  if(h.get('nobeat')){UI.beatYear=S.year;}
+  if(h.get('nobeat')){UI.beatYear=S.year;UI.winterYear=S.year;}
+  if(h.get('buy')){UI.buy=+h.get('buy');act(()=>buyMen(S,UI.buy));}
   render();};
 })();</script>
 <script src="ui.js"></script><script>__after()</script>'''

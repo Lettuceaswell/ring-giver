@@ -42,7 +42,7 @@ function discoverRulers(s) {
 }
 function rulerCards(s, found, envoy) { for (const k of found) s.queue.push({ t:'ruler', ruler: k.id, envoy: !!envoy }); }
 // each ruler takes one free coast beside his realm every few years; never the player's, never another king's
-function growRealms(s, lines) {
+function growRealms(s, lines, events = []) {
   for (const k of Object.values(s.rulers)) {
     if (k.broken || s.year < k.nextGrow) continue;
     const r = rng(s.day + ':grow:' + k.id + s.year);
@@ -50,7 +50,7 @@ function growRealms(s, lines) {
     const cands = [...new Set(k.coasts.flatMap(c => s.shores[c].neighbors))].filter(id => id !== HOME_ID && !ownerOf(s, id) && !isHolding(s, id) && !s.shores[id].walked);
     if (!cands.length) continue;
     const id = r.pick(cands), sh = s.shores[id]; k.coasts.push(id); k.newest = id;
-    if (k.known) { sh.known = true; lines.push(`${k.name}'s reach grows. ${sh.name} is his now.`); }
+    if (k.known) { sh.known = true; lines.push(`${k.name}'s reach grows. ${sh.name} is his now.`); events.push({ k:'realm', t:`${k.name}'s reach grows.`, s:`${sh.name} is his now` }); }
     else if (sh.known || sh.neighbors.some(n => s.shores[n].known)) s.envoy = k.id; // his realm now touches what you know: his envoy comes this winter
   }
 }
@@ -208,7 +208,7 @@ function chooseTarget(s, id) {
     sh.loot = Math.round(sh.loot * 0.6); sh.def = Math.min(200, Math.round(sh.def * 1.2));
     for (const m of ship) { m.raids++; if (m.raids % 3 === 0) m.combat = clamp(m.combat + 1, 1, 5); if (margin > 1) m.follow = clamp(m.follow + 1, 1, 5); moveStance(s, m, margin > 1 ? 10 : 5, `shared the loot of ${sh.name}`); }
     if (margin > 1) s.deeds.bigWins++;
-  } else { sh.def = Math.min(200, Math.round(sh.def * 1.1)); for (const m of ship) moveStance(s, m, -5, `bled at ${sh.name} for nothing`); log(s, `Driven back at ${sh.name}. ${losses} men lost.`); }
+  } else { sh.def = Math.min(200, Math.round(sh.def * 1.1)); for (const m of ship) moveStance(s, m, -5, `bled at ${sh.name} for nothing`); log(s, `Driven back at ${sh.name}. ${losses} men lost.`); if (s.yr) s.yr.beaten = sh.name; }
   // distribute losses across the ship's men
   let left = losses; for (const m of ship) { const l = Math.min(m.men, Math.round(losses * m.men / Math.max(1, menAboard))); m.men -= l; left -= l; }
   if (left > 0) { const m = ship[0]; const l = Math.min(m.men, left); m.men -= l; }
@@ -223,7 +223,7 @@ function chooseTarget(s, id) {
   save(s);
 }
 function plunder(s, loot, id) {
-  s.silver += loot;
+  s.silver += loot; if (s.yr) { s.yr.loot += loot; s.yr.from = s.shores[id].name; }
   if (!s.reign.bestRaid || loot > s.reign.bestRaid.loot) s.reign.bestRaid = { loot, shore: s.shores[id].name, year: s.year };
   log(s, `${s.shores[id].name} plundered for ${loot} silver.`);
 }
@@ -240,7 +240,7 @@ function chooseStay(s, jarlId) {
   s.holdings.push({ id: sh.id, name: sh.name, pay: holdPay(sh), unrest, quiet: 0, empty: 0, taken: s.year });
   j.place = sh.id; s.deeds.stays++; moveStance(s, j, 10, `given ${sh.name}`);
   revealAround(s, sh.id);
-  log(s, `${j.name} stays at ${sh.name}. It is ours.`);
+  log(s, `${j.name} stays at ${sh.name}. It is ours.`); if (s.yr) s.yr.forfeit = { jarl: j.name, shore: sh.name, loot: sc.loot };
   const owner = ownerOf(s, sh.id); if (owner) { moveStance(s, owner, -T.takeSour, `you hold ${sh.name}, which was his`); checkBreak(s, owner); }
   rulerCards(s, discoverRulers(s));
   next(s);
@@ -248,23 +248,28 @@ function chooseStay(s, jarlId) {
 
 // Land contests, home, then into winter
 function resolveLand(s) {
-  const r = rng(s.day + ':land:' + s.year), lines = [], k = s.king;
+  // the autumn ledger (audit 2, option A): `rows` are the rent roll, `events` what mattered on the land, `lines` what the chronicle keeps
+  const r = rng(s.day + ':land:' + s.year), lines = [], rows = [], events = [], k = s.king, dbl = s.flags.harvest ? ' · good harvest, doubled' : '';
   // the King holds the hall (GDD §15.2): home, it pays and his Rule grows and the hall warms to him
   if (k.place === 'home') {
     const pay = Math.round(hallPay(s) * (s.flags.harvest ? 2 : 1)); s.silver += pay; s.deeds.homeYears++;
     k.heldRun++; const grew = k.heldRun % 3 === 0 && k.rule < 5; if (grew) k.rule++;
     for (const m of s.notables) if (m.place === 'home') moveStance(s, m, T.hallWarm, 'a summer in the hall with the King');
     lines.push(`${k.name} kept his hall. Vestfold pays ${pay}.${grew ? ` His Rule is ${k.rule} now.` : ''}`);
-  } else lines.push(`The King was at sea. Vestfold paid nothing.`);
+    rows.push({ n: 'Vestfold', v: pay, why: `${k.name} kept his hall${dbl}` });
+    if (grew) events.push({ k:'rule', t:`${k.name}'s Rule is ${k.rule} now.`, s:'three summers in his hall' });
+  } else { lines.push(`The King was at sea. Vestfold paid nothing.`); rows.push({ n: 'Vestfold', v: 0, why: 'the King was at sea' }); }
   for (const m of s.notables) if (m.place === 'home' && m.men === 0 && !m.isKing) moveStance(s, m, -T.idleSour, 'sat idle, no men to lead');
   for (const h of [...s.holdings]) {
     const j = s.notables.find(m => m.place === h.id);
-    if (h.taken === s.year) { lines.push(`${h.name} is newly ours. No contest this summer.`); continue; } // the jarl who stayed just won it
-    if (j && stanceWord(j.stance) === 'hostile' && r() < T.walkChance) { walkAway(s, j, h); lines.push(`${j.name} has had enough of the King. He walks, and ${h.name} is his now.`); continue; }
+    if (h.taken === s.year) { lines.push(`${h.name} is newly ours. No contest this summer.`); rows.push({ n: h.name, v: null, why: 'newly ours · pays from next year' }); continue; } // the jarl who stayed just won it
+    if (j && stanceWord(j.stance) === 'hostile' && r() < T.walkChance) {
+      walkAway(s, j, h); lines.push(`${j.name} has had enough of the King. He walks, and ${h.name} is his now.`);
+      rows.push({ n: h.name, v: 0, why: `${j.name} walked with it` }); events.push({ k:'lost', t:`${j.name} has had enough of the King.`, s:`he walks, and ${h.name} is his now` }); continue; }
     if (!j) {
       h.empty++; h.quiet = 0; h.unrest = clamp(h.unrest + (has(s,'lawgiver') ? 5 : T.emptyUnrest), 0, 100);
-      if (h.empty >= 2) { loseHolding(s, h, null, 'stood empty and revolted'); lines.push(`${h.name} stood empty two summers. It has revolted.`); }
-      else lines.push(`${h.name} stood empty. Unrest ${h.unrest}.`);
+      if (h.empty >= 2) { loseHolding(s, h, null, 'stood empty and revolted'); lines.push(`${h.name} stood empty two summers. It has revolted.`); rows.push({ n: h.name, v: 0, why: 'stood empty two summers · revolted' }); events.push({ k:'lost', t:`${h.name} has revolted.`, s:'it stood empty two summers · the holding is lost' }); }
+      else { lines.push(`${h.name} stood empty. Unrest ${h.unrest}.`); rows.push({ n: h.name, v: 0, why: `stood empty · unrest ${h.unrest}` }); events.push({ k:'empty', t:`${h.name} stands empty.`, s:`unrest ${h.unrest} · another empty summer and it revolts` }); }
       continue;
     }
     const S = j.rule * j.men * (0.85 + r() * 0.3);
@@ -273,27 +278,29 @@ function resolveLand(s) {
       s.silver += pay; h.unrest = clamp(h.unrest - (has(s,'lawgiver') ? 10 : T.heldCalm), 0, 100); h.quiet++; h.empty = 0;
       j.heldRun++; if (j.heldRun % 3 === 0) j.rule = clamp(j.rule + 1, 1, 5);
       s.deeds.heldYears++; moveStance(s, j, 3, `held ${h.name} and it paid`);
-      lines.push(`${h.name} pays ${pay}. ${j.name} holds it.`);
+      lines.push(`${h.name} pays ${pay}. ${j.name} holds it.`); rows.push({ n: h.name, v: pay, why: `${j.name} holds it${dbl}` });
       if (h.quiet > 0 && h.quiet % T.quietYears === 0) {
         const sh = s.shores[h.id], nm = rng(s.day + h.id + s.year).pick(LOCAL_NAMES[sh.culture]);
         s.notables.push(makeMan(nm, 1 + r.int(0, 1), 3 + r.int(0, 2), 2 + r.int(0, 1), { age: 22 + r.int(0, 15) }));
-        lines.push(`Five quiet years at ${h.name}. ${nm} comes to the hall.`);
+        lines.push(`Five quiet years at ${h.name}. ${nm} comes to the hall.`); events.push({ k:'new', t:`${nm} comes to the hall.`, s:`five quiet years at ${h.name}` });
       }
     } else {
       const lost = Math.round(j.men * 0.3); j.men -= lost; s.men -= lost; j.heldRun = 0; moveStance(s, j, -10, `lost ${h.name} and ${lost} men`);
       loseHolding(s, h, j, `rose against ${j.name}`); lines.push(`${h.name} rose against ${j.name}. ${lost} men dead. The holding is lost.`);
+      rows.push({ n: h.name, v: 0, why: 'lost' }); events.push({ k:'lost', t:`${h.name} rose against ${j.name}.`, s:`${lost ? `${lost} men dead` : 'no men dead'} · the holding is lost` });
     }
   }
   s.deeds.jarlYears += s.notables.filter(m => !m.isKing && m.place !== 'home').length;
   // shores recover slowly
   for (const sh of Object.values(s.shores)) { if (sh.loot < sh.baseLoot) sh.loot = Math.min(sh.baseLoot, Math.round(sh.loot * 1.1) + 1); if (sh.def > sh.baseDef) sh.def = Math.max(sh.baseDef, Math.round(sh.def * 0.95)); }
-  growRealms(s, lines);
+  growRealms(s, lines, events);
   s.reign.bestHoldings = Math.max(s.reign.bestHoldings, s.holdings.length);
   // everyone home for winter; those who sailed board again in spring, and the destination stands (TODO 20)
   for (const m of s.notables) if (m.place === 'ship') m.place = 'home';
   for (const l of lines) if (!/ pays \d+\. | paid nothing\.$|No contest this summer/.test(l) || / Rule is /.test(l)) log(s, l); // the rent roll stays on the Winter sheet
   s.phase = 'winter';
-  s.queue.push({ t:'winter', land: lines, hall: upkeep(s) });
+  const u = upkeep(s, events), y = s.yr || {};
+  s.queue.push({ t:'winter', land: lines, hall: u.lines, rows, events, eat: u.eat, spring: y.spring ?? null, loot: { n: y.loot || 0, from: y.from, forfeit: y.forfeit, beaten: y.beaten } });
 }
 function loseHolding(s, h, j, why) {
   s.holdings = s.holdings.filter(x => x !== h);
@@ -315,18 +322,21 @@ function walkAway(s, j, h) {
 function buyMen(s, n) {
   const price = has(s,'fairdealer') ? 2 : T.manPrice;
   n = Math.min(n, Math.floor(s.silver / price)); if (n <= 0) return;
-  s.silver -= n * price; s.men += n; s.deeds.menBought += n;
+  s.silver -= n * price; s.men += n; s.deeds.menBought += n; if (s.yr) s.yr.bought += n;
 }
-function upkeep(s) {
+function upkeep(s, events = []) {
   const home = s.notables.filter(m => m.place === 'home').reduce((a, m) => a + m.men, 0) + unledMen(s);
-  let cost = Math.round(home * T.upkeep * (s.flags.hardWinter ? 2 : 1) * (has(s,'deepchest') ? 0.5 : 1));
-  s.deeds.upkeep += cost;
-  const lines = [];
-  if (cost > s.silver) { const starve = Math.min(home, Math.ceil((cost - s.silver) / 2)); cost = s.silver; s.men -= starve; trimMen(s); lines.push(`The hall could not feed everyone. ${starve} men left.`); }
+  const hard = !!s.flags.hardWinter, deep = has(s,'deepchest'), base = Math.round(home * T.upkeep);
+  const due = Math.round(home * T.upkeep * (hard ? 2 : 1) * (deep ? 0.5 : 1));
+  let cost = due; s.deeds.upkeep += cost;
+  const lines = []; let starve = 0;
+  if (cost > s.silver) { starve = Math.min(home, Math.ceil((cost - s.silver) / 2)); cost = s.silver; s.men -= starve; trimMen(s); lines.push(`The hall could not feed everyone. ${starve} men left.`); events.unshift({ k:'starve', t:'The hall could not feed everyone.', s:`${starve} men left` }); }
   s.silver -= cost; lines.push(`${home} men at home ate ${cost} silver.`);
+  if (hard) events.push({ k:'hard', t:'Hard winter.', s:'the ice came early · the hall ate double' });
   if (lines.length > 1) log(s, lines[0]);
   s.flags = {};
-  return lines;
+  const why = starve ? `only ${cost} in the chest` : hard && deep ? 'hard winter, Deep-chest' : hard ? 'hard winter · doubled' : deep ? 'Deep-chest · halved' : '';
+  return { lines, eat: { men: home, base, due, paid: cost, why, starve } };
 }
 function closeWinter(s) { winterCard(s); next(s); }
 function trimMen(s) { let over = placedMen(s) - s.men; for (const m of s.notables) { if (over <= 0) break; const d = Math.min(m.men, over); m.men -= d; over -= d; } }
@@ -400,6 +410,7 @@ function newYear(s) {
   for (const c of s.children) { c.age++; if (c.sex === 'm' && c.age === 16) comeOfAge(s, c); }
   if (s.year >= T.endYear) { s.dynasty.push(reignCard(s)); s.queue.push({ t:'end', reason: '1066' }); return; }
   s.phase = 'spring'; s.rumorOffer = null;
+  s.yr = { spring: s.silver, loot: 0, from: null, forfeit: null, beaten: null, bought: 0 }; // the year's account, for the autumn ledger
   // the crews who sailed last summer gather at the ship; a destination that is now ours or gone is forgotten (TODO 20)
   for (const m of s.notables) if (m.sailed && m.place === 'home') m.place = 'ship';
   if (s.destination && s.destination !== 'blind' && (isHolding(s, s.destination) || !s.shores[s.destination].known)) s.destination = null;
@@ -479,6 +490,7 @@ function migrate(s) {
   if (!s.rulers) { s.rulers = buildRulers(s.day); s.envoy = null; for (const k of Object.values(s.rulers)) k.coasts = k.coasts.filter(c => !isHolding(s, c)); discoverRulers(s); }
   s.log = s.log.map(l => typeof l === 'string' ? { y: +(l.match(/^(\d{3,4}): /) || [])[1] || null, t: l.replace(/^\d{3,4}: /, '') } : l);
   if (!s.lost) s.lost = [];
+  if (!s.yr) s.yr = { spring: s.silver, loot: 0, from: null, forfeit: null, beaten: null, bought: 0 };
   // where a coast sits on the map is presentation, not state: re-project every save from the table (the real coast came in session 5)
   for (const [id, , lon, lat, , , , side] of COASTS) { const sh = s.shores[id]; if (!sh) continue; const { x, y } = proj(lon, lat); sh.x = +x.toFixed(1); sh.y = +y.toFixed(1); sh.side = side || 'r'; }
   // a save caught between the old market card and this build: finish its winter the new way
