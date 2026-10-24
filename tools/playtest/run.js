@@ -1,5 +1,5 @@
 // Headless persona playtests for Ring Giver (docs/TODO.md item 25).
-// Usage: node tools/playtest/run.js [--seeds N] [--persona name] [--king ragnar|rollo] [--json out.json]
+// Usage: node tools/playtest/run.js [--seeds N] [--persona name] [--king ragnar|rollo|C,R,F] [--json out.json]
 // Loads coast.js, world.js, game.js (no ui.js, no DOM) into a vm context with its own Math.random and Date, so a seed and a persona always
 // give the same dynasty. The game is never edited; its public functions are driven exactly as the UI would, and a few are wrapped to count events.
 'use strict';
@@ -164,7 +164,7 @@ function runOne(name, seed) {
   DAY = 'pt-' + String(seed).padStart(7, '0');
   RAND = mulberry32(seed * 7919 + 13);
   M = newMetrics();
-  const s = G.migrate(G.newGame(KING));
+  const s = G.migrate((KING.includes(',') ? G.newGame('custom', Object.assign(KING.split(',').map(Number), { name: 'Halfdan' })) : G.newGame(KING)));
   s.pt = { lastStay: 793 };
   const run = { sails: 0, noSail: 0, blind: 0, hostile: {} };
   let endReason = null, guard = 0;

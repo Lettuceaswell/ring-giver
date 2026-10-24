@@ -2,6 +2,22 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-24 (session 13, the King's Rule, Board all, two stray-tap fixes)
+
+Levi asked whether a high-Rule King matters (it didn't), and reported two things from play: Everyone aboard left his named men home, and a stray tap on a jarl's name on Plunder or stay gave the jarl away. Mid-session: New dynasty at the foot of the Saga jumped to the top on the first tap. He approved my two fixes for Rule. TODO 34–37.
+
+**The King's Rule (TODO 34).** Measured first with the harness, which now takes `--king C,R,F` (11 builds, all personas, 24 seeds, snapshots at 803/813/823): Rule was the dump stat (C4 R1 F4 best; a home-sitting King's build changed nothing). Now `hallPay(s)` is a third of Vestfold's yield per point of the King's Rule, and `reachFree(s)` = `T.reachBase` 4 + `T.reachRule` 2 × Rule (was the flat `T.reachFree` 10). After: the hall-sitter's loot to 823 is within 2% across builds and Rule builds have more men; sailing Kings still want Combat. The reach is weak (tried `reachRise` 0.01 and 0.02: holdings did not move), left at 0.003. Picker: Rule reads "the hall pays 44 · 12 holdings before they stir" (today's Vestfold); Rollo is "the lawgiver". The hall card says what his Rule pays and keeps calm; a stir names the King's Rule.
+
+**Board all (TODO 35, reverses 32).** Everyone boards, the King too. `strengthShip` counts each named man aboard as one more man at his Combat (his own arm), so a man with no men adds something; he shares the loot and grows instead of souring at home.
+
+**Plunder or stay (TODO 36).** A tap picks the jarl; a confirm under the row (what staying costs; Not him / Leave <name>). `render` keeps the open sheet's scroll and skips its rise when the same sheet is drawn again (`UI.sheetId`, `.overlay.still`).
+
+**Saga (TODO 37).** New dynasty sits under the title.
+
+**Verified:** `node tools/smoke.js` OK (fails 0); default playtest md5 is now `b9aa68cc75b2104229ad388318115d55` (the own arm and the hall pay change every fate). Screens at 390 px: the picker, the Saga, Plunder or stay with a jarl picked (`shoot.sh` learned `click=` and `scroll=`). sw `seaking-v8`.
+
+**Next:** round 5, the Hall pane. Feel on the phone whether Rollo's hall pay makes sitting home a real summer.
+
 ## 2026-10-24 (session 12, audit 4 built: the battle)
 
 Levi chose **A, The Clash**, with more ceremony: the needle swinging back and forth was motion that meant nothing; he wants genuine rolls he can watch, like CK3, losses scattered across the ranks, something when men fall, a slower pace by default that a tap can skip, and the King's risk of dying stated plainly. He agreed to all of my recommendations: real exchanges in the combat math, luck kept at about today's share, the King's risk on the commit sheet and the battle, no mid-battle retreat for now, Turn for home (TODO 31) and Board all's fix (TODO 32).

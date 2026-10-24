@@ -11,7 +11,7 @@ const T = { startMen: 40, menPerF: 10, manPrice: 3, upkeep: 1, rumor: 20, startY
   strike: 0.3, strikeBase: 40, strikePer: 20, strikeSated: 20, // a hostile king comes for a holding that was his each summer at this chance; host = base + per x his free coasts; a coast won back warms him
   benches: 8,                      // named men without a holding the hall will feed at its table; past that no wanderer or local comes (sons always do)
   oldAge: 0.04,                    // past sixty a named man dies in his bed at oldAge x (age - 60) a winter
-  reachFree: 10, reachRise: 0.003, reachMax: 0.05 }; // past reachFree holdings each holding stirs (unrest +15..40) at reachRise x the excess a summer, at most reachMax
+  reachBase: 4, reachRule: 2, reachRise: 0.003, reachMax: 0.05 }; // past reachBase + reachRule x the King's Rule holdings (10 at Rule 3), each holding stirs (unrest +15..40) at reachRise x the excess a summer, at most reachMax
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -40,7 +40,9 @@ function moveStance(s, m, d, why) {
   if (last && last.t === why && Math.sign(last.d) === Math.sign(d)) { last.d += d; last.y = s.year; } // the same deed, year on year, is one line
   else { w.push({ y: s.year, t: why, d }); if (w.length > 6) w.shift(); }
 }
-function hallPay(s) { return holdPay(s.shores[HOME_ID]); }
+// the King's Rule is what the hall pays (a third of its yield for each point) and how far his land runs before it stirs (session 13)
+function hallPay(s, rule = s.king.rule) { return Math.round(holdPay(s.shores[HOME_ID]) * rule / 3); }
+const reachFree = (s, rule = s.king.rule) => T.reachBase + T.reachRule * rule;
 // the chronicle: one line, stamped with its year (GDD §16); the Saga sheet groups them
 function log(s, t) { s.log.push({ y: s.year, t }); if (s.log.length > 3000) s.log.splice(0, s.log.length - 3000); }
 // a man's stance moved this year or last: the card carries an arrow for one turn (TODO 21)
@@ -86,7 +88,8 @@ function checkBreak(s, k) {
 // the hall's benches: only so many named men can sit at the King's table without a holding of their own; a full hall draws no more (TODO 25)
 function benchRoom(s) { return s.notables.filter(m => !m.isKing && !s.holdings.some(h => h.id === m.place)).length < T.benches; }
 function fCap(s, m) { return (m.follow + (has(s,'ringgiver') ? 1 : 0)) * T.menPerF; }
-function strengthShip(s) { return s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.combat * m.men, 0); }
+// a named man fights with his own arm too: he counts as one man at his Combat, whether or not he leads any (session 13)
+function strengthShip(s) { return s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.combat * (m.men + 1), 0); }
 // ---- The battle (audit 4): up to three exchanges, the landing, the shield wall and the press, each a genuine roll of the ship's strength on the day ----
 // Each exchange the ship fights at ROLL[0]..ROLL[1] of its strength; the mean of the exchanges fought must beat the defenders. A battle stops as soon as
 // one side breaks (the coast when the ship stands at twice its number, the ship at half); a side can only break when the rolls still to come could not save it. Three rolls on 0.75..1.25 average to about the spread of the
@@ -185,7 +188,7 @@ function boardAll(s) {
   for (const m of s.notables) if (m.place === 'home') m.place = 'ship';
   const ship = s.notables.filter(m => m.place === 'ship').sort((a, b) => (b.isKing ? 1 : 0) - (a.isKing ? 1 : 0) || b.combat - a.combat);
   for (const m of ship) m.men = Math.min(fCap(s, m), m.men + unledMen(s));
-  for (const m of ship) if (!m.isKing && !m.men) m.place = 'home'; // a man with no one to lead adds nothing aboard, and he can fall (TODO 32)
+  // a man with no one to lead still boards: he fights with his own arm, shares the loot and grows, and at home he would only sour (session 13, reversing TODO 32)
 }
 function setDestination(s, id) { if (s.phase === 'spring') s.destination = id; } // the ship may be empty yet; Sail is what needs men
 function marry(s, childId, jarlId) {
@@ -362,9 +365,10 @@ function resolveLand(s) {
       s.deeds.heldYears++; moveStance(s, j, 3, `held ${h.name} and it paid`);
       lines.push(`${h.name} pays ${pay}. ${j.name} holds it.`); rows.push({ n: h.name, v: pay, why: `${j.name} holds it${dbl}` });
       const n = s.holdings.length; // a long reach: past a few holdings, any one may stir, and next summer asks more of its jarl (TODO 25)
-      if (n > T.reachFree && r() < Math.min(T.reachMax, T.reachRise * (n - T.reachFree))) {
+      const free = reachFree(s);
+      if (n > free && r() < Math.min(T.reachMax, T.reachRise * (n - free))) {
         const up = 15 + r.int(0, 25); h.unrest = clamp(h.unrest + up, 0, 100);
-        events.push({ k:'empty', t:`${h.name} stirs.`, s:`unrest ${h.unrest} next summer · ${n} holdings is a long reach for one hall` });
+        events.push({ k:'empty', t:`${h.name} stirs.`, s:`unrest ${h.unrest} next summer · ${n} holdings, and a King of Rule ${k.rule} keeps ${free} calm` });
       }
       if (h.quiet > 0 && h.quiet % T.quietYears === 0 && benchRoom(s)) {
         const sh = s.shores[h.id], nm = freshName(s, LOCAL_NAMES[sh.culture], rng(s.day + h.id + s.year), sh.name);

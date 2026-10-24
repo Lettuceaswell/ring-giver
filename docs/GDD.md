@@ -31,8 +31,8 @@ The only resource that fights, holds, or counts. A single pool at home.
 
 ### 3.2 Notable Men
 Named cards. The King is one; sons become them; the world supplies more. Three stats, 1–5 each:
-- **Combat** — multiplies men on the ship.
-- **Rule** — multiplies men on the land.
+- **Combat** — multiplies men on the ship. A named man aboard also fights with his own arm: he counts as one man at his Combat, whether or not he leads any.
+- **Rule** — multiplies men on the land. The King's Rule is his hall's pay (a third of Vestfold's yield for each point) and his reach (4 + 2 × Rule holdings before they stir), since a King never holds a coast himself.
 - **Followability** — how many men he can lead (F × 10).
 
 Named men are not safe aboard: each may fall in a lost fight or a bloody win, the King too. Past sixty they die in their beds.
@@ -123,7 +123,7 @@ Levers on the Oath, all pre-existing elements:
 
 ## 8. Growth: a life, not a menu
 
-- **Starter build.** Pick the King: Ragnar leans Combat, Rollo leans Rule, Custom spreads 9 points across three stats. All start in 793 at age 20.
+- **Starter build.** Pick the King: Ragnar leans Combat (a King who sails), Rollo leans Rule (a King who sits his hall: it pays twice Ragnar's, and his land runs further before it stirs), Custom spreads 9 points across three stats. All start in 793 at age 20.
 - **Stats grow by doing** (§3.2).
 - **Forks** at ages 25, 35, 45, 55: two titles offered, earned by what he actually did, pick one. Four per life, never the same pair. First-pass titles: *Ironside* (halve ship losses), *Lawgiver* (unrest rises slower), *Ring-giver* (every jarl's Followability +1), *Far-sailor* (blind arrival reveals five, not three).
 - The next fork shows on the King's card years ahead. That is the reach.
@@ -200,7 +200,7 @@ Every named man, jarl or foreign ruler, carries one stance toward the King, show
 **Why:** the player wants to read his people and work on them. One word on every card does that; a second loyalty number would not add anything the Oath could not already say.
 
 ### 15.2 The King holds the hall
-Vestfold is a holding row with the King as its jarl. King home: it pays its yield, his Rule grows as a jarl's does, and everyone at home warms one step in stance. King away: none of that, and the rival fleet finds the hall thin. The hall cannot revolt. Being away costs nothing beyond what was not collected.
+Vestfold is a holding row with the King as its jarl. King home: it pays a third of its yield for each point of his Rule (session 13; before, the full yield whatever his Rule), his Rule grows as a jarl's does, and everyone at home warms one step in stance. King away: none of that, and the rival fleet finds the hall thin. The hall cannot revolt. Being away costs nothing beyond what was not collected.
 
 **Why:** sailing with the King was always right, so it was not a choice. Now the King at home is doing the one thing only a King can do.
 

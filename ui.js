@@ -43,7 +43,11 @@ function render() {
   const beat = quiet && S.phase === 'spring' && UI.pane === 'map' && !open && UI.beatYear !== S.year;
   if (beat) UI.beatYear = S.year;
   const sheet = S.queue.length ? overlayHTML(S.queue[0]) : UI.man ? manSheet(UI.man) : UI.saga ? sagaSheet() : UI.picker ? pickerHTML() : '';
+  // the same sheet drawn again (a tap inside it) keeps its scroll and does not rise again (session 13: the Saga's New dynasty, the Stay confirm)
+  const sheetId = S.queue.length ? S.queue[0] : UI.man || (UI.saga && 'saga') || (UI.picker && 'picker') || null, sc0 = $('.scene'), keep = sc0 ? sc0.scrollTop : 0, same = sheetId && sheetId === UI.sheetId;
+  UI.sheetId = sheetId;
   app.innerHTML = bandHTML(quiet, beat) + paneHTML(beat) + footHTML() + sheet;
+  if (same) { const o = $('.overlay'), sc = $('.scene'); if (o) o.classList.add('still'); if (sc) sc.scrollTop = keep; }
   const p = $('.pane'); if (p && UI.pane !== 'map') p.scrollTop = UI.scroll[UI.pane] || 0;
   if ($('#bn')) marketNums();
   fitMap(); if (beat) countUp(app);
@@ -112,7 +116,7 @@ function setupHTML() {
   <div class="sub">793. You are twenty, with a hall, forty men, and one ship. Raid for silver. Hold what you take. Marry well, and die. Then your son faces the jarls: they kneel, or they walk. Play until the line ends.</div>
   <h2>Choose your king</h2>
   <div class="pick" onclick="startGame('ragnar')"><span class="name">Ragnar</span><small>The raider. Silver comes fast and the summers run red. What he takes, he keeps badly.</small>${statRows(4, 2, 3)}</div>
-  <div class="pick" onclick="startGame('rollo')"><span class="name">Rollo</span><small>The settler. Takes a coast and holds it. Silver comes slow and sure, and the fleet is weak when it must fight.</small>${statRows(2, 4, 3)}</div>
+  <div class="pick" onclick="startGame('rollo')"><span class="name">Rollo</span><small>The lawgiver. His hall pays well while he sits in it, and his land runs far before it stirs. Silver comes slow and sure, and the fleet is weak when it must fight.</small>${statRows(2, 4, 3)}</div>
   <div class="card"><span class="name">Your own</span><small>Name him. Nine points, one to five each.</small>
     <input id="cname" class="cname" placeholder="Name" value="Halfdan">
     ${statRows(cust.c, cust.r, cust.f, true)}
@@ -124,7 +128,9 @@ function setupHTML() {
 }
 // the three stats as dots and what each one does in the rules: Combat multiplies men at sea, Rule multiplies men on land, Followability is men led (F × 10)
 const dots = n => `<span class="dots">${'●'.repeat(n)}${'○'.repeat(5 - n)}</span>`;
-const STAT_WORDS = { c: v => `each man aboard fights as ${v}`, r: v => `each man on land holds as ${v}`, f: v => `leads ${v * T.menPerF} men` };
+// the King's Rule is his hall's pay and his reach (session 13); the seas are today's, so the hall's yield is today's too
+let todayHall = null; const hallYield = () => todayHall ?? (todayHall = holdPay(buildWorld(new Date().toISOString().slice(0, 10))[HOME_ID]));
+const STAT_WORDS = { c: v => `each man aboard fights as ${v}`, r: v => `the hall pays ${Math.round(hallYield() * v / 3)} · ${T.reachBase + T.reachRule * v} holdings before they stir`, f: v => `leads ${v * T.menPerF} men` };
 function statRows(c, r, f, edit) {
   const row = (k, label, v) => `<span class="k">${label}</span>${edit
     ? `<span class="men"><button onclick="bump('${k}',-1)">−</button><span class="n" id="${k}">${dots(v)}</span><button onclick="bump('${k}',1)">+</button></span>`
@@ -300,7 +306,7 @@ function destHTML(ship) {
   return `<div class="card">
     <button class="dest${d ? ' set' : ''}" ${spring ? '' : 'disabled'} onclick="UI.picker=true;render()"><span><span class="dname">${label}</span>${sub ? `<br><span class="stats">${sub}</span>` : ''}</span><span class="chev">▸</span></button>
     ${bar}
-    ${spring && atHome ? `<div class="where"><button class="small" onclick="act(()=>boardAll(S))">Everyone aboard</button><span class="hint" style="margin:0;align-self:center">all at home board, filled from the unled</span></div>` : ''}</div>`;
+    ${spring && atHome ? `<div class="where"><button class="small" onclick="act(()=>boardAll(S))">Everyone aboard</button><span class="hint" style="margin:0;align-self:center">all at home board, the King too, filled from the unled; a man with no men fights alone</span></div>` : ''}</div>`;
 }
 // the destination picker: one sheet, every known shore in the same shape, richest first
 function pickerHTML() {
@@ -334,7 +340,7 @@ function manCard(m) {
 // the hall is a holding row with the King as its jarl (GDD §15.2); it cannot revolt
 function hallHTML() {
   const k = S.king, home = k.place === 'home', spring = S.phase === 'spring';
-  const text = !spring ? 'The King\'s hall. It cannot revolt.' : home ? `${esc(k.name)} keeps his hall this summer: it pays, his Rule grows every third year, and every man at home warms to him.` : `${esc(k.name)} sails. The hall pays nothing and stands thin against a rival sail.`;
+  const text = !spring ? 'The King\'s hall. It cannot revolt.' : home ? `${esc(k.name)} keeps his hall this summer: it pays ${hallPay(S)} (a third of its yield for each point of his Rule), his Rule grows every third year, and every man at home warms to him. His Rule keeps ${reachFree(S)} holdings calm.` : `${esc(k.name)} sails. The hall pays nothing and stands thin against a rival sail.`;
   return `<div class="card"><div class="row"><span class="name">Vestfold<span class="tag">the hall</span></span><span class="stats">pays <b>${hallPay(S)}</b> · King ${home ? 'home' : 'at sea'}</span></div><div class="hint">${text}</div></div>`;
 }
 function holdingHTML(h) {
@@ -411,10 +417,9 @@ function sagaSheet() {
   const armed = Date.now() - UI.armed < 3000;
   return `<div class="overlay" onclick="if(event.target===this){UI.saga=false;render()}"><div class="scene">
     <h1>${ico('oath')}Saga${closeX('UI.saga=false;render()')}</h1><p class="stats">Generation ${S.gen} · the seas of ${S.day}</p>
+    <div class="where"><button class="small${armed ? ' armed' : ''}" onclick="newDynasty()">${armed ? 'Tap again · this dynasty is lost' : 'New dynasty'}</button><span class="hint" style="margin:0;align-self:center">${armed ? 'or wait, and nothing happens' : 'its kings stay under Past kings'}</span></div>
     <h2>Kings</h2>${reigns.map(reignRow).join('')}
     <h2>Chronicle</h2><div class="chron">${chron || '<div class="hint">Nothing yet. Sail.</div>'}</div>
-    <h2>New dynasty</h2>
-    <div class="where"><button class="small${armed ? ' armed' : ''}" onclick="newDynasty()">${armed ? 'Tap again · this dynasty is lost' : 'New dynasty'}</button><span class="hint" style="margin:0;align-self:center">${armed ? 'or wait, and nothing happens' : 'its kings stay under Past kings'}</span></div>
     <div class="actions"><button onclick="UI.saga=false;render()">Back</button></div></div></div>`;
 }
 // two taps within three seconds; no dialog (design law 1: undo over confirm)
@@ -661,10 +666,14 @@ function stayHTML(sc) {
     const tag = pNow >= .97 ? ['sure', 'holds'] : need <= cap ? ['fill', `send ${need - men}`] : pFull >= .4 ? ['fill', `${Math.round(100 * pFull)}% at best`] : ['no', 'cannot hold'];
     return { pNow, pFull, tag, score: 2 * pNow + pFull, why: `Rule ${r} × ${men} = <b>${r * men}</b> vs ${un} · ${Math.round(100 * pNow)}%${pNow < .97 ? ` · with ${cap} men <b>${r * cap}</b> · ${Math.round(100 * pFull)}%` : ''}` }; };
   const rows = [];
-  if (sc.walked) { const w = x.walked, cap = w.follow * T.menPerF; rows.push({ walked: true, fn: "chooseStay(S,'walked')", name: `${w.name} kneels and keeps it`, st: `C ${w.combat} · R ${w.rule} · F ${w.follow} · brings no men · leads ${cap}`, h: test(w.rule, 0, cap) }); }
-  for (const m of S.notables.filter(m => m.place === 'ship' && !m.isKing)) { const cap = fCap(S, m); rows.push({ fn: `chooseStay(S,'${m.id}')`, name: `${m.name} stays`, st: `C ${m.combat} · R ${m.rule} · F ${m.follow} · age ${m.age} · ${m.men} of ${cap} men`, h: test(m.rule, m.men, cap) }); }
+  if (sc.walked) { const w = x.walked, cap = w.follow * T.menPerF; rows.push({ walked: true, key: 'walked', fn: "chooseStay(S,'walked')", who: w.name, name: `${w.name} kneels and keeps it`, st: `C ${w.combat} · R ${w.rule} · F ${w.follow} · brings no men · leads ${cap}`, h: test(w.rule, 0, cap) }); }
+  for (const m of S.notables.filter(m => m.place === 'ship' && !m.isKing)) { const cap = fCap(S, m); rows.push({ key: m.id, fn: `chooseStay(S,'${m.id}')`, who: m.name, men: m.men, name: `${m.name} stays`, st: `C ${m.combat} · R ${m.rule} · F ${m.follow} · age ${m.age} · ${m.men} of ${cap} men`, h: test(m.rule, m.men, cap) }); }
   rows.sort((a, b) => (b.walked ? 1 : 0) - (a.walked ? 1 : 0) || b.h.score - a.h.score);
   const shown = UI.stayAll === sc.shore + S.year ? rows : rows.slice(0, 4);
+  // a tap picks a jarl; leaving him is a second, named button, so a stray tap gives nothing away (session 13)
+  const at = sc.shore + S.year, pick = UI.stayPick && UI.stayPick.at === at ? UI.stayPick.key : null;
+  const confirm = r => `<div class="jconfirm"><p>${r.walked ? `${esc(r.who)} kneels and keeps ${esc(x.name)}. He brings no men; send them from home next spring.` : `${esc(r.who)} stays at ${esc(x.name)} with his ${r.men} men. They do not sail home, and the loot is left.`}</p>
+    <div class="actions"><button onclick="UI.stayPick=null;render()">Not him</button><button class="primary" onclick="UI.stayPick=null;act(()=>${r.fn})">Leave ${esc(r.who)}</button></div></div>`;
   let owner = '';
   if (own) { const rest = own.coasts.filter(c => c !== own.anchor), held = rest.filter(c => isHolding(S, c)).length, seat = own.anchor === x.id;
     owner = `<p class="rule1">${esc(x.name)} is <b>${esc(own.name)}'s${seat ? ' seat' : ''}</b>. ${stanceWord(own.stance) === stanceWord(own.stance - T.takeSour) ? `He stays ${stanceWord(own.stance)}.` : `He sours: ${stanceWord(own.stance)} → ${stanceWord(own.stance - T.takeSour)}.`}${seat ? '' : ` His realm: ${held} of ${rest.length} coasts held${held + 1 >= rest.length ? ', and this makes it whole. He bends; three summers held and he kneels.' : ` → ${held + 1}.`}`}</p>`; }
@@ -673,7 +682,7 @@ function stayHTML(sc) {
     <div><div class="k">Stay</div><div class="v">${pay}<small>a year</small></div><div class="s">from next summer · ${back} ${back === 1 ? 'summer' : 'summers'} to earn ${sc.loot}</div></div></div>
     <button class="primary pbtn" onclick="act(()=>choosePlunder(S))">Plunder · ${sc.loot} silver</button>
     <p class="rule1">Unrest <b>${un}</b>. Next summer the jarl's Rule × men must beat it; it falls 5 for each summer held. This summer is free.${spare ? ` ${spare} men sit unled at home to send.` : ''}</p>${owner}
-    <h2>Or leave a jarl</h2>${shown.map(r => `<button class="jr" onclick="act(()=>${r.fn})"><span class="nm">${esc(r.name)}</span><span class="ok ${r.h.tag[0]}">${r.h.tag[1]}</span><span class="st">${r.st}</span><span></span><span class="jwhy">${r.h.why}</span></button>`).join('')}
+    <h2>Or leave a jarl</h2>${shown.map(r => `<button class="jr${pick === r.key ? ' on' : ''}" onclick="UI.stayPick=${pick === r.key ? 'null' : `{at:'${at}',key:'${r.key}'}`};render()"><span class="nm">${esc(r.name)}</span><span class="ok ${r.h.tag[0]}">${r.h.tag[1]}</span><span class="st">${r.st}</span><span></span><span class="jwhy">${r.h.why}</span></button>${pick === r.key ? confirm(r) : ''}`).join('')}
     ${rows.length > shown.length ? `<button class="more" onclick="UI.stayAll='${sc.shore + S.year}';render()">${rows.length - shown.length} more who could stay</button>` : ''}
     ${!rows.length ? '<div class="empty">The King cannot stay. Only another jarl can hold a shore.</div>' : ''}`;
 }

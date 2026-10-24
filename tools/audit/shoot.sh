@@ -3,7 +3,7 @@
 #   tools/audit/shoot.sh setup            builds the harness dir (symlinks to the game, a driver page, saved states) and starts a server on :8766
 #   tools/audit/shoot.sh NAME 'HASH'      shoots http://127.0.0.1:8766/index.html#HASH to tools/audit/out/NAME.png at 390x844, 2x
 # HASH keys (driver page): state=<name from states/>  pane=map|ship|hall  saga=1  picker=1  man=<index into S.notables>  ruler=1
-#   dest=<coast id or empty>  board=1  unboard=1  rumor=<coast id>  delta=<silver>&dmen=<men>  nobeat=1 (skips the arrival and ledger beats)  buy=<n> (buy n men on the Winter sheet)  fresh=1&start=ragnar  shift=1 (drop queue[0])  next=1 (run next(S): what follows the card)  rolled=1 (the King's card turned)  answer=yes|no (the suitor answered)
+#   dest=<coast id or empty>  board=1  unboard=1  rumor=<coast id>  delta=<silver>&dmen=<men>  nobeat=1 (skips the arrival and ledger beats)  buy=<n> (buy n men on the Winter sheet)  fresh=1&start=ragnar  shift=1 (drop queue[0])  next=1 (run next(S): what follows the card)  rolled=1 (the King's card turned)  answer=yes|no (the suitor answered)  click=<selector>[|<selector>] (tap these after render)  scroll=<px> (scroll the open sheet, before any click)
 set -e
 ROOT=$(cd "$(dirname "$0")/../.." && pwd); H=$ROOT/tools/audit/harness; OUT=$ROOT/tools/audit/out
 if [ "$1" = setup ]; then
@@ -28,7 +28,9 @@ driver='''<script>window.onerror=(m,s,l)=>{document.title="ERR "+m+" "+l};
   if(h.get('delta')){UI.pend={silver:+h.get('delta'),men:+(h.get('dmen')||0)};}
   if(h.get('nobeat')){UI.beatYear=S.year;UI.winterYear=S.year;UI.cardYear=S.year;} if(h.get('rolled')){UI.rolled=S.year;} if(h.get('answer')){act(()=>answerSuitor(S,h.get('answer')==='yes'));}
   if(h.get('buy')){UI.buy=+h.get('buy');act(()=>buyMen(S,UI.buy));}
-  render();};
+  render();
+  if(h.get('scroll')){const e=document.querySelector('.scene');if(e)e.scrollTop=+h.get('scroll');}
+  if(h.get('click')){for(const sel of h.get('click').split('|')){const e=document.querySelector(sel);if(e)e.click();}}};
 })();</script>
 <script src="ui.js"></script><script>__after()</script>'''
 old='<script src="ui.js"></script>\n<script>if(\'serviceWorker\' in navigator)navigator.serviceWorker.register(\'sw.js\');</script>'

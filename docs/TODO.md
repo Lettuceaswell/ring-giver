@@ -162,10 +162,30 @@ A blind landfall can show only hopeless coasts (912 in Levi's line: 758, 296, 89
 
 ---
 
-## 32. Board all boards men with no men (built session 12)
+## 32. Board all boards men with no men (built session 12, reversed session 13: see 35)
 `boardAll` puts every named man aboard, including those with no men to lead. They add nothing to the ship and each can fall (838: eight aboard, seven leading no one; Styr and Hastein fell). **Recommendation:** Board all skips a man with no men; boarding him by hand still works.
 
 ---
 
 ## 33. Late raids lose money
 In Levi's line past 900, 88% of fights bring home less silver than the men they cost at the market price (13% before 900): coasts arm toward 1,000 defenders and wins bring 25 to 46 silver for 58 to 84 men. The arming is as designed; the round-4 account makes it visible. Judge in play whether late raiding needs a new reason (holdings, tribute, glory) or a cheaper coast. Also: at least 242 of 374 lost fights in his line were hopeless before the ship sailed.
+
+---
+
+## 34. The King's Rule did nothing (decided and built session 13)
+Levi: picking a high-Rule King doesn't seem to matter; only Combat and Followability do. Measured (11 starting builds × 7 personas × 24 seeds, loot to 823): true. The King never holds a coast and the hall paid the same whatever his Rule, so Rule only fed the home guard and his sons; C4 R1 F4 was the best build, Rule the dump stat, and a home-sitting King's build changed nothing. **Built:** Vestfold pays a third of its yield per point of the King's Rule (`hallPay`), and his reach is `T.reachBase` 4 + `T.reachRule` 2 × Rule holdings before they stir (`reachFree`; 10 at Rule 3, as before). After: a King who sits his hall now does as well with Rule as with Combat (hall-sitter persona, loot to 823 within 2% across builds, more men with Rule); a sailing King still wants Combat. The reach barely moves holdings (jarls absorb the stirs, even at 7× the stir rate), so it was left at the old `reachRise`; the hall pay does the work. Rollo's card and the picker's Rule words say what Rule now does.
+
+---
+
+## 35. Board all leaves the named men home (decided and built session 13)
+Levi: with too few men to fill a second named man, Everyone aboard left the rest at home, which does him no good; he would rather they fight. At home with no men a named man only sours (idle) and guards nothing. **Built:** Board all boards everyone at home, the King too; a named man aboard fights with his own arm (one man at his Combat, in `strengthShip`), shares the loot and grows. He can still fall, and the commit sheet says how likely.
+
+---
+
+## 36. A stray tap on Plunder or stay gives away a jarl (decided and built session 13)
+Levi: tapping a jarl's name on Plunder or stay left him there at once, no undo. **Built:** the tap picks the row; under it a line says what staying means (his men stay, the loot is left) and two buttons, Not him and Leave <name>. No dialog. A sheet drawn again by a tap inside it now keeps its scroll and does not rise again (`render`, `UI.sheetId`).
+
+---
+
+## 37. New dynasty sat at the foot of the Saga (decided and built session 13)
+Levi: the button was at the bottom; the first tap re-drew the sheet at the top, and he had to scroll back down inside three seconds for the second tap. **Built:** New dynasty sits under the title; the sheet also keeps its scroll on a re-draw (36).
