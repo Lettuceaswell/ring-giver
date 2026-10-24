@@ -7,6 +7,17 @@ const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>'
 const statLine = m => `<span class="stats">C <b>${m.combat}</b> · R <b>${m.rule}</b> · F <b>${m.follow}</b>${m.age ? ` · age ${m.age}` : ''}</span>`;
 const shoreOf = id => S.shores[id];
 const ownerName = id => { const o = ownerOf(S, id); return o && o.known ? o.name : null; }; // a known king's name on his coast
+// a raid's expected return in silver, signed: "+162", "−40" (session 14)
+const netTxt = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v);
+// what the raid does to the coast's king: "Gudrød loyal → cool", "Gudrød turns hostile", or "angers Gudrød, loyal" when his word holds
+function kingTxt(k) { if (!k) return ''; const n = esc(k.name);
+  return k.st1 === k.st0 ? `angers ${n}, <b class="st-${k.st0}">${k.st0}</b>` : k.st1 === 'hostile' ? `${n} turns <b class="st-hostile">hostile</b>` : `${n} ${k.st0} → <b class="st-${k.st1}">${k.st1}</b>`; }
+// the destination's second line, the same on the map's sheet and the Ship pane: loot, the net the raid should bring, and the king it angers
+function destSub(x) {
+  if (!x.seen) return (x.rumored ? 'rich, by rumor' : 'unseen') + (ownerName(x.id) ? ` · ${esc(ownerName(x.id))}'s` : '');
+  const v = strengthShip(S) > 0 ? raidValue(S, x.id) : null;
+  return `loot ${x.loot}${v ? ` · net <b class="${v.net >= 0 ? 'rich' : 'lose'}">≈ ${netTxt(v.net)}</b>` : ` · ${x.def} defenders`} · ${x.holdable ? 'holdable' : 'cannot hold'}${v && v.king ? ` · ${kingTxt(v.king)}` : ownerName(x.id) ? ` · ${esc(ownerName(x.id))}'s` : ''}`;
+}
 const notable = id => S.notables.find(m => m.id === id);
 // line icons at the brand's thin strand weight: one stroke, no fills, nothing that is a symbol
 const ICONS = {
@@ -263,7 +274,7 @@ function sheetHTML(ship) {
   if (!spring) { name = `Winter ${S.year}`; sub = 'The year turns.'; }
   else if (!d) { name = 'Where this year?'; sub = first ? 'Tap a coast. Rich ones are bigger dots.' : 'Tap a coast on the map, or open the list.'; }
   else if (d === 'blind') { name = 'Sail blind'; sub = `${has(S,'farsailor') ? 5 : 3} dark coasts, fog until you arrive`; }
-  else { name = esc(x.name); sub = (x.seen ? `loot ${x.loot} · ${x.def} defenders · ${x.holdable ? 'holdable' : 'cannot hold'}` : x.rumored ? 'rich, by rumor' : 'unseen') + (own ? ` · ${esc(own)}'s` : ''); }
+  else { name = esc(x.name); sub = destSub(x); }
   const bar = x && x.seen && manned ? barHTML(Sh, x.def) : d && manned ? `<div class="odds">Ship strength ${Sh}.</div>` : '';
   const bar2 = spring && manned ? riskLine(x && x.seen ? x.def : null) : '';
   let label, small = '', fn = '', cls = 'plank', temp = '';
@@ -298,7 +309,7 @@ function destHTML(ship) {
   const spring = S.phase === 'spring', d = S.destination, x = d && d !== 'blind' ? shoreOf(d) : null;
   const label = !d ? 'Choose a destination' : d === 'blind' ? 'Sail blind' : esc(x.name);
   const own = x && ownerName(x.id);
-  const sub = x ? (x.seen ? `loot ${x.loot} · ${x.def} defenders · ${x.holdable ? 'holdable' : 'cannot hold'}` : x.rumored ? 'rich, by rumor' : 'unseen') + (own ? ` · ${esc(own)}'s` : '') : d === 'blind' ? `${has(S,'farsailor') ? 5 : 3} dark coasts, fog until you arrive` : '';
+  const sub = x ? destSub(x) : d === 'blind' ? `${has(S,'farsailor') ? 5 : 3} dark coasts, fog until you arrive` : '';
   const Sh = strengthShip(S); let bar = '';
   if (x && x.seen && ship.length) bar = barHTML(Sh, x.def);
   else if (ship.length) bar = `<div class="odds">Ship strength ${Sh}.</div>`;
@@ -308,20 +319,25 @@ function destHTML(ship) {
     ${bar}
     ${spring && atHome ? `<div class="where"><button class="small" onclick="act(()=>boardAll(S))">Everyone aboard</button><span class="hint" style="margin:0;align-self:center">all at home board, the King too, filled from the unled; a man with no men fights alone</span></div>` : ''}</div>`;
 }
-// the destination picker: one sheet, every known shore in the same shape, richest first
+// the destination picker: one sheet, every known shore in the same shape, best return first (session 14: net is the loot the raid should bring less the men
+// it should cost at the market price; unseen and rumored coasts, whose defenders are fog, follow)
 function pickerHTML() {
-  const Sh = strengthShip(S);
-  const known = Object.values(S.shores).filter(x => x.known && x.id !== HOME_ID && !isHolding(S, x.id))
-    .sort((a, b) => (b.seen ? b.loot : b.rumored ? 999 : -1) - (a.seen ? a.loot : a.rumored ? 999 : -1) || a.name.localeCompare(b.name));
-  const row = x => { const own = ownerName(x.id); return `<div class="prow${S.destination === x.id ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'${x.id}');UI.picker=false})">
+  const Sh = strengthShip(S), king = S.notables.find(m => m.isKing && m.place === 'ship');
+  const known = Object.values(S.shores).filter(x => x.known && x.id !== HOME_ID && !isHolding(S, x.id)).map(x => ({ x, v: x.seen && Sh > 0 ? raidValue(S, x.id) : null }));
+  const rank = ({ x, v }) => v ? 1e6 + v.net : x.seen ? 1e5 + x.loot : x.rumored ? 1 : 0;
+  known.sort((a, b) => rank(b) - rank(a) || a.x.name.localeCompare(b.x.name));
+  const row = ({ x, v }) => { const own = ownerName(x.id), f = v && v.fall >= 0.005 ? `${king ? esc(king.name) : 'each man'} ${Math.round(1000 * v.fall) / 10}% to fall` : '';
+    const sub = !x.seen ? 'defenders unknown' : !v ? `${x.def} defenders · no one aboard yet` : `<b class="${oddsTemp(Sh, x.def)}">${Math.round(100 * v.win)}%</b>${v.win > 0 ? ` · ≈${v.men} men lost` : ''}${f ? ` · ${f}` : ''}`;
+    const sub2 = [x.holdable ? `holdable, ${holdPay(x)} a year` : 'cannot hold', v && v.king && kingTxt(v.king)].filter(Boolean).join(' · ');
+    return `<div class="prow${S.destination === x.id ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'${x.id}');UI.picker=false})">
     <span class="pname">${esc(x.name)}${x.walked ? `<small>(${esc(x.walked.name)}'s now)</small>` : own ? `<small>(${esc(own)}'s realm)</small>` : x.rumored && !x.seen ? '<small>(rich, by rumor)</small>' : ''}</span>
-    <span class="pnum rich">${x.seen ? x.loot : '?'}</span><span class="pnum">${x.seen ? x.def : '?'}</span>
-    <span class="psub">${x.seen ? oddsWords(Sh, x.def) : 'unknown'} · ${x.holdable ? 'holdable' : 'cannot hold'}</span></div>`; };
+    <span class="pnum">${x.seen ? x.loot : '?'}</span><span class="pnum ${v ? v.net > 0 ? 'rich' : v.net < 0 ? 'lose' : '' : ''}">${v ? netTxt(v.net) : '?'}</span>
+    <span class="psub">${sub}<br>${sub2}</span></div>`; };
   const blind = `<div class="prow blind${S.destination === 'blind' ? ' sel' : ''}" onclick="act(()=>{setDestination(S,'blind');UI.picker=false})">
     <span class="pname">Sail blind</span><span class="pnum">—</span><span class="pnum">—</span><span class="psub">${has(S,'farsailor') ? 5 : 3} dark coasts · fog until you arrive</span></div>`;
   return `<div class="overlay" onclick="if(event.target===this){UI.picker=false;render()}"><div class="scene">
-    <h1>${ico('ship')}Where?${closeX('UI.picker=false;render()')}</h1><p>Ship strength <b class="rich">${Sh}</b>. Richest first. Tapping a coast on the map works too.</p>
-    <div class="phead"><span>Shore</span><span>loot</span><span>def</span></div>
+    <h1>${ico('ship')}Where?${closeX('UI.picker=false;render()')}</h1><p>Ship strength <b class="rich">${Sh}</b>. ${Sh > 0 ? `Best return first. <b>Net</b> is the loot less the men lost, at ${T.manPrice} silver a man.` : 'Put men aboard to see what each coast returns.'} Tapping a coast on the map works too.</p>
+    <div class="phead"><span>Shore</span><span>loot</span><span>net</span></div>
     ${known.map(row).join('')}${blind}
     <div class="actions"><button onclick="UI.picker=false;render()">Back</button></div></div></div>`;
 }
@@ -696,11 +712,12 @@ function overlayHTML(sc) {
   else if (sc.t === 'fork') h = `<h1>${ico('fork')}${esc(S.king.name)} is ${S.king.age}</h1><p>What they call him is what he did. Choose one.</p>${sc.offers.map(k => `<div class="pick" onclick="act(()=>takeTitle(S,'${k}'))"><span class="name">${TITLES[k].name}</span><br><span class="stats">${TITLES[k].text}</span></div>`).join('')}`;
   else if (sc.t === 'noSail') h = `<h1>Summer</h1><p>The ship stays beached. The land contests itself.</p><div class="actions">${btn('On', 'next(S)')}</div>`;
   else if (sc.t === 'arrive') { const Sh = strengthShip(S), king = S.notables.find(m => m.isKing && m.place === 'ship'), xs = sc.targets.map(shoreOf), all = xs.every(x => winOdds(Sh, x.def) < 0.4);
-    const best = xs.filter(x => winOdds(Sh, x.def) >= 0.97).sort((a, b) => b.loot - a.loot)[0];
+    const vs = new Map(xs.map(x => [x, raidValue(S, x.id)])), best = xs.filter(x => vs.get(x).net > 0).sort((a, b) => vs.get(b).net - vs.get(a).net)[0];
     h = `<h1>${ico('ship')}Landfall</h1>${mapHTML(sc.targets)}<p>The fog lifts. Ship strength <b class="rich">${Sh}</b>.${king ? ` ${esc(king.name)} is aboard.` : ''}</p>${xs.map(x => { const p = winOdds(Sh, x.def), f = shipRisk(S, x.def).fall, own = ownerName(x.id);
+      const v = vs.get(x);
       return `<div class="pick lf" onclick="act(()=>chooseTarget(S,'${x.id}'))"><div class="row"><span class="name">${esc(x.name)}</span><span class="pc ${oddsTemp(Sh, x.def)}">${Math.round(100 * p)}%</span></div>
-      <div class="stats">loot <b class="rich">${x.loot}</b> · ${x.def} defenders${x.holdable ? ' · holdable' : ''}${x.walked ? ` · ${esc(x.walked.name)} holds it` : own ? ` · ${esc(own)}'s` : ''}${x === best ? ' · <b class="best">the best of them</b>' : ''}</div>
-      <div class="stats">${oddsWords(Sh, x.def)}${f >= 0.0005 ? ` · ${king ? esc(king.name) : 'each man'} ${Math.round(1000 * f) / 10}% to fall` : ''}</div></div>`; }).join('')}
+      <div class="stats">net <b class="${v.net >= 0 ? 'rich' : 'lose'}">≈ ${netTxt(v.net)}</b> · loot ${x.loot} · ${x.def} defenders${x.holdable ? ' · holdable' : ''}${x.walked ? ` · ${esc(x.walked.name)} holds it` : ''}${x === best ? ' · <b class="best">the best of them</b>' : ''}</div>
+      <div class="stats">${oddsWords(Sh, x.def)}${v.win > 0 ? ` · ≈${v.men} men lost` : ''}${f >= 0.0005 ? ` · ${king ? esc(king.name) : 'each man'} ${Math.round(1000 * f) / 10}% to fall` : ''}${v.king ? ` · ${kingTxt(v.king)}` : ''}</div></div>`; }).join('')}
     <button class="home${all ? ' call' : ''}" onclick="act(()=>turnHome(S))"><span>Turn for home</span><small>${all ? 'nothing here worth the men' : 'the summer is spent, no blood'}</small></button>`; }
   else if (sc.t === 'ruler') { const k = S.rulers[sc.ruler], w = stanceWord(k.stance), newest = k.newest && shoreOf(k.newest);
     h = `<h1>${ico('crown')}${esc(k.name)}</h1><p class="stats">${esc(k.title)}</p>

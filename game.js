@@ -121,11 +121,20 @@ const fallChance = b => b.win ? Math.max(0, b.lossFrac - 0.2) * T.fallWin : b.lo
 const riskCache = new Map();
 function fightRisk(S, D, iron) {
   const key = S + ':' + D + ':' + (iron ? 1 : 0); if (riskCache.has(key)) return riskCache.get(key);
-  const g = 10, [lo, hi] = ROLL, at = i => lo + (hi - lo) * (i + 0.5) / g; let fall = 0, win = 0;
-  for (let a = 0; a < g; a++) for (let b = 0; b < g; b++) for (let c = 0; c < g; c++) { const f = battle(S, D, [at(a), at(b), at(c)], iron); fall += fallChance(f); win += f.win ? 1 : 0; }
-  const out = { win: win / g ** 3, fall: fall / g ** 3 }; if (riskCache.size > 500) riskCache.clear(); riskCache.set(key, out); return out;
+  const g = 10, [lo, hi] = ROLL, at = i => lo + (hi - lo) * (i + 0.5) / g; let fall = 0, win = 0, loot = 0, loss = 0;
+  for (let a = 0; a < g; a++) for (let b = 0; b < g; b++) for (let c = 0; c < g; c++) { const f = battle(S, D, [at(a), at(b), at(c)], iron); fall += fallChance(f); win += f.win ? 1 : 0;
+    loot += f.win ? clamp(0.5 + f.margin / 2, 0.3, 1) : 0; loss += f.lossFrac; } // the same share of the coast's loot and of the men aboard that chooseTarget takes
+  const out = { win: win / g ** 3, fall: fall / g ** 3, loot: loot / g ** 3, loss: loss / g ** 3 }; if (riskCache.size > 500) riskCache.clear(); riskCache.set(key, out); return out;
 }
 const shipRisk = (s, D) => fightRisk(strengthShip(s), D, has(s, 'ironside'));
+// what a raid on a seen coast should bring with the ship as it stands, averaged over every day the rolls could bring: the loot, the men lost and what they
+// cost at the market, the net, and what it does to the coast's king (Levi, session 14: the return, not the defenders, is the question)
+function raidValue(s, id) {
+  const sh = s.shores[id], aboard = s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.men, 0), r = shipRisk(s, sh.def);
+  const loot = Math.round(r.loot * sh.loot * (has(s,'seawolf') ? 1.25 : 1)), men = Math.round(r.loss * aboard), k = ownerOf(s, id);
+  return { win: r.win, fall: r.fall, loot, men, cost: men * T.manPrice, net: loot - men * T.manPrice,
+    king: k && k.known ? { name: k.name, st0: stanceWord(k.stance), st1: stanceWord((k.stance || 0) - T.raidSour) } : null };
+}
 // the odds in words: how likely, and how dear. A sure fight can still be a bloody one.
 function oddsWords(S, D) {
   const p = winOdds(S, D), q = S > 0 ? D / S : 9;

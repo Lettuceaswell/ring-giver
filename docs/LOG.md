@@ -2,6 +2,18 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-24 (session 14, the return on a raid)
+
+Levi: the picker shows loot and defenders, but defenders don't tell him the cost, and the cost isn't his question: what is the return on raiding this coast? A high return could make him raid a king and anger him. TODO 39 (built), 40 (open).
+
+**`game.js`.** `fightRisk` sums two more things over its 10×10×10 grid of days: the share of the coast's loot a win takes (`clamp(0.5 + margin / 2, 0.3, 1)`, as `chooseTarget` does) and the share of the men aboard lost (`lossFrac`). `raidValue(s, id)` turns them into `loot` (Sea-wolf included), `men`, `cost` (men × `T.manPrice`), `net`, `win`, `fall`, and `king` (his stance word now and after the raid's −`T.raidSour`). No rule changed; the playtest md5 is still `b9aa68cc…`.
+
+**`ui.js`.** The picker: columns loot and **net** (accent when positive, oxblood when not), sorted best return first, then seen coasts with no one aboard, then rumored, then unseen. Each row: the odds in their color, ≈ men lost, the King's (or each man's) chance to fall when 0.5% or more, "holdable, 28 a year" or "cannot hold", and the king (`kingTxt`: "angers Gudrød, loyal", "Gudrød cool → sour", "Gudrød turns hostile"). The destination line on the map's sheet and the Ship pane (`destSub`) reads "loot 113 · net ≈ +98 · holdable · angers Gudrød, hostile". Landfall: "net ≈ +101 · loot 110 · 90 defenders", ≈ men lost and the king on the second line; "the best of them" is the best positive net (was the richest sure coast). `index.html`: the picker's sub line spans the row.
+
+**Verified:** the estimate against 300 real `chooseTarget` runs per coast (different seeds), every seen coast of every spring state with everyone aboard: 68 coast-states, worst net gap 2 silver, mean 0.8 (script was a one-off in the job tmp). `node tools/smoke.js` OK (793→917, 4,670 renders, no fails). Shots at 390 px: the picker at 815, 850, 900 and with no one aboard; the map's sheet and Landfall. sw `seaking-v9`.
+
+**Found:** a king's coasts are no richer than free ones (TODO 40), so the best return lies under a king only by chance. **Next:** Levi plays with the net on screen; then TODO 40, and round 5, the Hall pane.
+
 ## 2026-10-24 (session 13, the King's Rule, Board all, two stray-tap fixes)
 
 Levi asked whether a high-Rule King matters (it didn't), and reported two things from play: Everyone aboard left his named men home, and a stray tap on a jarl's name on Plunder or stay gave the jarl away. Mid-session: New dynasty at the foot of the Saga jumped to the top on the first tap. He approved my two fixes for Rule. TODO 34–37.

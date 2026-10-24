@@ -194,3 +194,11 @@ Levi: the button was at the bottom; the first tap re-drew the sheet at the top, 
 
 ## 38. The Wanderer names a coast already named (fixed session 13)
 Levi: a rumor named a place already on the map, and he paid for it. `buyRumor` drew from every coast not yet *seen*, so a coast named only by a king's realm (Birka, Ladoga) or by an earlier rumor could be sold again: 13 of the 35 rumors bought across the saved audit states. **Fixed:** the Wanderer names only a coast not yet on the map (`rumorCands`), and the chip reads "Nothing new within reach" before the tap when he has none.
+
+---
+
+## 39. The return, not the defenders (built session 14)
+Levi: the picker shows loot and defenders, but defenders don't say what a raid costs, and cost isn't the question anyway: what does this coast *return*? Seeing a high return could make him raid a king and anger him. **Built:** `raidValue(s, id)` averages the same grid of days the King's fall chance uses (`fightRisk`, now also the expected share of the loot and of the men aboard) into the loot the raid should bring, the men it should cost, and the net at the market price (3 silver a man), plus what it does to the coast's king. The picker's columns are loot and **net**, sorted best return first; each row says the odds, ≈ men lost, the King's chance to fall, the rent if held ("holdable, 28 a year") and the king ("angers Gudrød, loyal", "Gudrød cool → sour", "Gudrød turns hostile"). The map's sheet, the Ship pane and Landfall carry the net too, and Landfall's "the best of them" is now the best net. Net rather than a ratio: a sure, clean raid loses two men, so a ratio reads 20× on a coast worth 40 silver. Checked against 300 real fights per coast over every seen coast in the spring states (68): worst gap 2 silver, mean 0.8.
+
+## 40. A king's coasts are no richer than free ones (open)
+The temptation Levi described in 39 only shows up by chance: in the saved springs a king's coasts average 104 / 97 / 91 base loot against 89 / 94 / 107 for free coasts (815 / 850 / 900), so the best net is as often a free coast as a king's. **Recommendation:** after he has played with the net on screen, if raiding a king never tempts, give a realm's coasts more loot than the free shore (×1.4, the seat ×2), so the richest returns sit under a king and the anger is the price. Not built: tune after play (TODO 11).
