@@ -234,8 +234,10 @@ The temptation Levi described in 39 only shows up by chance: in the saved spring
 
 ---
 
-## 42. The CK3 decisions: more than location and raid (Levi, 2026-10-25, open)
+## 42. The CK3 decisions: more than location and raid (Levi, 2026-10-25, undecided)
 Levi: "Right now it's a game of selecting locations and clicking raid." What he wants from CK3: development; diplomacy, good, bad and neutral, with other rulers; legacy and strengthening a line; religious differences (not reformation); many paths, not only expansion. What he does not: intrigue, piety.
+
+**Status: all undecided (Levi, 2026-10-25).** Every item below, 42.1 to 42.9, is parked for him to come back to. None approved, none rejected; build nothing from 42 until he calls them by number.
 
 **The panel agrees, mostly (round 1, TODO 41).** Two of them call it "a raid-and-hold game" in their first sentence. Goal is the panel's lowest score (2.1 of 5), and 7 of 8 asked for a target. Theo: "The game behind those screens is shallower than they are... Silver piles up with nothing to spend it on." Jen, year 4: "stuck in a loop: raid, get ~70, the hall eats ~50, buy 10 men." Dana: "Kings don't react to what I do to them"; her father's killer knelt "and I was given no choice and no line." Mikkel: a kneeling king "gives no tribute and no levies". Ingrid: "Freydis and Ragnhild given mothers and choices; silver I can give (rings to Bjorn, a bride-price, a new ship)." Rafa liked the one other path that exists: hold a realm three summers and its king kneels. **Where they are silent:** nobody asked for faith or for development, and nobody missed intrigue or piety. Those two are Levi's taste, not the panel's. The panel also played only twenty years and three of them died in 799, so nobody saw the middle of the game, where most of this would live.
 

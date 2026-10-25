@@ -2,6 +2,10 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-25 (session 17, the CK3 steer, no code)
+
+Levi named what he wants from CK3 (development; diplomacy good, bad and neutral; legacy and a stronger line; religious difference without reformation; many paths, not only expansion) and what he does not (intrigue, piety). Written up as **TODO 42**, nine items with recommendations (a wife and the blood with the regency, kings who answer, faith, worth and Build, trade, great deeds, fosterage, the house), with what the round-1 panel said about each: they back "it's just raiding" (goal 2.1 of 5) but never asked for faith or development. **All nine logged as undecided**, at Levi's call, to come back to. Nothing built.
+
 ## 2026-10-25 (session 16, TODO 41A built overnight)
 
 Levi, going to bed: build and deploy every item from the LLM playtest that needs no decision (41A, all ten), with lean delegation, and push when done. Four Sonnet build agents ran one after another on the same two files (a shared brief with the house style and a headless render recipe, then one brief per pair of items); the orchestrator reviewed each diff, ran `tools/smoke.js` between them, and drove the real page on the phone driver at the end (setup → Hordaland → the fight → the stay sheet → the ledger and market → the winter card → spring 794, every pane and the Saga). 41B stands untouched for Levi's calls.
