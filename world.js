@@ -25,6 +25,31 @@ const MALE_NAMES = ['Bjorn','Ivar','Halfdan','Sigurd','Ubbe','Hastein','Eirik','
 const FEMALE_NAMES = ['Astrid','Gudrun','Thyra','Ingrid','Sigrid','Ragnhild','Aud','Hild','Solveig','Thora','Asa','Freydis','Bera','Gyda','Helga','Unn'];
 const LOCAL_NAMES = {saxon:['Aelfric','Osric','Wulfstan','Cuthred','Eadric'], frank:['Rotbert','Hugo','Odo','Gerard','Walter'], gael:['Niall','Conall','Cormac','Donnchad','Aed'], norse:MALE_NAMES};
 
+// ---- Writing variants (TODO 41A.9): the saga says the same thing a few ways, picked by rng(day + ':line:' + key + year) so a given winter or fight always reads the same ----
+const upFirst = x => x[0].toUpperCase() + x.slice(1);
+const LINES = {
+  // the lead on the birth card; each takes { name, king }
+  birth: {
+    son: [({ name, king }) => `${name}, son of ${king}.`, ({ name }) => `${name}, born in the dark of the year. The hall drinks to him.`, ({ name, king }) => `${king} lifts the boy before the hall and names him ${name}.`,
+      ({ name }) => `A son. They call him ${name}, and the line has a boy to raise.`, ({ name, king }) => `The women say a boy. ${name}, son of ${king}.`],
+    daughter: [({ name, king }) => `${name}, daughter of ${king}.`, ({ name }) => `${name}, born in the dark of the year. The hall drinks to her.`, ({ name, king }) => `${king} takes the child in his arms and names her ${name}.`,
+      ({ name }) => `A daughter. ${name}. In sixteen winters a jarl may ask for her.`, ({ name, king }) => `The women say a girl. ${name}, daughter of ${king}.`],
+  },
+  quiet: ['Snow on the roof. Nothing stirs.', 'The fjord freezes at its edges. Nothing comes up it.', 'A long night, a short day, and the fire kept. Nothing stirs.', 'The wind drops. The hall sleeps through the dark.', 'Ice on the oars. The men mend nets and tell the old tales.'],
+  wanderer: ['He winters in the hall and talks of far coasts.', 'A stranger at the door with salt in his cloak. He has seen coasts you have not.', 'An old sailor asks for the fire and pays in talk of far shores.', 'He comes in out of the snow with a hundred place names, and the hall listens.'],
+  // the verdict under the stamp; `at` is the phase the fight ended in ("the landing"). lostLate is a fight fought to the press and lost
+  verdict: {
+    rout: [at => `They break at ${at}.`, at => `They do not stand. ${upFirst(at)} is the whole of it.`, at => `The line breaks at ${at} and does not mend.`, at => `${upFirst(at)} is enough. They run.`],
+    victory: [at => `They give way at ${at}.`, at => `The defenders give ground at ${at} and do not take it back.`, at => `It is won at ${at}.`, at => `${upFirst(at)} decides it, and the coast goes to the ships.`],
+    narrow: [at => `It hangs until ${at}, and then the coast gives.`, at => `Won at ${at}, by a hand's breadth.`, at => `${upFirst(at)} tips it. Nobody will say how close.`, at => `They give way at ${at}, barely.`],
+    lost: [at => `The ship's men break at ${at}.`, at => `The ship's men give way at ${at} and run for the oars.`, at => `${upFirst(at)} is lost, and the oars with it.`, at => `The coast does not bend at ${at}. The ship's men turn.`],
+    lostLate: ['Back to the ships.', 'The shore holds. Back to the ships.', 'They carry the wounded to the ships.', 'Nothing to take here. Back to the ships.'],
+  },
+  // one line for the places a saga would name; shown under the account of the coast (destSub)
+  famous: { lindisfarne: 'A holy house on a tidal island. Monks, silver, and no wall worth the name.', york: 'The old Roman walls still stand, and a king\'s hall inside them.',
+    paris: 'An island city behind two bridges. The Franks will pay to be left alone.', jutland: 'A market town at the neck of the land: traders from every sea.' },
+};
+
 // ---- The coast ----------------------------------------------------------------
 // Mercator, shared with coast.py (which builds coast.js from Natural Earth): x from longitude, y from latitude
 const PROJ = { lon0: -12, lat1: 63.5, k: 9.4 };

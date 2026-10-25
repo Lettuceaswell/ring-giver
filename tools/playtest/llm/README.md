@@ -16,4 +16,4 @@ Opus subagents with personas play the real UI on a phone through `drive.js` and 
 - Vary the world seed per agent (shim `Date` in the driver's init script) and keep two on the shared seed.
 - Add `tap a,b,c` chains; agents over-tap steppers and lists.
 - `collect.js` should list screen kinds seen per agent (coverage).
-- Add a reload step to `tools/smoke.js`: both pre-play bugs were reload bugs.
+- `tools/smoke.js` reloads mid-run now (session 16). The driver keeps `seaking-setup` (`setup.json`) across its reloads and taps a coast on its hit circle; on the setup screen tap Begin by number, two buttons share the word.

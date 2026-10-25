@@ -37,9 +37,20 @@ function drive() {
   check(sc.t);
   return true;
 }
+// a reload mid-run (TODO 41A.10): the save goes through JSON and migrate the way closing the app does; the two pre-play bugs of the LLM round were both reload bugs
+let reloads = 0;
+function reload(where) {
+  save(S); const was = { year: S.year, king: S.king.name, age: S.king.age, place: S.king.place, men: S.men, silver: S.silver, q: S.queue.length };
+  S = migrate(load()); reloads++;
+  const row = S.notables.find(m => m.isKing);
+  if (S.king !== row) { console.log('reload: the King is not his row', where); fails++; }
+  if (S.year !== was.year || S.king.name !== was.king || S.king.age !== was.age || S.king.place !== was.place || S.men !== was.men || S.silver !== was.silver || S.queue.length !== was.q) { console.log('reload changed the state', where, was, { year: S.year, king: S.king.name, age: S.king.age, place: S.king.place, men: S.men, silver: S.silver, q: S.queue.length }); fails++; }
+  render(); check('after reload ' + where);
+}
 while (S && maxYears-- > 0) {
   // spring
-  while (S.queue.length) { const d = drive(); if (d === 'end') break; }
+  while (S.queue.length) { if (S.year % 5 === 2 && S.queue[0].t !== 'fight') reload(S.queue[0].t); const d = drive(); if (d === 'end') break; }
+  if (S.year % 3 === 0) reload('spring');
   if (S.queue.length && S.queue[0].t === 'end') { if (S.year >= 900 || lines >= 4) break; // a line broken early: begin again, so the run still covers a century
     render(); check('end early'); act(() => { archive(S, 'the line broke'); S = null; }); startGame('ragnar'); lines++; continue; }
   if (S.phase !== 'spring') { console.log('not spring after queue drained', S.phase, S.year); fails++; break; }
@@ -63,7 +74,7 @@ while (S && maxYears-- > 0) {
   } else act(() => sail(S));
   check('after sail');
 }
-console.log(JSON.stringify({ from: year0, to: S && S.year, gens: S && S.gen, deaths, fights, stays, winters, landfalls, skipsOK: skips > 0, homes, lines, renders, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
+console.log(JSON.stringify({ from: year0, to: S && S.year, gens: S && S.gen, deaths, fights, stays, winters, landfalls, skipsOK: skips > 0, homes, lines, renders, reloads, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
 // the end card and begin again
 if (S && S.queue[0] && S.queue[0].t === 'end') { render(); check('end'); act(() => { archive(S, 'reached 1066'); S = null; }); check('setup after end'); if (!app.innerHTML.includes('Past kings')) { console.log('no past kings'); fails++; } }
 // a fresh run: two-tap abandon

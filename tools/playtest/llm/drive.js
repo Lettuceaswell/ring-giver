@@ -60,7 +60,7 @@ const MIME = { html: 'text/html', js: 'text/javascript', json: 'application/json
     route.fulfill({ status: 200, contentType: MIME[path.extname(f).slice(1)] || 'application/octet-stream', body: fs.readFileSync(f) });
   });
   // the save goes into localStorage before the game's scripts run, as if the phone had it
-  await page.addInitScript(({ save, sagas }) => { localStorage.clear(); if (save) localStorage.setItem('seaking', save); if (sagas) localStorage.setItem('seaking-sagas', sagas); }, { save: save ? JSON.stringify(save) : null, sagas: J('sagas.json', null) ? JSON.stringify(J('sagas.json', null)) : null });
+  await page.addInitScript(({ save, sagas, setup }) => { localStorage.clear(); if (save) localStorage.setItem('seaking', save); if (sagas) localStorage.setItem('seaking-sagas', sagas); if (setup) localStorage.setItem('seaking-setup', setup); }, { save: save ? JSON.stringify(save) : null, sagas: J('sagas.json', null) ? JSON.stringify(J('sagas.json', null)) : null, setup: J('setup.json', null) ? JSON.stringify(J('setup.json', null)) : null });
   await page.goto('http://ringgiver.test/index.html');
   await page.waitForSelector('#app > *');
   // screen state that is not game state (which pane, the open sheet, a half-made choice) comes back as it was
@@ -129,7 +129,8 @@ const MIME = { html: 'text/html', js: 'text/javascript', json: 'application/json
       el.scrollIntoView({ block: 'center' }); return 'ok'; }, n);
     if (ok !== 'ok') return ok;
     await page.waitForTimeout(150);
-    const pt = await page.evaluate(n => { const el = document.querySelector(`[data-llm="${n}"]`); const t = el.tagName.toLowerCase() === 'g' ? (el.querySelector('circle.hit, circle.coast, rect') || el) : el; const r = t.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, n);
+    // a map group is tapped on its dot (the hit circle), not on the king's label rect that now precedes it in the markup (TODO 41A.7)
+    const pt = await page.evaluate(n => { const el = document.querySelector(`[data-llm="${n}"]`); const t = el.tagName.toLowerCase() === 'g' ? (el.querySelector('circle.hit') || el.querySelector('circle.coast') || el.querySelector('rect') || el) : el; const r = t.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; }, n);
     if (flags.debug) console.error('tap at', pt, await page.evaluate(p => { const e = document.elementFromPoint(p.x, p.y); return e ? e.tagName + '.' + e.getAttribute('class') : null; }, pt));
     await page.touchscreen.tap(pt.x, pt.y);
     return 'ok';
@@ -181,9 +182,10 @@ const MIME = { html: 'text/html', js: 'text/javascript', json: 'application/json
     fs.appendFileSync(path.join(OUT, 'notes.jsonl'), JSON.stringify({ agent, step: prev.step ?? 0, year: prev.year ?? s0.yr, phase: prev.phase ?? s0.phase, kind: prev.kind ?? s0.kind, shot: prev.shot ? rel(prev.shot) : null, category: category.trim(), severity: severity.trim(), text }) + '\n');
   }
   // persist
-  const st = await page.evaluate(() => ({ save: localStorage.getItem('seaking'), sagas: localStorage.getItem('seaking-sagas'), ui: typeof UI === 'undefined' ? null : (({ fightT, ...rest }) => rest)(UI) }));
+  const st = await page.evaluate(() => ({ save: localStorage.getItem('seaking'), sagas: localStorage.getItem('seaking-sagas'), setup: localStorage.getItem('seaking-setup'), ui: typeof UI === 'undefined' ? null : (({ fightT, ...rest }) => rest)(UI) }));
   if (st.save) W('save.json', st.save); else try { fs.unlinkSync(path.join(OUT, 'save.json')); } catch (e) {}
   if (st.sagas) W('sagas.json', st.sagas);
+  if (st.setup) W('setup.json', st.setup); else try { fs.unlinkSync(path.join(OUT, 'setup.json')); } catch (e) {} // the setup screen's chosen king and custom steppers (TODO 41A.8) survive the reload, as on the phone
   if (st.ui) W('ui.json', st.ui);
   Object.assign(meta, { year: s1.yr, phase: s1.phase, kind: s1.kind, shot });
   W('meta.json', meta);

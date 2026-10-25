@@ -207,8 +207,8 @@ Eight Opus playtesters with personas (six in-genre, two outside) played 793 to 8
 
 **Fixed on the way (session 15):** coasts could not be tapped on the map (`.free` took the touch); the King froze after a reload (`s.king` parted from his row; `migrate` re-links). Not yet committed.
 
-### 41A. Fix and build, no decision needed (do these first, in this order)
-Each is the UI or the copy saying what the rules already do, or a plain bug. No rule changes, no new nouns.
+### 41A. Fix and build, no decision needed (built session 16, 2026-10-25)
+Each is the UI or the copy saying what the rules already do, or a plain bug. No rule changes, no new nouns. **All ten built** (LOG session 16). Notes: 8's "stray spaces before commas" is the phone driver flattening inline spans, not the page; a jarl who kneels at the Oath still becomes kin by rule, but his tag now reads "Sworn" and his card says when and to whom; the bill line's "chest after winter" counts the loot and the men lost, not the profit (the 3 silver a man is never paid out). `drive.js` now keeps the setup screen's choice across its reloads and taps a coast on its dot.
 1. **The guard, visible where the choice is made.** The Hall pane's hall row and the map's commit sheet carry "Guard 24 · a strange sail finds the hall held / thin" (the King counted when he is home, as `resolveRival` already counts him); the rival-sail card shows Guard vs Fleet as a roll the way the battle does, and names what made the guard ("no named man stayed home"). Three of eight died to "Guard 0" with men in the hall and could not say why.
 2. **The line's rule, said out loud.** The intro and the children list say "if the King dies before a son is sixteen, the line ends"; the death card already knows the heir's age. (The regency itself is 41B.1.)
 3. **Bought men follow the ship.** Men bought in the market fill the named men at once (the market already names who leads them); Everyone aboard stays set year to year; "+" on a jarl with no free men says why instead of nothing; Fill is one button for the whole ship. All eight hit this.

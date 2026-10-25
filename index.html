@@ -208,7 +208,9 @@ button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .scene .actions .row button{flex:1}
 .pick{border:1px solid var(--rule);border-radius:var(--r);padding:10px 12px;margin:6px 0;cursor:pointer;background:var(--bg);animation:rise .4s var(--ease) both}
 .pick:nth-child(2){animation-delay:.08s}.pick:nth-child(3){animation-delay:.16s}.pick:nth-child(4){animation-delay:.24s}
-.pick:active{border-color:var(--primary)}
+.pick:active,.pick.sel{border-color:var(--primary)}
+.pick .begin{display:none;width:100%;margin-top:10px}.pick.sel .begin{display:block}
+.setup.still .pick{animation:none}
 .pick .name{color:var(--text)}
 .result{font-family:var(--display);font-size:34px;line-height:1.1;color:var(--accent);margin:12px 0}
 .result.lose{color:var(--oxblood)}
@@ -314,6 +316,9 @@ details summary::after{content:' ▸'}details[open] summary::after{content:' ▾
 .tc h3{font:400 27px/1.12 var(--display);color:var(--text);margin:10px 0 6px;text-wrap:balance}
 .tc .tone-blood h3{color:var(--oxblood)}
 .tc .lead{font-size:16px;line-height:1.45;margin:0}
+.tc.big .face{border-top-width:3px}.tc.big{margin-bottom:0}
+.bill{font:400 12px/1.45 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}.bill b{color:var(--text);font-weight:500}.bill b.lose{color:var(--oxblood)}
+.cons+.bill{margin:-4px 0 10px}
 .cchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .cchip{font:400 12.5px/1.2 var(--mono);color:var(--text);background:var(--bg);border:1px solid var(--rule);border-radius:var(--r);padding:5px 7px;font-variant-numeric:tabular-nums}
 .cchip s{color:var(--iron)}.cchip b{font-weight:500;color:var(--accent)}
@@ -435,6 +440,7 @@ button.jr.on{border-radius:var(--r) var(--r) 0 0}
 .jr .nm{font:400 16px/1.2 var(--display)}.jr .st{font:400 11.5px/1.4 var(--mono);color:var(--muted)}
 .jr .ok{font:500 10px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;border:1px solid currentColor;border-radius:var(--r);padding:4px 5px;align-self:start;white-space:nowrap}
 .jr .ok.sure{color:var(--pine)}.jr .ok.fill{color:var(--chestnut)}.jr .ok.no{color:var(--oxblood)}
+.jlead{font:400 14px/1.4 var(--body);color:var(--text);margin:4px 0}.jr .jlead{grid-column:1/-1;margin:2px 0}
 .jr .jwhy{grid-column:1/-1;font:400 12px/1.45 var(--mono);color:var(--muted)}.jr .jwhy b{color:var(--text);font-weight:500}
 button.more{background:none;border:0;padding:8px 0;font:400 12px/1.4 var(--mono);color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
