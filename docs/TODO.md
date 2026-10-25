@@ -231,3 +231,60 @@ Each is the UI or the copy saying what the rules already do, or a plain bug. No 
 
 ## 40. A king's coasts are no richer than free ones (open)
 The temptation Levi described in 39 only shows up by chance: in the saved springs a king's coasts average 104 / 97 / 91 base loot against 89 / 94 / 107 for free coasts (815 / 850 / 900), so the best net is as often a free coast as a king's. **Recommendation:** after he has played with the net on screen, if raiding a king never tempts, give a realm's coasts more loot than the free shore (×1.4, the seat ×2), so the richest returns sit under a king and the anger is the price. Not built: tune after play (TODO 11).
+
+---
+
+## 42. The CK3 decisions: more than location and raid (Levi, 2026-10-25, open)
+Levi: "Right now it's a game of selecting locations and clicking raid." What he wants from CK3: development; diplomacy, good, bad and neutral, with other rulers; legacy and strengthening a line; religious differences (not reformation); many paths, not only expansion. What he does not: intrigue, piety.
+
+**The panel agrees, mostly (round 1, TODO 41).** Two of them call it "a raid-and-hold game" in their first sentence. Goal is the panel's lowest score (2.1 of 5), and 7 of 8 asked for a target. Theo: "The game behind those screens is shallower than they are... Silver piles up with nothing to spend it on." Jen, year 4: "stuck in a loop: raid, get ~70, the hall eats ~50, buy 10 men." Dana: "Kings don't react to what I do to them"; her father's killer knelt "and I was given no choice and no line." Mikkel: a kneeling king "gives no tribute and no levies". Ingrid: "Freydis and Ragnhild given mothers and choices; silver I can give (rings to Bjorn, a bride-price, a new ship)." Rafa liked the one other path that exists: hold a realm three summers and its king kneels. **Where they are silent:** nobody asked for faith or for development, and nobody missed intrigue or piety. Those two are Levi's taste, not the panel's. The panel also played only twenty years and three of them died in 799, so nobody saw the middle of the game, where most of this would live.
+
+**One rule for all of it:** every new thing pays and costs in what exists (silver, men, a person, a placement, stance) and touches the coasts, men and kings already on the map. No piety, no prestige, no score currency. Each item has a recommendation; approve or change by number (42.1, 42.2, ...).
+
+### 42.1 What stays out
+No intrigue (no schemes, spies, murder plots, secrets), no piety or any faith currency, no reformation of the Old Gods, no prestige or renown. **Recommend:** write it into GDD §12 so nothing drifts back in.
+
+### 42.2 A wife, and the blood (strengthening the line)
+Today children have no mother and every son is his father ±1. **Recommend:** the King takes a wife: from a jarl's house (he becomes kin), from a king's house (an alliance, 42.4), or a free woman of a coast he holds (no politics). Births need her. She carries three stats like a man; each child takes each stat from the better parent, ±1. Choosing a bride is choosing what kind of sons the line gets. **Gifts of the blood:** three rare marks (Strong: Combat may reach 6; Wise: Rule 6; Beloved: Followability 6), carried to each child at 50%, 80% if both parents carry it. A queen with a mark is worth courting for generations. **She is also the regency (41B.1):** the King dies with a son under sixteen and she holds the hall for the boy, the Oath deferred to his sixteenth spring, as long as a jarl or her own kin stands with her. One new person, no new screen: she is a Man card.
+
+### 42.3 Kings who answer (diplomacy, good, bad and neutral)
+Today a ruler has a stance and one verb, a gift. **Recommend:** verbs on his card, each gated by his stance and paid in what exists:
+- **Good.** *Marriage* (loyal or better): a daughter goes to his house, or his daughter comes to yours (42.2). While she lives you are allies: his stance cannot fall below cool, and once a reign either of you may call the other. *A call to war:* his host sails with yours one summer, or he calls you in winter against another king. Go and he warms, refuse and he sours.
+- **Neutral.** *Truce* (cool or better): ten years, he sends no fleet, you raid none of his coasts. Break it and every known king sours (an oath-breaker). *Trade* (42.6).
+- **Bad.** *Demand tribute* when he fears you (you hold a coast of his, or routed him this reign): silver every autumn, he sours a little each year, and a refusal turns him hostile. *Danegeld*, his move: a king whose coasts you raid hard offers silver a year to be left alone (a winter card); take it and it is a truce that pays.
+- **Kneeling gives something** (Mikkel): a king who kneels pays tribute and answers your call to war. **When your father's killer kneels, you choose** (Dana): take his knee, or his head (his realm opens, every king sours).
+- **Kings are mortal.** They age, die and are followed by a son; the stance halves as yours does, marriages and truces carry over at a word colder. Two hundred years of diplomacy need new faces.
+**Flag:** the largest item here. Build in steps: kneeling gives tribute and the call; truce; tribute and Danegeld; marriage and alliance; mortal kings.
+
+### 42.4 Faith: the Old Gods and the Cross (religious difference, no reformation)
+Every coast already has a culture; faith follows it: norse coasts keep the Old Gods, Saxon, Frankish and Gaelic coasts the Cross. Every named man carries one: men from the sea the Old Gods, locals their coast's, sons the line's. **Recommend:**
+- A holding of the other faith sits 15 unrest higher unless its jarl shares its faith (so a baptized jarl is the man for York).
+- A king of the other faith never warms past loyal, and will not marry into a heathen house (or will, if the bride is baptized).
+- Raid a church or monastery coast (Lindisfarne, Tours, the famous Cross places) and every Cross king hears of it (a small sour each). Monasteries get weak walls that recover slowly (41B.7), so the sack is rich, easy, and costs you Christendom's opinion.
+- **The baptism** is a one-time deed (42.7): Cross kings warm and the cap lifts, Old-Gods jarls and kings sour and some walk. The line keeps the faith the King dies in; there is no reform and no going back.
+
+### 42.5 Development (building, not only taking)
+**Recommend:** every coast gets one number, its worth, 1 to 5, shown as a word (poor, modest, fair, rich, great). It replaces the hidden drift that makes a raided coast poorer: a raid knocks a step off, quiet years bring it back. Loot and rent scale with it. On a holding or Vestfold the King can **Build** in spring: silver raises it a step (a hall, a market, a church or a hof), more silver each step. Vestfold's worth is the hall's: more pay, a stronger guard, room on the benches. A rich holding raises its local in fewer quiet years. The tension is the point: raid a coast you mean to hold and you hold a poorer place. It is the silver sink the panel asked for (Theo, 41B.2). Moving the hall (TODO 14) falls out of it: the hall may move to a holding of worth 4 or more. **Flag:** a new number on every coast, but it takes over one that is already there, hidden.
+
+### 42.6 Trade (a path that is not a fight)
+**Recommend:** at a coast whose king is cool or better (or a free coast), the ship may **Trade** instead of raid: no fight, no men lost. It pays by the worth of that coast and of Vestfold and by the men aboard, more at the markets (Hedeby, Birka, Dorestad, Dublin, York), and it warms the coast's king. Raid a coast and nobody trades there for ten years. Trading does not arm a coast, so late in the game it out-earns raiding: that answers TODO 33 with a second road instead of a nerf. It reuses the whole Sail arc; the picker shows a trade profit beside the raid profit.
+
+### 42.7 Great deeds (CK3's Decisions panel, and the goal)
+The panel's lowest score was goal. **Recommend:** a short list of one-time deeds on the King's card, each with its conditions shown as progress ("Agder ✓ · Rogaland ✓ · Hordaland, Gudrød's"), each with a lasting effect on the line. First list, one or two per path:
+- *Unite Norway* (hold Agder, Rogaland, Hordaland, Gudrød broken): the line are Kings of Norway; norse jarls start a word warmer at every Oath.
+- *Found the Danelaw* (hold York and two Saxon coasts): Saxon holdings sit calmer.
+- *Granted Normandy* (Charles loyal, Rouen held, the King baptized): Charles grants it; Frankish coasts calm; a truce with the Franks for good.
+- *Be baptized* (42.4).
+- *Raise a runestone for your father* (silver, in your first spring): his best deed carved; the Oath runs a word warmer for you.
+- *The great feast* (Blót or Yule by faith; silver, once a reign): every jarl warms.
+- *A market town* (a holding at worth 5): it becomes a market for trade (42.6).
+- *Settle the West* (Faroes, Iceland: off the map's edge, far, empty): free land with no defenders and no king, at the price of the voyage.
+The Saga lists each king's deeds; that is what a good king looks like.
+
+### 42.8 Fosterage (education, and diplomacy through a child)
+**Recommend:** a son from 6 to 15 can be fostered: at home (he grows toward the King), with a jarl (toward the jarl's best stat; the jarl warms every year and kneels to the boy at the Oath), or at a king's court (he grows; that king sends no fleet while the boy is with him, a Cross court sends him home baptized, and if the king turns hostile the boy is a hostage). Haakon the Good was fostered by Æthelstan and came home Christian. One placement for a child, like a man's.
+
+### 42.9 The house remembers (legacy)
+**Recommend:** a byname earned by two kings of the line in a row becomes the house's: every king after starts with it ("the house of the Iron Side"). Deeds (42.7) stay with the line. No currency: the legacy is what the line did.
+
+**Build order, if all approved:** 42.1 (words only) → 42.2 the wife and the regency (closes 41B.1) → 42.3 in its steps → 42.4 faith → 42.5 worth and Build → 42.6 trade → 42.7 deeds (they name what the rest made possible) → 42.8 → 42.9. The persona harness learns each new verb as it lands (a courtier who marries and treats, a merchant who trades, a builder who sits and builds) and measures whether each path keeps a line alive as well as raiding does.
