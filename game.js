@@ -636,6 +636,9 @@ function next(s) {
 function migrate(s) {
   if (!s) return s;
   for (const m of s.notables) { if (m.stance === undefined) m.stance = m.kin ? 20 : 0; if (!m.why) m.why = []; }
+  // a save holds the King twice (s.king and his row in notables) and JSON parts them: after a reload he aged, grew and moved only in one of the two.
+  // The row is the one every rule reads; the King is that row (found by the LLM playtest driver, which reloads the page on every tap)
+  s.king = s.notables.find(m => m.isKing) || s.king;
   if (s.guard === undefined) s.guard = null;
   if (!s.rulers) { s.rulers = buildRulers(s.day); s.envoy = null; for (const k of Object.values(s.rulers)) k.coasts = k.coasts.filter(c => !isHolding(s, c)); discoverRulers(s); }
   s.log = s.log.map(l => typeof l === 'string' ? { y: +(l.match(/^(\d{3,4}): /) || [])[1] || null, t: l.replace(/^\d{3,4}: /, '') } : l);
