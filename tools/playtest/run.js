@@ -26,6 +26,10 @@ G.save = () => {}; // the game saves to localStorage after every step; nothing t
 let M = null; // metrics of the run in progress
 const origMarkLost = G.markLost;
 G.markLost = (s, h, why) => { if (M) { if (/walked/.test(why)) M.holdWalked++; else if (/empty/.test(why)) M.holdEmpty++; else if (/taken by/.test(why)) M.holdTaken++; else M.holdRevolt++; M.holdLost++; } origMarkLost(s, h, why); };
+const origBuild = G.build;
+G.build = (s, id, k) => { const sv = s.silver; origBuild(s, id, k); if (M && s.silver !== sv) { M.built++; M.builtSilver += sv - s.silver; } };
+// TWEAK='{"build":{"market":300},"marketPay":1}': try a tuning without editing game.js (the reflex loop's price sweeps); nested objects merge one level
+if (process.env.TWEAK) for (const [k, v] of Object.entries(JSON.parse(process.env.TWEAK))) G.T[k] = v && typeof v === 'object' ? Object.assign(G.T[k] || {}, v) : v;
 const origCheckBreak = G.checkBreak;
 G.checkBreak = (s, k) => { const was = k && k.broken; origCheckBreak(s, k); if (M && k && k.broken && !was) { M.realmsBroken++; if (M.firstHostile[k.id] != null) M.breakWinters.push(s.year - M.firstHostile[k.id]); } };
 
@@ -84,7 +88,7 @@ function newMetrics() {
     firstHostile: {}, breakWinters: [],
     kingFell: 0, luck: 0, phases: 0, turnedHome: 0, kingSlain: 0, jarlFell: 0, hallSlain: 0, starveWalk: 0, stirs: 0, strikes: 0, strikesHeld: 0, firstBreakYear: null, kingDeaths: 0, jarlDeaths: 0, titles: 0, menBought: 0,
     hostileEpisodes: 0, hostileResolved: 0, hostileWinters: [], hostileOpen: 0, hostileJarlYears: 0,
-    holdByDecade: {}, chestSum: 0, chestYears: 0, chestMin: Infinity, menSum: 0, years: 0, eventsBy: {} };
+    holdByDecade: {}, chestSum: 0, chestYears: 0, chestMin: Infinity, menSum: 0, years: 0, eventsBy: {}, built: 0, builtSilver: 0 };
 }
 
 function allocate(s, order, homeOrder) {
@@ -236,6 +240,7 @@ function runOne(name, seed) {
     chestAvg: M.chestYears ? M.chestSum / M.chestYears : 0, chestMin: isFinite(M.chestMin) ? M.chestMin : 0, menAvg: M.years ? M.menSum / M.years : 0,
     sails: run.sails, noSail: run.noSail, blind: run.blind, eventsBy: M.eventsBy,
     finalSilver: s.silver, finalMen: s.men, finalHoldings: s.holdings.length, finalNotables: s.notables.length,
+    built: M.built, builtSilver: M.builtSilver,
   };
   M = null;
   return out;
@@ -267,7 +272,7 @@ table('THE BATTLE (audit 4)', [['luck in play %', S(r => r.luckPct)], ['exchange
 table('LAND', [['hold avg/yr', S(r => r.holdAvg)], ['hold peak', S(r => r.holdMax)], ['gained', S(r => r.holdGained)], ['lost', S(r => r.holdLost)], ['jarl walked', S(r => r.holdWalked)], ['hostile jarl-yrs', S(r => r.hostileJarlYears)]]);
 table('NEW TEETH (TODO 25)', [['king fell', S(r => r.kingFell)], ['king slain', S(r => r.kingSlain)], ['jarls fell', S(r => r.jarlFell)], ['hall slain', S(r => r.hallSlain)], ['starve walk', S(r => r.starveWalk)], ['stirs', S(r => r.stirs)], ['strikes', S(r => r.strikes)], ['struck held', S(r => r.strikesHeld)], ['revolt', S(r => r.holdRevolt)], ['taken', S(r => r.holdTaken)], ['hold@843-852', S(r => r.holdAt850)]]);
 table('RULERS', [['went hostile', S(r => r.hostileEpisodes)], ['calmed', S(r => r.hostileResolved)], ['winters to calm', S(r => r.hostileWinters)], ['still hostile', S(r => r.hostileOpen)], ['realms broken', S(r => r.realmsBroken)], ['hostile→kneels yrs', S(r => r.breakWinters)]]);
-table('THE END', [['final silver', S(r => r.finalSilver)], ['final men', S(r => r.finalMen)], ['final holdings', S(r => r.finalHoldings)], ['chest avg', S(r => r.chestAvg)], ['chest min', S(r => r.chestMin)], ['men avg', S(r => r.menAvg)]]);
+table('THE END', [['final silver', S(r => r.finalSilver)], ['final men', S(r => r.finalMen)], ['final holdings', S(r => r.finalHoldings)], ['chest avg', S(r => r.chestAvg)], ['chest min', S(r => r.chestMin)], ['men avg', S(r => r.menAvg)], ['built', S(r => r.built)], ['built silver', S(r => r.builtSilver)]]);
 // holdings by era
 const ERAS = [[793, 849], [850, 899], [900, 949], [950, 999], [1000, 1066]];
 const eraMean = (r, [a, b]) => { const v = []; for (let d = 0; d < r.holdByDecade.length; d++) { const y0 = 793 + d * 10; if (r.holdByDecade[d] !== null && y0 + 9 >= a && y0 <= b) v.push(r.holdByDecade[d]); } return v.length ? v.reduce((x, y) => x + y, 0) / v.length : null; };

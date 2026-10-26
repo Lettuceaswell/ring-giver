@@ -45,6 +45,12 @@ const LINES = {
     lost: [at => `The ship's men break at ${at}.`, at => `The ship's men give way at ${at} and run for the oars.`, at => `${upFirst(at)} is lost, and the oars with it.`, at => `The coast does not bend at ${at}. The ship's men turn.`],
     lostLate: ['Back to the ships.', 'The shore holds. Back to the ships.', 'They carry the wounded to the ships.', 'Nothing to take here. Back to the ships.'],
   },
+  // the saga's line when a holding gets a building (41B.2); each takes the coast's name
+  built: {
+    market: [n => `A market rises at ${n}. Traders come up the beach with the tide, and the jarl takes his tenth.`, n => `${n} keeps a market now. Silver comes in by the boatload, and some of it stays.`, n => `Booths on the strand at ${n}, and weights that are honest while the jarl is looking.`],
+    longhouse: [n => `A longhouse goes up at ${n}, with benches for men who were not there before.`, n => `${n} has a longhouse now. Farmers' sons sit on its benches and learn the shield.`, n => `The roof-tree is raised at ${n}. Its benches will fill every spring.`],
+    palisade: [n => `A palisade rings ${n}. Oak stakes, a ditch, and a gate that shuts.`, n => `${n} is fenced in oak now. The men inside sleep better than the men outside.`, n => `A ditch and a wall of stakes at ${n}. Trouble finds it harder to get in.`],
+  },
   // one line for the places a saga would name; shown under the account of the coast (destSub)
   famous: { lindisfarne: 'A holy house on a tidal island. Monks, silver, and no wall worth the name.', york: 'The old Roman walls still stand, and a king\'s hall inside them.',
     paris: 'An island city behind two bridges. The Franks will pay to be left alone.', jutland: 'A market town at the neck of the land: traders from every sea.' },

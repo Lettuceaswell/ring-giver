@@ -11,7 +11,8 @@ const T = { startMen: 40, menPerF: 10, manPrice: 3, upkeep: 1, rumor: 20, startY
   strike: 0.3, strikeBase: 40, strikePer: 20, strikeSated: 20, // a hostile king comes for a holding that was his each summer at this chance; host = base + per x his free coasts; a coast won back warms him
   benches: 8,                      // named men without a holding the hall will feed at its table; past that no wanderer or local comes (sons always do)
   oldAge: 0.04,                    // past sixty a named man dies in his bed at oldAge x (age - 60) a winter
-  reachBase: 4, reachRule: 2, reachRise: 0.003, reachMax: 0.05 }; // past reachBase + reachRule x the King's Rule holdings (10 at Rule 3), each holding stirs (unrest +15..40) at reachRise x the excess a summer, at most reachMax
+  reachBase: 4, reachRule: 2, reachRise: 0.003, reachMax: 0.05, // past reachBase + reachRule x the King's Rule holdings (10 at Rule 3), each holding stirs (unrest +15..40) at reachRise x the excess a summer, at most reachMax
+  build: { market: 300, longhouse: 300, palisade: 200 }, marketPay: 0.5, longhouseMen: 5, palisadeCalm: 20 }; // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -207,6 +208,26 @@ function revealAround(s, id) { see(s, s.shores[id]); for (const n of s.shores[id
 function isHolding(s, id) { return s.holdings.some(h => h.id === id); }
 function holdPay(sh) { return Math.max(10, Math.round(sh.baseLoot / 4)); }
 function stayUnrest(s, sh) { return clamp(Math.round(sh.baseDef / 1.5) - (has(s,'landtaker') ? 20 : 0), 10, 100); }
+// ---- Buildings (41B.2, reflex run 2): a holding takes each once, in spring, from its sheet. They belong to the coast (sh.built), so a king who
+// takes it back takes them too, and a coast won back again has them still. Prices and gains live in T; the words are made from the numbers.
+const BUILDINGS = {
+  market:    { name: 'Market',    what: sh => `rent +${marketGain(sh)} a year, while it is ours` },
+  longhouse: { name: 'Longhouse', what: () => `up to ${nMen(T.longhouseMen)} to the jarl there each spring, as far as he can lead them` },
+  palisade:  { name: 'Palisade',  what: () => `unrest −${T.palisadeCalm} now, and every rise after is halved` },
+};
+const built = (sh, k) => !!sh.built && sh.built.includes(k);
+function marketGain(sh) { return Math.round(holdPay(sh) * T.marketPay); }
+function holdRent(sh) { return holdPay(sh) + (built(sh, 'market') ? marketGain(sh) : 0); }
+function canBuild(s, id, k) { return s.phase === 'spring' && isHolding(s, id) && !built(s.shores[id], k) && s.silver >= T.build[k]; }
+function build(s, id, k) {
+  if (!canBuild(s, id, k)) return;
+  const sh = s.shores[id], h = s.holdings.find(x => x.id === id);
+  s.silver -= T.build[k]; (sh.built = sh.built || []).push(k); s.deeds.built++;
+  if (k === 'market') h.pay = holdRent(sh);
+  if (k === 'palisade') h.unrest = clamp(h.unrest - T.palisadeCalm, 0, 100);
+  log(s, rng(s.day + id + k).pick(LINES.built[k])(sh.name));
+}
+function unrestRise(s, h, up) { return clamp(h.unrest + (built(s.shores[h.id], 'palisade') ? Math.round(up / 2) : up), 0, 100); }
 
 // ---- New game ------------------------------------------------------------------
 function newGame(kingKey, custom) {
@@ -215,7 +236,7 @@ function newGame(kingKey, custom) {
   const king = makeMan(custom && custom.name ? custom.name : stats[0], stats[1], stats[2], stats[3], { age: 20, isKing: true, titles: [], offeredPairs: [], born: T.startYear - 20 });
   const s = { seed: day, day, year: T.startYear, phase: 'spring', silver: 60, men: T.startMen, king, notables: [king], children: [],
     holdings: [], shores: buildWorld(day), rulers: buildRulers(day), destination: null, rumorOffer: null, queue: [], log: [], envoy: null, guard: null,
-    deeds: { raids:0, blind:0, heldYears:0, jarlYears:0, bigWins:0, homeYears:0, rumors:0, menBought:0, stays:0, upkeep:0, marriages:0, years:0 },
+    deeds: { raids:0, blind:0, heldYears:0, jarlYears:0, bigWins:0, homeYears:0, rumors:0, menBought:0, stays:0, upkeep:0, marriages:0, years:0, built:0 },
     reign: { bestRaid: null, bestHoldings: 0, title: null, start: T.startYear },
     dynasty: [], flags: {}, gen: 1 };
   king.men = Math.min(T.startMen, fCap(s, king));
@@ -247,7 +268,7 @@ function addMen(s, id, d) {
 // fill every named man aboard from the unled pool, the King first, then by Combat (TODO 41A.3)
 function fillShip(s) {
   const ship = s.notables.filter(m => m.place === 'ship').sort((a, b) => (b.isKing ? 1 : 0) - (a.isKing ? 1 : 0) || b.combat - a.combat);
-  for (const m of ship) m.men = Math.min(fCap(s, m), m.men + unledMen(s));
+  for (const m of ship) m.men = Math.max(m.men, Math.min(fCap(s, m), m.men + unledMen(s))); // a man over his cap keeps what he has (Q16)
 }
 function boardAll(s) {
   if (s.phase !== 'spring') return;
@@ -400,7 +421,7 @@ function chooseStay(s, jarlId) {
   else j = s.notables.find(m => m.id === jarlId);
   sh.walked = null;
   const unrest = stayUnrest(s, sh);
-  s.holdings.push({ id: sh.id, name: sh.name, pay: holdPay(sh), unrest, quiet: 0, empty: 0, taken: s.year });
+  s.holdings.push({ id: sh.id, name: sh.name, pay: holdRent(sh), unrest, quiet: 0, empty: 0, taken: s.year });
   j.place = sh.id; s.deeds.stays++; moveStance(s, j, 10, `given ${sh.name}`);
   revealAround(s, sh.id);
   log(s, `${j.name} stays at ${sh.name}. It is ours.`); if (s.yr) s.yr.forfeit = { jarl: j.name, shore: sh.name, loot: sc.loot };
@@ -431,7 +452,7 @@ function resolveLand(s) {
       rows.push({ n: h.name, v: 0, why: `${j.name} walked with it` }); events.push({ k:'lost', t:`${j.name} has had enough of the King.`, s:`he walks, and ${h.name} is his now` });
       bigMoment(s, 'Summer', 'land', events[events.length - 1], [...(took ? [{ t:`−${nMen(took)} go with him`, cls:'down' }] : []), { t:`−${h.pay} a year`, cls:'down' }]); continue; }
     if (!j) {
-      h.empty++; h.quiet = 0; h.unrest = clamp(h.unrest + (has(s,'lawgiver') ? 5 : T.emptyUnrest), 0, 100);
+      h.empty++; h.quiet = 0; h.unrest = unrestRise(s, h, has(s,'lawgiver') ? 5 : T.emptyUnrest);
       if (h.empty >= 2) { loseHolding(s, h, null, 'stood empty and revolted'); lines.push(`${h.name} stood empty two summers. It has revolted.`); rows.push({ n: h.name, v: 0, why: 'stood empty two summers · revolted' }); events.push({ k:'lost', t:`${h.name} has revolted.`, s:'it stood empty two summers · the holding is lost' }); bigMoment(s, 'Autumn', 'land', events[events.length - 1], [{ t:`−${h.pay} a year`, cls:'down' }]); }
       else { lines.push(`${h.name} stood empty. Unrest ${h.unrest}.`); rows.push({ n: h.name, v: 0, why: `stood empty · unrest ${h.unrest}` }); events.push({ k:'empty', t:`${h.name} stands empty.`, s:`unrest ${h.unrest} · another empty summer and it revolts` }); }
       continue;
@@ -442,11 +463,11 @@ function resolveLand(s) {
       s.silver += pay; h.unrest = clamp(h.unrest - (has(s,'lawgiver') ? 10 : T.heldCalm), 0, 100); h.quiet++; h.empty = 0;
       j.heldRun++; if (j.heldRun % 3 === 0) j.rule = clamp(j.rule + 1, 1, 5);
       s.deeds.heldYears++; moveStance(s, j, 3, `held ${h.name} and it paid`);
-      lines.push(`${h.name} pays ${pay}. ${j.name} holds it.`); rows.push({ n: h.name, v: pay, why: `${j.name} holds it${dbl}` });
+      lines.push(`${h.name} pays ${pay}. ${j.name} holds it.`); rows.push({ n: h.name, v: pay, why: `${j.name} holds it${built(s.shores[h.id], 'market') ? ' · the market' : ''}${dbl}` });
       const n = s.holdings.length; // a long reach: past a few holdings, any one may stir, and next summer asks more of its jarl (TODO 25)
       const free = reachFree(s);
       if (n > free && r() < Math.min(T.reachMax, T.reachRise * (n - free))) {
-        const up = 15 + r.int(0, 25); h.unrest = clamp(h.unrest + up, 0, 100);
+        const up = 15 + r.int(0, 25); h.unrest = unrestRise(s, h, up);
         events.push({ k:'empty', t:`${h.name} stirs.`, s:`unrest ${h.unrest} next summer · ${n} holdings, and a King of Rule ${k.rule} keeps ${free} calm` });
       }
       if (h.quiet > 0 && h.quiet % T.quietYears === 0 && benchRoom(s)) {
@@ -636,6 +657,11 @@ function newYear(s) {
   if (s.year >= T.endYear) { s.dynasty.push(reignCard(s)); s.queue.push({ t:'end', reason: '1066' }); return; }
   s.phase = 'spring'; s.rumorOffer = null;
   s.yr = newYr(s.silver);
+  // a longhouse fills the benches of the jarl who holds the coast, up to what he leads; no jarl, or a full following, and it sends no one (41B.2: a levy, not a flood)
+  for (const h of s.holdings) if (built(s.shores[h.id], 'longhouse')) {
+    const j = s.notables.find(m => m.place === h.id), n = j ? Math.min(T.longhouseMen, Math.max(0, fCap(s, j) - j.men)) : 0;
+    if (n) { s.men += n; j.men += n; log(s, `The longhouse at ${h.name} sends ${nMen(n)} to ${j.name}.`); }
+  }
   // the crews who sailed last summer gather at the ship; a destination that is now ours or gone is forgotten (TODO 20)
   for (const m of s.notables) if (m.sailed && m.place === 'home' && !(m.isKing && s.kingHome)) m.place = 'ship';
   if (s.allAboard) boardAll(s); // everyone aboard stays set (TODO 41A.3)
@@ -755,6 +781,8 @@ function migrate(s) {
   if (s.kingHome === undefined) s.kingHome = false;
   if (s.regency === undefined) s.regency = null;
   if (!s.guardWho) s.guardWho = [];
+  if (s.deeds.built === undefined) s.deeds.built = 0;
+  for (const sh of Object.values(s.shores)) if (!sh.built) sh.built = []; // buildings belong to the coast (41B.2)
   if (!s.rulers) { s.rulers = buildRulers(s.day); s.envoy = null; for (const k of Object.values(s.rulers)) k.coasts = k.coasts.filter(c => !isHolding(s, c)); discoverRulers(s); }
   s.log = s.log.map(l => typeof l === 'string' ? { y: +(l.match(/^(\d{3,4}): /) || [])[1] || null, t: l.replace(/^\d{3,4}: /, '') } : l);
   if (!s.lost) s.lost = [];

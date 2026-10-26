@@ -70,8 +70,8 @@ const stanceTag = m => { const w = stanceWord(m.stance), a = stanceMoved(S, m); 
 const openMan = id => `onclick="event.stopPropagation();openCard('${id}')"`;
 function openCard(id) { UI.man = id; UI.assign = null; UI.assignTo = null; render(); }
 function closeCard() { UI.man = null; UI.assign = null; UI.assignTo = null; render(); }
-function openHold(id) { UI.hold = id; UI.assign = null; UI.assignTo = null; render(); }
-function closeHold() { UI.hold = null; UI.assign = null; UI.assignTo = null; render(); }
+function openHold(id) { UI.hold = id; UI.assign = null; UI.assignTo = null; UI.build = null; render(); }
+function closeHold() { UI.hold = null; UI.assign = null; UI.assignTo = null; UI.build = null; render(); }
 const kingTag = () => `<span class="tag">${S.regency ? 'Regent' : 'King'}</span>`;
 function toggleFold(k) { UI.fold[k] = !UI.fold[k]; try { localStorage.setItem('seaking-fold', JSON.stringify(UI.fold)); } catch (e) {} render(); }
 const foldH = (k, icon, title, sum) => `<h2 class="fold${UI.fold[k] ? ' shut' : ''}" onclick="toggleFold('${k}')">${ico(icon)}${title}<span class="fsum">${UI.fold[k] ? sum : ''}</span><i class="fchev">▾</i></h2>`;
@@ -442,12 +442,16 @@ function holdSheet(id) {
     : `<div class="alist">${cands.map(m => { const v = holdPreview(S, m, h), on = UI.assignTo === m.id;
         return `<div class="aopt${on ? ' sel' : ''}" onclick="UI.assignTo='${m.id}';render()"><div class="row"><span class="name">${esc(m.name)}</span><span class="stats t-${holdTone(v.now)}">${pct(v.now)} now</span></div><div class="stats">Rule ${m.rule} · ${nMen(m.men)}, up to ${fCap(S, m)} (${pct(v.full)}) · ${whereWords(m)}</div></div>${on ? `<div class="aconf"><div class="hint">${v.need.sentence(esc(m.name), 'stay')}${j ? ` ${esc(j.name)} goes home.` : ''}</div><button class="primary" onclick="act(()=>{place(S,'${m.id}','${id}');UI.assign=null;UI.assignTo=null})">Send ${esc(m.name)} to ${esc(h.name)}</button></div>` : ''}`; }).join('')}
       <button class="small" onclick="UI.assign=null;UI.assignTo=null;render()">Cancel</button></div>`;
+  // buildings (41B.2): one row each; a tap arms it, the button under it buys. Built rows stay as the record of what the coast keeps
+  const bld = Object.entries(BUILDINGS).map(([k, b]) => { const on = built(sh, k), ok = canBuild(S, id, k), arm = UI.build === k && !on;
+    return `<div class="aopt${on ? ' here' : arm ? ' sel' : ''}" ${on || !spring ? '' : `onclick="UI.build=UI.build==='${k}'?null:'${k}';render()"`}><div class="row"><span class="name">${b.name}</span><span class="stats">${on ? 'built' : `${T.build[k]} silver`}</span></div><div class="stats">${b.what(sh)}</div></div>${arm ? `<div class="aconf"><button class="primary" ${ok ? '' : 'disabled'} onclick="act(()=>{build(S,'${id}','${k}');UI.build=null})">${ok ? `Build the ${b.name.toLowerCase()} · ${T.build[k]} silver` : `Not enough silver · ${T.build[k]} needed, ${S.silver} in the chest`}</button></div>` : ''}`; }).join('');
   return `<div class="overlay" onclick="if(event.target===this)closeHold()"><div class="scene">
     <h1>${ico('land')}${esc(h.name)}${closeX('closeHold()')}</h1>
     <div class="facts"><span>Pays <b>${h.pay}</b> a year</span><span>Unrest <b>${h.unrest}</b></span><span>Quiet <b>${h.quiet}</b> ${h.quiet === 1 ? 'year' : 'years'}</span></div>
     ${LINES.famous[id] ? `<p class="hint">${esc(LINES.famous[id])}</p>` : ''}
     <h2>${ico('men')}The jarl</h2>${jarl}
     ${assign}
+    <h2>${ico('land')}Buildings</h2>${spring ? '' : '<div class="hint">Built in spring, from this sheet.</div>'}<div class="alist">${bld}</div>
     <div class="actions"><button onclick="closeHold()">Back</button></div></div></div>`;
 }
 const whereWords = m => m.place === 'ship' ? 'on the ship' : m.place === 'home' ? 'at home' : `holds ${esc((S.holdings.find(h => h.id === m.place) || {}).name || '')}`;

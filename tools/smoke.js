@@ -70,6 +70,13 @@ while (S && maxYears-- > 0) {
   for (const k of ['home', 'holdings']) { UI.pane = 'hall'; toggleFold(k); check('fold ' + k); toggleFold(k); }
   // − and + land on multiples of five
   { const m = S.notables.find(m => m.men % 5); if (m && m.men >= 5) { const was = m.men; stepMen(S, m.id, -1); if (m.men !== Math.ceil(was / 5) * 5 - 5) { console.log('step', was, m.men); fails++; } } }
+  // buildings (reflex run 2): every row armed on the sheet; the first holding takes a market and a longhouse once, and keeps them through the winters
+  if (S.holdings[0] && !(global.builtOnce && global.builtOnce.line === lines)) { const h = S.holdings[0], sh = S.shores[h.id]; openHold(h.id); for (const k of Object.keys(BUILDINGS)) { UI.build = k; render(); check('build armed ' + k); }
+    const was = S.silver; S.silver = Math.max(was, T.build.market + T.build.longhouse); act(() => { build(S, h.id, 'market'); build(S, h.id, 'longhouse'); });
+    if (!built(sh, 'market') || !built(sh, 'longhouse') || h.pay !== holdPay(sh) + marketGain(sh)) { console.log('build failed', h.name, sh.built, h.pay); fails++; }
+    const silver = S.silver; build(S, h.id, 'market'); if (S.silver !== silver) { console.log('market built twice'); fails++; }
+    render(); check('build built'); closeHold(); S.silver = Math.min(S.silver, was); global.builtOnce = { id: h.id, line: lines }; }
+  if (global.builtOnce && global.builtOnce.line === lines && S.shores[global.builtOnce.id].built.length !== 2) { console.log('the coast lost its buildings', global.builtOnce.id); fails++; }
   // a man over his cap (a dead Ring-giver's men): − steps him down to the next five, + gives him nothing (reflex run 1)
   { const m = S.notables.find(m => !m.isKing); if (m) { const was = m.men, cap = fCap(S, m); m.men = cap + 7; stepMen(S, m.id, -1); if (m.men !== cap + 5) { console.log('step over cap down', cap + 7, m.men); fails++; } stepMen(S, m.id, 1); if (m.men !== cap + 5) { console.log('step over cap up', cap + 5, m.men); fails++; } m.men = was; } }
   if (r() < 0.15) { act(() => kingStays(S, true)); act(() => boardAll(S)); if (S.king.place !== 'home') { console.log('king boarded with kingHome'); fails++; } act(() => kingStays(S, false)); }

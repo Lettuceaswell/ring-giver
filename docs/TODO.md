@@ -231,6 +231,7 @@ Each is the UI or the copy saying what the rules already do, or a plain bug. No 
    - **Development buildings in holdings** that raise a coast's profit (rent), and some that give men (raise levies), in the manner of Crusader Kings III.
    - **Holdings open into their own detail view** (tap a held coast: its jarl, rent, buildings, men, what can be built), with room for more management inside each, as CK3's holdings.
    **Build order (Levi signed off 2026-10-26):** the holding view (built, TODO 44) → buildings in holdings (Market: more rent; Longhouse: men each spring; Palisade: less unrest; one slot each to start; a king who takes the coast back takes them too) → raise the hall (three tiers: a bench, a shorter wait for a new man, a cheaper Oath) → the second ship last. Not built: prices need the persona harness, and Levi has more decisions to batch first.
+   **Buildings built (reflex run 2, 2026-10-26):** the rule, the holding sheet's rows, a builder persona, prices 300/300/200 from the harness (the scale is TODO 45). Two calls made on the way, open to his word: the Longhouse's men go only to the jarl there and only as far as he can lead them (a flat five a spring to the hall made a flood: 1,900 men by 1066); the buildings belong to the coast, so a coast won back has them still. Left: the Hall's one-line row, a moment card when a building is lost with the coast.
    Order and prices to be set with the persona harness; overlaps 41B.6 (named men on demand), which may shrink to the champion card. Not built yet; more decisions to batch first.
 3. **Profit less the bill?** Keep profit as loot less men (session 14), with the bill shown beside it (41A.6), or redefine profit to subtract the hall's bill and the hall-pay a sailing King forfeits. **Recommend:** keep the definition, show the bill; redefining makes a sure raid read negative every lean year and hides the choice.
    **Decided (Levi, 2026-10-26): keep the definition (route A).** Profit stays loot less men; the bill sits beside it as 41A.6 built. Nothing to build.
@@ -326,3 +327,12 @@ Decided by Levi during the 41B calls. **Built in session 18** unless marked.
 5. **− and + step to the next multiple of five** (23 → 25 or 20). *Built.*
 6. **King stays home**, a toggle beside Everyone aboard on the map and at the top of the Ship pane: Everyone aboard and each spring's re-boarding leave him in the hall. Sending the King home by hand sets it; sending him to the ship clears it. *Built.*
 
+
+---
+
+## 45. Buildings: dear and few, or cheap and many? (reflex run 2, 2026-10-26)
+The builder persona priced 41B.2's buildings. One-off buildings that pay back are an investment, not a sink: at 60/60/40 the builder put up 85 of them and his chest *rose* to 1,177 (Levi's own persona sits at 530). At 300/300/200 it fell to 719, the line still lives 7 of 8, and 15,650 silver goes into the land over a game. Doubling the Market's rent made it free money again. **Shipped at 300/300/200.** Three ways to go from here:
+- **A. Dear and few (built; recommended).** A building is a reign's saving: you build the Market at the coast you mean to keep, the Longhouse where the jarl is thin, the Palisade where it stirs. By rent alone a Market pays back in fifteen to sixty years, so it is bought for the holding, not for the silver. The hall tiers (next in the order) are the second sink; together they are what gets the chest under 300.
+- **B. Cheap and many (60/60/40).** Everyone builds everything by year twenty; there is nothing to save for, and the chest climbs.
+- **C. Priced by the coast.** A Market costs ten years of that coast's rent, a Longhouse ten years of its men's price, so a rich coast's buildings are dear and a poor one's cheap. Not yet swept; a run's work with the harness.
+**Recommend:** A now; sweep C after the hall tiers land, when the whole sink can be seen at once. Answer by letter.

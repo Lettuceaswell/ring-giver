@@ -138,6 +138,14 @@ module.exports = function (G) {
     target(s, sc) { const S = strengthShip(s), best = sc.targets.map(id => s.shores[id]).sort((a, b) => winOdds(S, b.def) - winOdds(S, a.def) || b.loot - a.loot)[0]; return winOdds(S, best.def) < 0.5 ? 'home' : best.id; },
     titles: prio(['beloved', 'ringgiver', 'lawgiver', 'landtaker', 'deepchest']),
   };
+  P.builder = { ...base, // the baseline player who spends on the land (41B.2): each spring every holding takes its next building while the chest covers the price, a winter's bill (the men not at a holding) and sixty over
+    extras(s) {
+      base.extras(s);
+      const bill = s.men - s.notables.filter(m => isHolding(s, m.place)).reduce((a, m) => a + m.men, 0);
+      for (const h of s.holdings) for (const k of Object.keys(G.BUILDINGS)) if (G.canBuild(s, h.id, k) && s.silver - T.build[k] >= bill + 60) G.build(s, h.id, k);
+    },
+    titles: prio(['landtaker', 'lawgiver', 'deepchest', 'ringgiver', 'hallward', 'fairdealer']),
+  };
   P.levi = { ...base,
     // Levi's first line (LOG s8 / TODO 25): steady expansion every few years, buys men freely, never lost a battle (he fights favorable odds),
     // never short of silver, and "subjugates a hostile king at once" (modelled as: take the coasts of his realm until he breaks; gift him when rich).

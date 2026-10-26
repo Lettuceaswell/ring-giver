@@ -46,6 +46,8 @@ if (PERSONAS) {
     band('levi luck in play %', g('levi').luckPct, 4, 10, 'the roll decides a fight sometimes, not often (audit 4)');
     band('levi holdings at 850', g('levi').holdAt850, 8, 30, 'not every coast by 850: the "automatic win" complaint (TODO 25)');
     band('levi king falls / line', g('levi').kingFell, 0, 3, 'the King at sea is a risk, not a habit');
+    band('builder lives', 1 - (g('builder').broke ?? 1), 0.75, null, 'a plan that spends on the land should still reach 1066 (41B.2)');
+    band('builder chest', g('builder').chestAvg, null, 300, 'the buildings are the sink: a builder has no idle silver (41B.2, reflex run 2)');
     const careful = ['levi', 'settler', 'hall-sitter', 'courtier'].map(p => g(p).chestAvg).filter(x => x != null);
     band('idle silver (careful chest avg)', careful.length ? careful.reduce((a, b) => a + b, 0) / careful.length : null, null, 300, 'silver with nothing to buy is the year-seven itch (41B.2, TODO 33)');
   }
