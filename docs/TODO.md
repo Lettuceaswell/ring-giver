@@ -336,3 +336,4 @@ The builder persona priced 41B.2's buildings. One-off buildings that pay back ar
 - **B. Cheap and many (60/60/40).** Everyone builds everything by year twenty; there is nothing to save for, and the chest climbs.
 - **C. Priced by the coast.** A Market costs ten years of that coast's rent, a Longhouse ten years of its men's price, so a rich coast's buildings are dear and a poor one's cheap. Not yet swept; a run's work with the harness.
 **Recommend:** A now; sweep C after the hall tiers land, when the whole sink can be seen at once. Answer by letter.
+**Decided (Levi, 2026-10-26): A.** Dear and few stands as built (300/300/200). C stays a sweep for after the hall tiers, not a change.
