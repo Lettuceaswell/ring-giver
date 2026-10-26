@@ -311,7 +311,7 @@ Levi: a painterly head-and-shoulders portrait for every character in one consist
 
 **Open:**
 - 43.4 Route: A "The Deck" (bake ~2,400 busts bucketed by ~8 genes × 4 age bands, ship ~60 MB) first, B "The Forge" (the PC mints unique children from both parents on the home wifi) later. Recommended, not yet called.
-- 43.5 The proof, next: can a knife-impasto bust be cut out cleanly (fallback: a painted frame layer that hides the seam), and does one crown layer sit on three different heads. Norse, Saxon and Frankish busts on two backgrounds, with and without a crown.
+- 43.5 The proof (`pages/2026-10-26-layer-proof.html`, 2026-10-26): cut-outs and painted backgrounds pass (Levi). Crowns as sprites fail (Levi: wrong size, no wrap, the back in front of the head): a flat sticker cannot know the shape of the head. Replaced by **painted-on crowns**: the edit model (FLUX.2 Klein 4B, ~14 s) repaints the bare bust wearing the crown, same brushwork, hair over the band, back hidden. `pages/2026-10-26-crown-test.html`, awaiting Levi. If it passes, 43.2 changes: a crown is never a layer; a crowned ruler is a second painted version of his own bust, baked for the ruler pool only. Backgrounds stay layers. Pipeline rule learned: paint busts on a flat pale ground (dark grounds eat dark cloaks) and cut with BiRefNet (the fast matting model beheads grey tunics).
 - 43.6 Taste calls still open from the plan page: Forge palette only vs full colour; family presets from photos; Hugging Face login for FLUX 3 Klein.
 - 43.7 The gene schema in the game (the 8 genes, inheritance with mutation, age bands) comes after the proof.
 
