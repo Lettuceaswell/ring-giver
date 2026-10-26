@@ -241,7 +241,8 @@ function place(s, id, where) {
 function stepMen(s, id, dir) { const m = s.notables.find(x => x.id === id); if (!m) return; addMen(s, id, (dir > 0 ? Math.floor(m.men / 5) * 5 + 5 : Math.ceil(m.men / 5) * 5 - 5) - m.men); }
 function addMen(s, id, d) {
   const m = s.notables.find(x => x.id === id);
-  m.men = clamp(m.men + d, 0, Math.min(fCap(s, m), m.men + unledMen(s)));
+  // a man can stand over his cap (the Ring-giver who raised every cap died with the King): he keeps those men, − still takes them off him, + gives him none (reflex run 1)
+  m.men = clamp(m.men + d, 0, Math.max(m.men, Math.min(fCap(s, m), m.men + unledMen(s))));
 }
 // fill every named man aboard from the unled pool, the King first, then by Combat (TODO 41A.3)
 function fillShip(s) {

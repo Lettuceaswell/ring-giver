@@ -70,6 +70,8 @@ while (S && maxYears-- > 0) {
   for (const k of ['home', 'holdings']) { UI.pane = 'hall'; toggleFold(k); check('fold ' + k); toggleFold(k); }
   // − and + land on multiples of five
   { const m = S.notables.find(m => m.men % 5); if (m && m.men >= 5) { const was = m.men; stepMen(S, m.id, -1); if (m.men !== Math.ceil(was / 5) * 5 - 5) { console.log('step', was, m.men); fails++; } } }
+  // a man over his cap (a dead Ring-giver's men): − steps him down to the next five, + gives him nothing (reflex run 1)
+  { const m = S.notables.find(m => !m.isKing); if (m) { const was = m.men, cap = fCap(S, m); m.men = cap + 7; stepMen(S, m.id, -1); if (m.men !== cap + 5) { console.log('step over cap down', cap + 7, m.men); fails++; } stepMen(S, m.id, 1); if (m.men !== cap + 5) { console.log('step over cap up', cap + 5, m.men); fails++; } m.men = was; } }
   if (r() < 0.15) { act(() => kingStays(S, true)); act(() => boardAll(S)); if (S.king.place !== 'home') { console.log('king boarded with kingHome'); fails++; } act(() => kingStays(S, false)); }
   // decide: everyone aboard most years, king home some years
   if (r() < 0.8) act(() => boardAll(S)); else { act(() => boardAll(S)); act(() => place(S, S.king.id, 'home')); }

@@ -2,6 +2,17 @@
 
 Each entry: **Picked** (what and why, the class), **Predicted** (which band or judgment moves, by how much), **Measured** (the scoreboard before → after), **Shipped** (commit), **Lesson** (what to do differently; the next run reads this first), **For Levi** (calls filed, by number). A run that failed verification still gets an entry: what was tried, why it was reverted.
 
+## Run 1 — 2026-10-26, a man over his cap (Q1)
+
+**Reflection on run 0:** the baseline's fuzz was clean, so the `step 47 40` failure came from the unseeded run only; the lesson stands that an unreproducible gate is no gate. The lint caught my own unbumped `sw.js` on this run, which is the kind of thing the loop is for.
+
+**Picked:** Q1, class A, Sound. `addMen` clamped to `fCap` on every change, so a man standing over his cap (how: `fCap` counts the King's Ring-giver title; when that King dies the cap drops ten under every man, and the men stay) could not be stepped down to the next five, and a tap on + took men off him.
+**Predicted:** gate stays green, fates unchanged (personas never step men), a new smoke check covers both buttons over the cap; no band moves.
+**Measured:** before = after on every band (fates `c06892e611e1` unchanged); the new check passes on seed `smoke`; the fuzz seed `fuzz-2026-10-26T20` clean.
+**Shipped:** `game.js` one line, `tools/smoke.js` one check, sw `seaking-v14`.
+**Lesson:** the real cause was a cap that can fall under a man, not the stepper. Anywhere else the game assumes `men ≤ fCap` (the Autumn sheet's "room", `menRoom`, `fillShip`) now deserves one look; added as Q16. Small runs like this one are worth doing between the big B steps because they keep the gate honest, but the next run should start Q2(a): the buildings' rule and a `builder` persona, since idle silver is the furthest band from target.
+**For Levi:** nothing new.
+
 ## Run 0 — 2026-10-26, the baseline (no game change)
 
 **Built the loop:** `tools/reflex/measure.js` (gate + fuzz + persona bands + lints → `docs/reflex/metrics/`), `RUBRIC.md`, this journal, `QUEUE.md`, the `reflex` skill (`.claude/skills/reflex/SKILL.md`), the "run" trigger in CLAUDE.md. `tools/smoke.js` now seeds `Math.random` and pins the day (`SEED=`, `DAY=`): before this, two runs of the gate were two different dynasties (the game's `uid()` draws on `Math.random`, and something downstream of the ids changes fates), so a failure could not be reproduced. The fuzz smoke runs a new seed every hour for exactly that reason.

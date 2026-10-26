@@ -1,7 +1,7 @@
 {
- "at": "2026-10-26T20:26:36.684Z",
- "head": "8197fc6",
- "tag": "run0",
+ "at": "2026-10-26T20:29:26.373Z",
+ "head": "3aa02ac",
+ "tag": "run1",
  "seeds": 8,
  "gate": "ok",
  "smoke": {
@@ -273,7 +273,7 @@
   "lost": 0
  },
  "fateHash": "c06892e611e1",
- "bytes": 268708,
+ "bytes": 268899,
  "todo": {
   "decided": 7,
   "built": 24

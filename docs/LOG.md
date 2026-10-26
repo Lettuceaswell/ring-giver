@@ -2,6 +2,12 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-26 (reflex run 1: a man over his cap)
+
+The loop's first pick (Q1, `docs/reflex/QUEUE.md`): `addMen` clamped every change to the man's cap, so a jarl standing over it (the Ring-giver whose title raised every cap died with the King, and his men stayed) could not be stepped down to the next five (47 → 40 instead of 45) and lost men to a tap on +. Now − takes men off him and + gives him none; the men he has are his. One line in `game.js`; `tools/smoke.js` sets a man seven over his cap and checks both buttons. `node tools/reflex/measure.js`: gate ok, fates unchanged (`c06892e611e1`; the personas never step men), two WARN bands as at the baseline. sw `seaking-v14`.
+
+Run 0, the same day, built the loop itself: `docs/reflex/` (RUBRIC, QUEUE, JOURNAL, metrics), `tools/reflex/measure.js`, the `reflex` skill, and `smoke.js` seeded and day-pinned (`SEED=`, `DAY=`) so a failing dynasty can be run again.
+
 ## 2026-10-26 (session 18, portraits: the audit, the audition and the layer rule, no game code)
 
 Levi opened the portrait question: a painterly head-and-shoulders portrait for every character, thousands of them, kin who resemble their parents, faces that age. Ideation, not a go. Machine audited (RTX 3060 12 GB, 16 GB RAM is the squeeze, 184 GB of models on G:, the Linux ComfyUI reads them), ai-toolkit installed at `~/ai-toolkit`, Z-Image full-precision + training adapter + ControlNet Union 2.1 + FLUX.2 Klein base pulled. Plan page `pages/2026-10-25-portrait-pipeline.html` (https://claude.ai/artifact/JBv9fzS4GL1TyscWRVgcMP): Route A "The Deck" (bake a gene-bucketed library overnight, ship it) recommended first, Route B "The Forge" (the PC mints unique children from both parents' faces on the home wifi) as the upgrade. Style audition `pages/2026-10-25-style-audition.html` (https://claude.ai/artifact/HMGBLJUivtZDE9cv4BY9M5): five looks on the same three faces out of Z-Image, no training. **Levi picked D, Knife Impasto.** Written up as **TODO 43** with the layer rule he agreed to: the bust is the person (genes, culture, age), cut out; background, crown and cloak are layers the game stacks by status, so succession and foreign kings cost nothing at play time. Next: the proof (cut-outs and a crown layer on Norse, Saxon and Frankish busts). Full-size audition images in `G:\ai\lora-lab\datasets\portrait_style\audition\`.
