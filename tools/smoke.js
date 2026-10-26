@@ -10,7 +10,7 @@ global.navigator = {};
 const src = ['coast.js', 'world.js', 'game.js', 'ui.js'].map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
 // expose everything: strip top-level const/let so they become globals under eval in sloppy mode
 const code = src.replace(/^(const|let) /gm, 'var ');
-let fails = 0, renders = 0;
+let fails = 0, renders = 0, regents = 0, stepdowns = 0;
 const check = (where) => { renders++; const h = app.innerHTML; for (const bad of ['undefined', 'NaN', '[object', 'null silver']) if (h.includes(bad)) { fails++; console.log('BAD', where, bad, h.slice(Math.max(0, h.indexOf(bad) - 120), h.indexOf(bad) + 40).replace(/\s+/g, ' ')); if (fails > 8) process.exit(1); } };
 eval(code);
 // start
@@ -28,7 +28,8 @@ function drive() {
   else if (sc.t === 'winter') { winters++; if (S.silver > 60 && r() < 0.7) act(() => buyMen(S, 10)); check('winter'); act(() => closeWinter(S)); }
   else if (sc.t === 'event') { if (sc.choice) { act(() => answerSuitor(S, r() < 0.5)); check('event answered'); } if (sc.roll) { UI.rolled = S.year; render(); check('event rolled'); } act(() => next(S)); } // the winter card: answer, turn the King's card, move on
   else if (sc.t === 'fork') act(() => takeTitle(S, sc.offers[r() < 0.5 ? 0 : 1]));
-  else if (sc.t === 'death') { deaths++; act(() => startSuccession(S)); }
+  else if (sc.t === 'death') { deaths++; const w = successor(S); if (w.kind === 'regent') regents++; act(() => startSuccession(S)); if (w.kind === 'regent' && (S.king !== w.man || !S.regency || S.regency.boy !== w.boy.id)) { console.log('regent not crowned', S.year); fails++; } }
+  else if (sc.t === 'moment' && / steps down$/.test(sc.title)) { const y = S.year, rg = S.notables.find(m => !m.isKing && sc.title.startsWith(m.name)); stepdowns++; if (!rg || S.regency || S.king.age !== 16) { console.log('step down', y, !!rg, !!S.regency, S.king.age); fails++; } act(() => next(S)); }
   else if (sc.t === 'heir') act(() => chooseHeir(S, sc.sons[0]));
   else if (sc.t === 'oath') act(() => oathPay(S, S.silver >= sc.price && r() < 0.7));
   else if (sc.t === 'coronation') act(() => finishCoronation(S));
@@ -59,6 +60,13 @@ while (S && maxYears-- > 0) {
   UI.picker = true; render(); check('picker'); UI.picker = false;
   for (const m of S.notables) { UI.man = m.id; render(); check('man ' + m.name); } UI.man = null;
   for (const k of Object.values(S.rulers)) if (k.known) { UI.man = k.id; render(); check('ruler ' + k.name); } UI.man = null;
+  // the new sheets (2026-10-26): each holding opened, its jarl list with a pick; a man's assign list with a pick; the Hall folded and open
+  for (const h of S.holdings) { openHold(h.id); check('hold ' + h.name); UI.assign = 'hold'; UI.assignTo = (S.notables.find(m => !m.isKing && m.place !== h.id) || {}).id || null; render(); check('hold assign ' + h.name); closeHold(); }
+  for (const m of S.notables.filter(m => !m.isKing).slice(0, 2)) { openCard(m.id); UI.assign = 'man'; UI.assignTo = S.holdings[0] ? S.holdings[0].id : null; render(); check('man assign ' + m.name); closeCard(); }
+  for (const k of ['home', 'holdings']) { UI.pane = 'hall'; toggleFold(k); check('fold ' + k); toggleFold(k); }
+  // − and + land on multiples of five
+  { const m = S.notables.find(m => m.men % 5); if (m && m.men >= 5) { const was = m.men; stepMen(S, m.id, -1); if (m.men !== Math.ceil(was / 5) * 5 - 5) { console.log('step', was, m.men); fails++; } } }
+  if (r() < 0.15) { act(() => kingStays(S, true)); act(() => boardAll(S)); if (S.king.place !== 'home') { console.log('king boarded with kingHome'); fails++; } act(() => kingStays(S, false)); }
   // decide: everyone aboard most years, king home some years
   if (r() < 0.8) act(() => boardAll(S)); else { act(() => boardAll(S)); act(() => place(S, S.king.id, 'home')); }
   const ship = S.notables.filter(m => m.place === 'ship');
@@ -74,7 +82,7 @@ while (S && maxYears-- > 0) {
   } else act(() => sail(S));
   check('after sail');
 }
-console.log(JSON.stringify({ from: year0, to: S && S.year, gens: S && S.gen, deaths, fights, stays, winters, landfalls, skipsOK: skips > 0, homes, lines, renders, reloads, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
+console.log(JSON.stringify({ from: year0, to: S && S.year, gens: S && S.gen, deaths, regents, stepdowns, fights, stays, winters, landfalls, skipsOK: skips > 0, homes, lines, renders, reloads, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
 // the end card and begin again
 if (S && S.queue[0] && S.queue[0].t === 'end') { render(); check('end'); act(() => { archive(S, 'reached 1066'); S = null; }); check('setup after end'); if (!app.innerHTML.includes('Past kings')) { console.log('no past kings'); fails++; } }
 // a fresh run: two-tap abandon

@@ -121,6 +121,7 @@ function battle(S, D, rolls, iron) {
 function holdOdds(R, U) { return R <= 0 ? 0 : clamp((R * 1.15 - U) / (R * 0.3), 0, 1); }
 // one odds vocabulary (TODO 41A.4): the percent, then the word. pct is shared with ui.js
 const pct = p => `${p < 0.1 ? Math.round(1000 * p) / 10 : Math.round(100 * p)}%`;
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const nMen = n => `${n} ${n === 1 ? 'man' : 'men'}`;
 function holdWords(R, U) { const p = holdOdds(R, U); return `${pct(p)} · ${p >= .97 ? 'holds' : p >= .7 ? 'likely holds' : p >= .4 ? 'even' : p > 0 ? 'long odds' : 'cannot hold'}`; }
 // a jarl and a holding's unrest, said as one sentence before the sums (TODO 41A.4): the chance as he stands, with all he could lead, the men that would make it sure,
@@ -233,8 +234,11 @@ function place(s, id, where) {
     const prev = s.notables.find(x => x.place === where); if (prev) prev.place = 'home';
   }
   m.place = where; m.sailed = false;
-  if (where !== 'ship') s.allAboard = false; // a man sent home or to a holding by hand: the crew is no longer set to board each spring (TODO 41A.3)
+  if (m.isKing) s.kingHome = where === 'home'; // the King sent home by hand is the toggle set: Everyone aboard leaves him there
+  else if (where !== 'ship') s.allAboard = false; // a man sent home or to a holding by hand: the crew is no longer set to board each spring (TODO 41A.3)
 }
+// − and + step to the next multiple of five, so 23 goes to 25 or 20, never to 28 (Levi, 2026-10-26)
+function stepMen(s, id, dir) { const m = s.notables.find(x => x.id === id); if (!m) return; addMen(s, id, (dir > 0 ? Math.floor(m.men / 5) * 5 + 5 : Math.ceil(m.men / 5) * 5 - 5) - m.men); }
 function addMen(s, id, d) {
   const m = s.notables.find(x => x.id === id);
   m.men = clamp(m.men + d, 0, Math.min(fCap(s, m), m.men + unledMen(s)));
@@ -246,11 +250,19 @@ function fillShip(s) {
 }
 function boardAll(s) {
   if (s.phase !== 'spring') return;
-  for (const m of s.notables) if (m.place === 'home') m.place = 'ship';
+  for (const m of s.notables) if (m.place === 'home' && !(m.isKing && s.kingHome)) m.place = 'ship';
   s.allAboard = true; // it stays set year to year until someone is sent home by hand (TODO 41A.3)
   fillShip(s);
   // a man with no one to lead still boards: he fights with his own arm, shares the loot and grows, and at home he would only sour (session 13, reversing TODO 32)
 }
+// the King stays home: Everyone aboard and each spring's re-boarding leave him in the hall, to rule it and guard it (Levi, 2026-10-26)
+function kingStays(s, on) {
+  s.kingHome = on; if (s.phase !== 'spring') return;
+  if (on) { s.king.place = 'home'; s.king.sailed = false; }
+  else if (s.allAboard) { s.king.place = 'ship'; fillShip(s); }
+}
+// the man in a holding's seat as it would stand with this jarl: his men now and at his full following against its unrest
+function holdPreview(s, m, h) { const cap = fCap(s, m); return { now: holdOdds(m.rule * m.men, h.unrest), full: holdOdds(m.rule * cap, h.unrest), need: holdNeed(m.rule, m.men, cap, h.unrest) }; }
 function setDestination(s, id) { if (s.phase === 'spring') s.destination = id; } // the ship may be empty yet; Sail is what needs men
 function marry(s, childId, jarlId) {
   const d = s.children.find(c => c.id === childId), j = s.notables.find(m => m.id === jarlId);
@@ -547,7 +559,7 @@ function winterCard(s) {
   const foes = Object.values(s.rulers).filter(x => x.wroth != null && x.wroth < s.year);
   const deck = [];
   const kids = s.children.length;
-  if (k.age < 55) deck.push(['birth', kids < 2 ? 7 : 4]);
+  if (k.age < 55 && !s.regency) deck.push(['birth', kids < 2 ? 7 : 4]);
   if (s.notables.some(m => !m.isKing && m.age > 45)) deck.push(['jarlDeath', 2]);
   deck.push(['wanderer', 2]); deck.push(['rival', 1 + 2 * foes.length + Math.min(6, 2 * Math.floor(s.silver / T.richHall))]); deck.push(['hardWinter', 1]); deck.push(['harvest', s.holdings.length ? 2 : 0]); // a rich chest draws sails
   if (benchRoom(s)) deck.push(['seaman', 2]);
@@ -624,7 +636,7 @@ function newYear(s) {
   s.phase = 'spring'; s.rumorOffer = null;
   s.yr = newYr(s.silver);
   // the crews who sailed last summer gather at the ship; a destination that is now ours or gone is forgotten (TODO 20)
-  for (const m of s.notables) if (m.sailed && m.place === 'home') m.place = 'ship';
+  for (const m of s.notables) if (m.sailed && m.place === 'home' && !(m.isKing && s.kingHome)) m.place = 'ship';
   if (s.allAboard) boardAll(s); // everyone aboard stays set (TODO 41A.3)
   if (s.destination && s.destination !== 'blind' && (isHolding(s, s.destination) || !s.shores[s.destination].known)) s.destination = null;
   // and a seen coast the ship as it stands could not take is not left on the plank ("even" is the line; TODO 41A.8)
@@ -640,32 +652,60 @@ function newYear(s) {
   }
 }
 function comeOfAge(s, c) {
-  const r = rng(s.day + c.id), k = s.king;
+  const rg = s.regency && s.regency.boy === c.id ? s.regency : null;
+  const r = rng(s.day + c.id), k = rg ? rg.father : s.king;
   const m = makeMan(c.name, clamp(k.combat - 1 + r.int(0, 2), 1, 5), clamp(k.rule - 1 + r.int(0, 2), 1, 5), clamp(2 + r.int(0, 2), 1, 5), { age: 16, son: true, kin: true });
   s.notables.push(m); c.ofAge = true;
+  if (rg) return stepDown(s, m);
   log(s, `${c.name} is sixteen and takes a seat in the hall.`);
   s.queue.push({ t:'moment', tone:'boon', glyph:'men', when:'Spring', title: `${c.name} is sixteen`, lead:'He takes a seat in the hall. The line has an heir of age.', chips: [{ t:`Combat ${m.combat} · Rule ${m.rule} · Follow ${m.follow}` }], rows: [] });
 }
 
+// the regent's years end at the boy's sixteenth spring: he steps down to a seat in the hall, kin to the line now, and the boy is crowned (TODO 41B.1)
+function stepDown(s, boy) {
+  const rg = s.king, years = s.year - s.reign.start;
+  s.dynasty.push(Object.assign(reignCard(s), { title: 'Regent' + (s.reign.title ? ' · ' + s.reign.title : '') }));
+  log(s, `${rg.name} steps down. ${boy.name} is sixteen and king.`);
+  s.queue.push({ t:'moment', tone:'boon', glyph:'crown', when:'Spring', title: `${rg.name} steps down`, lead: `${boy.name} is sixteen. ${rg.name} held the hall for him ${plural(years, 'year')} and gives it back. The jarls swear to the boy now.`, chips: [{ t:`${boy.name}: Combat ${boy.combat} · Rule ${boy.rule} · Follow ${boy.follow}` }], rows: [] });
+  crown(s, boy, true);
+  Object.assign(rg, { isKing: false, place: 'home', kin: true, sailed: false, titles: [], stance: 40, why: [{ y: s.year, t: `held the hall for ${boy.name}`, d: 40 }] });
+  s.notables.push(rg);
+}
 // ---- The reign ends -------------------------------------------------------------------------
 function reignCard(s) { return { king: s.king.name, from: s.reign.start, to: s.year, bestRaid: s.reign.bestRaid, bestHoldings: s.reign.bestHoldings, title: s.reign.title, age: s.king.age }; }
+// who takes the hall when the King dies: a son of age; else, with a boy under sixteen, the most loyal man in the hall rules for him as regent (TODO 41B.1),
+// any man but a hostile one; else the youngest of the kin; else no one. A boy with only hostile men in the hall: the line breaks as before
+function successor(s) {
+  const others = s.notables.filter(m => !m.isKing);
+  const sons = others.filter(m => m.son);
+  if (sons.length) return { kind: 'son', sons };
+  const boy = s.children.filter(c => c.sex === 'm' && !c.ofAge).sort((a, b) => b.age - a.age)[0];
+  if (boy) {
+    const regent = others.filter(m => m.kin || stanceWord(m.stance) !== 'hostile').sort((a, b) => (b.kin ? 1 : 0) - (a.kin ? 1 : 0) || b.stance - a.stance || b.rule - a.rule)[0];
+    if (regent) return { kind: 'regent', man: regent, boy, until: s.year + 16 - boy.age };
+  }
+  const inlaw = others.filter(m => m.kin).sort((a, b) => a.age - b.age)[0]; // the youngest of the kin, who may yet raise sons
+  if (inlaw) return { kind: 'inlaw', man: inlaw };
+  return { kind: 'none', boy };
+}
 function startSuccession(s) {
   s.dynasty.push(reignCard(s));
-  const sons = s.notables.filter(m => m.son);
-  if (sons.length) s.queue.push({ t:'heir', sons: sons.map(m => m.id) });
-  else {
-    const inlaw = s.notables.filter(m => m.kin && !m.son).sort((a, b) => a.age - b.age)[0]; // the youngest of the kin, who may yet raise sons
-    if (inlaw) { s.queue.push({ t:'summary', title: 'No son', lines: [`${inlaw.name}, ${kinOf(inlaw)}, takes the hall.`] }); crown(s, inlaw); }
-    else s.queue.push({ t:'end', reason: 'noheir' });
+  const w = successor(s), father = s.regency ? s.regency.father : { name: s.king.name, combat: s.king.combat, rule: s.king.rule }; // a regent's death keeps the boy's own father
+  if (w.kind === 'son') s.queue.push({ t:'heir', sons: w.sons.map(m => m.id) });
+  else if (w.kind === 'regent') {
+    s.queue.push({ t:'summary', title: 'A regent', lines: [`${w.boy.name} is ${w.boy.age}. ${w.man.name} rules for him until his sixteenth spring, in ${w.until}. Then he steps down and the boy is crowned.`] });
+    crown(s, w.man); s.regency = { boy: w.boy.id, name: w.boy.name, until: w.until, father };
   }
+  else if (w.kind === 'inlaw') { s.queue.push({ t:'summary', title: 'No son', lines: [`${w.man.name}, ${kinOf(w.man)}, takes the hall.`] }); crown(s, w.man); }
+  else s.queue.push({ t:'end', reason: 'noheir' });
   next(s);
 }
 function chooseHeir(s, id) { crown(s, s.notables.find(m => m.id === id)); next(s); }
-function crown(s, heir) {
+function crown(s, heir, spring = s.phase === 'spring') {
   const old = s.king;
   s.notables = s.notables.filter(m => m !== old);
   heir.isKing = true; heir.son = false; heir.kin = false; heir.titles = []; heir.offeredPairs = []; heir.place = 'home'; heir.sailed = false;
-  s.king = heir; s.gen++;
+  s.king = heir; s.gen++; s.regency = null;
   s.reign = { bestRaid: null, bestHoldings: s.holdings.length, title: null, start: s.year, oath: { knelt: 0, paidN: 0, paid: 0, walked: [] } }; // what the Oath did, for the coronation card (TODO 41A.8)
   s.deeds = Object.fromEntries(Object.keys(s.deeds).map(k => [k, 0]));
   s.children = s.children.filter(c => !c.ofAge && !c.married);
@@ -678,7 +718,7 @@ function crown(s, heir) {
     const price = Math.round(j.follow * 15 * (old.titles && old.titles.includes('beloved') ? 0.5 : 1) * (w === 'hostile' ? 2 : w === 'sour' ? 1.5 : 1));
     s.queue.push({ t:'oath', jarl: j.id, kneels, price });
   }
-  s.queue.push({ t:'coronation' });
+  s.queue.push({ t:'coronation', spring }); // crowned in spring (the regent steps down as the year turns): the coronation does not turn it again
 }
 function oathPay(s, pay) {
   const sc = s.queue[0], j = s.notables.find(m => m.id === sc.jarl), o = s.reign.oath = s.reign.oath || { knelt: 0, paidN: 0, paid: 0, walked: [] };
@@ -689,7 +729,7 @@ function oathPay(s, pay) {
   else { const h = s.holdings.find(h => h.id === j.place); o.walked.push({ n: j.name, at: h.name }); walkAway(s, j, h); } // he walks with his holding
   next(s);
 }
-function finishCoronation(s) { if (s.phase === 'summer') next(s); else { newYear(s); next(s); } } // a King who fell at sea is crowned over in summer; the land and winter still come
+function finishCoronation(s) { if (s.phase === 'summer' || s.queue[0].spring) next(s); else { newYear(s); next(s); } } // a King who fell at sea is crowned over in summer; the land and winter still come
 
 // ---- Scene queue ------------------------------------------------------------------------------
 function next(s) {
@@ -711,6 +751,8 @@ function migrate(s) {
   if (s.guard === undefined) s.guard = null;
   if (!s.big) s.big = [];
   if (s.allAboard === undefined) s.allAboard = false;
+  if (s.kingHome === undefined) s.kingHome = false;
+  if (s.regency === undefined) s.regency = null;
   if (!s.guardWho) s.guardWho = [];
   if (!s.rulers) { s.rulers = buildRulers(s.day); s.envoy = null; for (const k of Object.values(s.rulers)) k.coasts = k.coasts.filter(c => !isHolding(s, c)); discoverRulers(s); }
   s.log = s.log.map(l => typeof l === 'string' ? { y: +(l.match(/^(\d{3,4}): /) || [])[1] || null, t: l.replace(/^\d{3,4}: /, '') } : l);

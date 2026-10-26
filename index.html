@@ -444,6 +444,41 @@ button.jr.on{border-radius:var(--r) var(--r) 0 0}
 .jr .jwhy{grid-column:1/-1;font:400 12px/1.45 var(--mono);color:var(--muted)}.jr .jwhy b{color:var(--text);font-weight:500}
 button.more{background:none;border:0;padding:8px 0;font:400 12px/1.4 var(--mono);color:var(--muted);text-decoration:underline;text-underline-offset:3px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* the Hall in folds, holdings as one line each, the large man's card, the assign list (Levi, 2026-10-26) */
+h2.fold{cursor:pointer;user-select:none;-webkit-user-select:none}
+h2.fold .fsum{margin-left:auto;font:400 11.5px/1 var(--mono);letter-spacing:0;text-transform:none;color:var(--iron)}
+h2.fold .fchev{font-style:normal;font-size:13px;transition:transform .2s var(--ease)}
+h2.fold.shut .fchev{transform:rotate(-90deg)}
+.chev{font-style:normal;color:var(--muted);margin-left:5px;font-weight:400}
+.card.hrow{cursor:pointer}
+.hrow .hsub{margin-top:4px}
+.hsub [class*="t-"],.aopt [class*="t-"]{color:var(--temp)}
+.lose{color:var(--oxblood)}
+.chips-r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;max-width:60%}
+.chips-r .chip{max-width:none}
+.tog .box{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid var(--iron);border-radius:var(--r);font-size:11px;line-height:1;color:var(--primary);margin-right:7px;vertical-align:-2px}
+.chip.tog .box{margin-right:0}
+.tog.on .box{border-color:var(--primary)}
+.card.tog{cursor:pointer}
+button.wide{width:100%;margin-top:10px;text-align:left;display:flex;justify-content:space-between}
+.alist{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.alist>.small{align-self:flex-start}
+.aopt{border:1px solid var(--rule);border-radius:var(--r);padding:9px 11px;background:var(--bg);cursor:pointer}
+.aopt.sel{border-color:var(--primary);background:var(--raised)}
+.aopt.here{cursor:default;opacity:.7}
+.aconf{display:flex;flex-direction:column;gap:8px;padding:6px 0}
+.aconf .hint{margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:6px 14px;font:400 13px/1.3 var(--mono);color:var(--muted)}
+.facts b{color:var(--text);font-weight:500}
+.scene.card-big{min-height:86vh;max-height:94vh}
+.portrait{position:relative;height:170px;margin:4px 0 6px;border:1px solid var(--rule);border-radius:var(--r);background:radial-gradient(120% 90% at 50% 20%,var(--raised),var(--bg));display:flex;align-items:center;justify-content:center;overflow:hidden}
+.portrait>span{font:400 92px/1 var(--display);color:var(--rule);margin-bottom:28px}
+.portrait.king>span{color:var(--fjord)}
+.pstats{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;padding:8px 6px;background:linear-gradient(to top,rgba(43,46,51,.95),rgba(43,46,51,0))}
+.pstats div{display:flex;flex-direction:column;align-items:center;gap:2px}
+.pstats small{font:500 10px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.pstats b{font:500 20px/1 var(--mono);color:var(--text)}
 </style>
 </head>
 <body>

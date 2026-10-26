@@ -1,6 +1,6 @@
 let S = migrate(load());
 // screen state that is not game state: which pane, the picker, the open Man card, the Saga sheet, the two-tap arm, and what changed since the band last showed it
-const UI = { fightDone: null, fightT: [], pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10, beatYear: 0, routeDrawn: null, winterYear: 0, winterBeat: false, cardYear: 0, cardBeat: false, rolled: 0 };
+const UI = { hold: null, assign: null, assignTo: null, fold: (() => { try { return JSON.parse(localStorage.getItem('seaking-fold')) || {}; } catch (e) { return {}; } })(), fightDone: null, fightT: [], pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10, beatYear: 0, routeDrawn: null, winterYear: 0, winterBeat: false, cardYear: 0, cardBeat: false, rolled: 0 };
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = sel => document.querySelector(sel);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
@@ -67,7 +67,14 @@ const ICONS = {
 };
 // the stance word as a tag, with an arrow for one turn after it moved (TODO 21); pine / chestnut / oxblood for warm / cool / cold
 const stanceTag = m => { const w = stanceWord(m.stance), a = stanceMoved(S, m); return `<span class="tag st-${w}">${w}${a ? `<i class="arr ${a > 0 ? 'up' : 'down'}">${a > 0 ? '↑' : '↓'}</i>` : ''}</span>`; };
-const openMan = id => `onclick="UI.man='${id}';render()"`;
+const openMan = id => `onclick="event.stopPropagation();openCard('${id}')"`;
+function openCard(id) { UI.man = id; UI.assign = null; UI.assignTo = null; render(); }
+function closeCard() { UI.man = null; UI.assign = null; UI.assignTo = null; render(); }
+function openHold(id) { UI.hold = id; UI.assign = null; UI.assignTo = null; render(); }
+function closeHold() { UI.hold = null; UI.assign = null; UI.assignTo = null; render(); }
+const kingTag = () => `<span class="tag">${S.regency ? 'Regent' : 'King'}</span>`;
+function toggleFold(k) { UI.fold[k] = !UI.fold[k]; try { localStorage.setItem('seaking-fold', JSON.stringify(UI.fold)); } catch (e) {} render(); }
+const foldH = (k, icon, title, sum) => `<h2 class="fold${UI.fold[k] ? ' shut' : ''}" onclick="toggleFold('${k}')">${ico(icon)}${title}<span class="fsum">${UI.fold[k] ? sum : ''}</span><i class="fchev">▾</i></h2>`;
 const ico = k => `<svg class="ico" viewBox="0 0 20 20" aria-hidden="true">${ICONS[k]}</svg>`;
 
 function render() {
@@ -75,15 +82,16 @@ function render() {
   if (!S) { app.innerHTML = setupHTML(); UI.setupShown = true; return; }
   if (S.queue.length) UI.picker = false;
   if (UI.man && !S.rulers?.[UI.man] && !notable(UI.man)) UI.man = null; // he died, or walked
+  if (UI.hold && !isHolding(S, UI.hold)) UI.hold = null; // lost
   const fsc = S.queue[0] && S.queue[0].t === 'fight' && S.queue[0].phases ? S.queue[0] : null;
   clearFight(); // drawn again mid-battle: the battle starts over (only Skip ends it early)
-  const quiet = !S.queue.length, open = UI.man || UI.saga || UI.picker;
+  const quiet = !S.queue.length, open = UI.man || UI.hold || UI.saga || UI.picker;
   // the arrival beat: the first time the Map pane shows a new spring, the band counts, the fog opens, last summer's coasts bloom, the route draws
   const beat = quiet && S.phase === 'spring' && UI.pane === 'map' && !open && UI.beatYear !== S.year;
   if (beat) UI.beatYear = S.year;
-  const sheet = S.queue.length ? overlayHTML(S.queue[0]) : UI.man ? manSheet(UI.man) : UI.saga ? sagaSheet() : UI.picker ? pickerHTML() : '';
+  const sheet = S.queue.length ? overlayHTML(S.queue[0]) : UI.man ? manSheet(UI.man) : UI.hold ? holdSheet(UI.hold) : UI.saga ? sagaSheet() : UI.picker ? pickerHTML() : '';
   // the same sheet drawn again (a tap inside it) keeps its scroll and does not rise again (session 13: the Saga's New dynasty, the Stay confirm)
-  const sheetId = S.queue.length ? S.queue[0] : UI.man || (UI.saga && 'saga') || (UI.picker && 'picker') || null, sc0 = $('.scene'), keep = sc0 ? sc0.scrollTop : 0, same = sheetId && sheetId === UI.sheetId;
+  const sheetId = S.queue.length ? S.queue[0] : UI.man || (UI.hold && 'hold:' + UI.hold) || (UI.saga && 'saga') || (UI.picker && 'picker') || null, sc0 = $('.scene'), keep = sc0 ? sc0.scrollTop : 0, same = sheetId && sheetId === UI.sheetId;
   UI.sheetId = sheetId;
   app.innerHTML = bandHTML(quiet, beat) + paneHTML(beat) + footHTML() + sheet;
   if (same) { const o = $('.overlay'), sc = $('.scene'); if (o) o.classList.add('still'); if (sc) sc.scrollTop = keep; }
@@ -293,18 +301,21 @@ function chipsHTML(ship) {
   const unled = unledMen(S), room = ship.some(m => m.men < fCap(S, m)); // nobody home but unled men could still board: the tap fills the ship (TODO 41A.3)
   const fill = !atHome && unled > 0 && room;
   const crew = `<div class="chip${hint ? ' hint' : ''}" onclick="${atHome ? 'act(()=>boardAll(S))' : fill ? 'act(()=>fillShip(S))' : "go('ship')"}">${ico('men')}${ab} aboard${atHome ? ' <small>all aboard</small>' : fill ? ` · <small>${unled} unled</small>` : ''}</div>`;
-  return rumor + crew;
+  const kh = `<div class="chip tog${S.kingHome ? ' on' : ''}" onclick="act(()=>kingStays(S,${!S.kingHome}))"><span class="box">${S.kingHome ? '✓' : ''}</span>King stays home</div>`;
+  return rumor + `<div class="chips-r">${kh}${crew}</div>`;
 }
+const kingHomeRow = () => S.phase !== 'spring' ? '' : `<div class="card row tog${S.kingHome ? ' on' : ''}" onclick="act(()=>kingStays(S,${!S.kingHome}))"><span><span class="box">${S.kingHome ? '✓' : ''}</span>King stays home</span><span class="stats">${S.kingHome ? 'Everyone aboard leaves him in the hall' : 'Everyone aboard takes him too'}</span></div>`;
 function shipPane(ship) {
-  return `<h2>${ico('ship')}The ship</h2>${destHTML(ship)}
+  return `<h2>${ico('ship')}The ship</h2>${destHTML(ship)}${kingHomeRow()}
   ${ship.map(m => manCard(m)).join('') || '<div class="card empty">No one aboard. <b>Everyone aboard</b> puts the whole hall on the ship; or send men one at a time from the Hall.</div>'}`;
 }
 function hallPane(home) {
-  return `<h2>${ico('hall')}Home · Vestfold</h2>
-  ${home.map(m => manCard(m)).join('') || '<div class="card empty">Everyone is at sea. The hall stands thin.</div>'}
-  <div class="card row"><span>Unled men</span><span class="stats"><b>${unledMen(S)}</b> — no use, still fed</span></div>
-  <h2>${ico('land')}Holdings</h2>
-  ${hallHTML()}${S.holdings.map(h => holdingHTML(h)).join('')}${lostHTML()}
+  const held = S.holdings.filter(h => S.notables.some(m => m.place === h.id)).length;
+  return `${foldH('home', 'hall', 'Home · Vestfold', `${home.length} at home · ${unledMen(S)} unled`)}
+  ${UI.fold.home ? '' : `${home.map(m => manCard(m)).join('') || '<div class="card empty">Everyone is at sea. The hall stands thin.</div>'}
+  <div class="card row"><span>Unled men</span><span class="stats"><b>${unledMen(S)}</b> — no use, still fed</span></div>`}
+  ${foldH('holdings', 'land', 'Holdings', `${S.holdings.length} · ${held} with a jarl`)}
+  ${UI.fold.holdings ? '' : `${hallHTML()}${S.holdings.map(h => holdingHTML(h)).join('')}${lostHTML()}`}
   ${childrenHTML()}`;
 }
 function footHTML() {
@@ -388,16 +399,16 @@ function barHTML(Sv, D, labelS = 'Ship', labelD = 'Defenders', anim = false, odd
   <div class="odds">${labelS} <b class="us">${Math.round(Sv)}</b> vs ${labelD} <b class="them">${D}</b> · ${land ? holdWords(Sv, D) : odds || oddsWords(Sv, D)}</div>`;
 }
 // "+" or Fill with no free men says why instead of nothing (TODO 41A.3)
-function moreMen(id) { if (unledMen(S) === 0) { UI.why = id; render(); } else act(() => addMen(S, id, 5)); }
+function moreMen(id) { if (unledMen(S) === 0) { UI.why = id; render(); } else act(() => stepMen(S, id, 1)); }
 function fillMan(id) { const m = S.notables.find(x => x.id === id); if (!m) return; if (unledMen(S) === 0) { UI.why = id; render(); } else act(() => addMen(S, id, fCap(S, m))); }
 const whyHint = m => UI.why === m.id ? '<div class="hint">No free men. Take men from another with −, or buy them in winter.</div>' : '';
+// a named man's row: his name opens his card (where he is sent from); the row only steps his men (Levi, 2026-10-26: no one-tap moves)
+const menStep = (m, spring = true) => `<div class="men"><button ${spring ? '' : 'disabled'} onclick="event.stopPropagation();act(()=>stepMen(S,'${m.id}',-1))">−</button><span class="n">${m.men}<div class="cap">of ${fCap(S, m)}</div></span><button ${spring ? '' : 'disabled'} onclick="event.stopPropagation();moreMen('${m.id}')">+</button><button class="fill" ${spring && m.men < fCap(S, m) ? '' : 'disabled'} onclick="event.stopPropagation();fillMan('${m.id}')">Fill</button></div>`;
 function manCard(m) {
   const spring = S.phase === 'spring', cap = fCap(S, m);
-  const places = [['ship', 'Ship'], ['home', 'Home'], ...(m.isKing ? [] : S.holdings.map(h => [h.id, h.name]))];
-  return `<div class="card"><div class="row"><div class="who" ${openMan(m.id)}><span class="name">${esc(m.name)}</span>${m.isKing ? '<span class="tag">King</span>' : stanceTag(m)}${kinTag(m)}<br>${statLine(m)}</div>
-    <div class="men"><button ${spring ? '' : 'disabled'} onclick="act(()=>addMen(S,'${m.id}',-5))">−</button><span class="n">${m.men}<div class="cap">of ${cap}</div></span><button ${spring ? '' : 'disabled'} onclick="moreMen('${m.id}')">+</button><button class="fill" ${spring && m.men < cap ? '' : 'disabled'} onclick="fillMan('${m.id}')">Fill</button></div></div>
-    ${whyHint(m)}
-    ${spring ? `<div class="where">${places.map(([id, nm]) => `<button class="small ${m.place === id ? 'sel' : ''}" onclick="act(()=>place(S,'${m.id}','${id}'))">${esc(nm)}</button>`).join('')}</div>` : ''}</div>`;
+  return `<div class="card"><div class="row"><div class="who" ${openMan(m.id)}><span class="name">${esc(m.name)}<i class="chev">›</i></span>${m.isKing ? kingTag() : stanceTag(m)}${kinTag(m)}<br>${statLine(m)}</div>
+    <div class="men"><button ${spring ? '' : 'disabled'} onclick="act(()=>stepMen(S,'${m.id}',-1))">−</button><span class="n">${m.men}<div class="cap">of ${cap}</div></span><button ${spring ? '' : 'disabled'} onclick="moreMen('${m.id}')">+</button><button class="fill" ${spring && m.men < cap ? '' : 'disabled'} onclick="fillMan('${m.id}')">Fill</button></div></div>
+    ${whyHint(m)}</div>`;
 }
 // the hall is a holding row with the King as its jarl (GDD §15.2); it cannot revolt
 // the guard in words, where the choice is made (TODO 41A.1): the same figure the rival sail rolls against
@@ -413,11 +424,33 @@ function hallHTML() {
   const text = !spring ? 'The King\'s hall. It cannot revolt.' : home ? `${esc(k.name)} keeps his hall this summer: it pays ${hallPay(S)} (a third of its yield for each point of his Rule), his Rule grows every third year, and every man at home warms to him. His Rule keeps ${reachFree(S)} holdings calm.` : `${esc(k.name)} sails. The hall pays nothing and stands thin against a rival sail.`;
   return `<div class="card"><div class="row"><span class="name">Vestfold<span class="tag">the hall</span></span><span class="stats">pays <b>${hallPay(S)}</b> · King ${home ? 'home' : 'at sea'} · Guard <b>${gd}</b></span></div><div class="hint">${text} ${guardLine(false)}</div></div>`;
 }
+// one line per holding on the Hall: what it pays, who holds it, his odds; the tap opens it (Levi, 2026-10-26)
+const holdTone = p => p >= .97 ? 'sure' : p >= .7 ? 'likely' : p >= .4 ? 'even' : 'long';
 function holdingHTML(h) {
-  const j = S.notables.find(m => m.place === h.id);
-  return `<div class="card"><div class="row"><span class="name">${esc(h.name)}</span><span class="stats">pays <b>${h.pay}</b> · unrest <b>${h.unrest}</b> · quiet ${h.quiet}y</span></div>
-    ${j ? `<div class="jlead">${holdNeed(j.rule, j.men, fCap(S, j), h.unrest).sentence(esc(j.name), 'hall')}</div>` + barHTML(j.rule * j.men, h.unrest, j.name, 'Unrest') + manCard(j) : `<div class="empty" style="margin-top:6px">No jarl. ${h.empty ? 'Stood empty last summer — one more and it revolts.' : 'Empty this summer: unrest rises, nothing paid.'}</div>`}</div>`;
+  const j = S.notables.find(m => m.place === h.id), p = j ? holdOdds(j.rule * j.men, h.unrest) : 0;
+  return `<div class="card hrow" onclick="openHold('${h.id}')"><div class="row"><span class="name">${esc(h.name)}<i class="chev">›</i></span><span class="stats">pays <b>${h.pay}</b> · unrest <b>${h.unrest}</b></span></div>
+    <div class="row hsub"><span class="stats">${j ? `${esc(j.name)} · ${nMen(j.men)}` : '<span class="lose">No jarl</span>'}</span><span class="stats t-${j ? holdTone(p) : 'long'}">${j ? holdWords(j.rule * j.men, h.unrest) : h.empty ? 'one more summer and it revolts' : 'nothing paid'}</span></div></div>`;
 }
+// a holding opened: its account, its jarl, and who else could hold it, each with his odds (Levi, 2026-10-26)
+function holdSheet(id) {
+  const h = S.holdings.find(x => x.id === id), sh = shoreOf(id), j = S.notables.find(m => m.place === id), spring = S.phase === 'spring';
+  const jarl = j ? `<div class="card"><div class="row"><div class="who" ${openMan(j.id)}><span class="name">${esc(j.name)}<i class="chev">›</i></span>${stanceTag(j)}${kinTag(j)}<br>${statLine(j)}</div>${menStep(j, spring)}</div>${whyHint(j)}
+      <div class="jlead">${holdNeed(j.rule, j.men, fCap(S, j), h.unrest).sentence(esc(j.name), 'hall')}</div>${barHTML(j.rule * j.men, h.unrest, j.name, 'Unrest')}</div>`
+    : `<div class="card empty">No jarl. ${h.empty ? 'It stood empty last summer: one more and it revolts.' : 'Empty this summer: unrest rises and it pays nothing.'}</div>`;
+  const cands = S.notables.filter(m => !m.isKing && m.place !== id);
+  const assign = !spring ? '<div class="hint">Jarls are sent in spring.</div>' : !cands.length ? '' : UI.assign !== 'hold' ? `<button class="wide" onclick="UI.assign='hold';UI.assignTo=null;render()">${j ? 'Send another jarl' : 'Send a jarl'} ›</button>`
+    : `<div class="alist">${cands.map(m => { const v = holdPreview(S, m, h), on = UI.assignTo === m.id;
+        return `<div class="aopt${on ? ' sel' : ''}" onclick="UI.assignTo='${m.id}';render()"><div class="row"><span class="name">${esc(m.name)}</span><span class="stats t-${holdTone(v.now)}">${pct(v.now)} now</span></div><div class="stats">Rule ${m.rule} · ${nMen(m.men)}, up to ${fCap(S, m)} (${pct(v.full)}) · ${whereWords(m)}</div></div>${on ? `<div class="aconf"><div class="hint">${v.need.sentence(esc(m.name), 'stay')}${j ? ` ${esc(j.name)} goes home.` : ''}</div><button class="primary" onclick="act(()=>{place(S,'${m.id}','${id}');UI.assign=null;UI.assignTo=null})">Send ${esc(m.name)} to ${esc(h.name)}</button></div>` : ''}`; }).join('')}
+      <button class="small" onclick="UI.assign=null;UI.assignTo=null;render()">Cancel</button></div>`;
+  return `<div class="overlay" onclick="if(event.target===this)closeHold()"><div class="scene">
+    <h1>${ico('land')}${esc(h.name)}${closeX('closeHold()')}</h1>
+    <div class="facts"><span>Pays <b>${h.pay}</b> a year</span><span>Unrest <b>${h.unrest}</b></span><span>Quiet <b>${h.quiet}</b> ${h.quiet === 1 ? 'year' : 'years'}</span></div>
+    ${LINES.famous[id] ? `<p class="hint">${esc(LINES.famous[id])}</p>` : ''}
+    <h2>${ico('men')}The jarl</h2>${jarl}
+    ${assign}
+    <div class="actions"><button onclick="closeHold()">Back</button></div></div></div>`;
+}
+const whereWords = m => m.place === 'ship' ? 'on the ship' : m.place === 'home' ? 'at home' : `holds ${esc((S.holdings.find(h => h.id === m.place) || {}).name || '')}`;
 // a holding lost last summer stays on the pane, struck through, until the next spring (TODO 21)
 function lostHTML() { return (S.lost || []).map(l => `<div class="card lost row"><span class="name">${esc(l.name)}</span><span class="stats">${esc(l.why)} · ${l.y}</span></div>`).join(''); }
 function childrenHTML() {
@@ -426,11 +459,13 @@ function childrenHTML() {
   // the line's rule, with the real numbers (TODO 41A.2): no son of sixteen and no in-law when the King dies, and the line ends
   const sons = S.children.filter(c => c.sex === 'm' && !c.ofAge), grown = S.notables.some(m => m.son && !m.isKing), inlaw = S.notables.filter(m => m.kin && !m.son && !m.isKing).sort((a, b) => a.age - b.age)[0];
   const young = sons.sort((a, b) => b.age - a.age)[0];
+  const w = successor(S);
   const rule = grown ? `${esc(S.notables.find(m => m.son && !m.isKing).name)} is of age. The line is safe.`
-    : young ? `${esc(young.name)} is sixteen in ${S.year + 16 - young.age}. Until then, if the King dies, the line ends${inlaw ? `, unless ${esc(inlaw.name)}, ${kinOf(inlaw)}, takes the hall.` : '.'}`
+    : S.regency ? `${esc(S.king.name)} rules for ${esc(S.regency.name)} until ${S.regency.until}, then steps down. ${w.kind === 'regent' ? `If he dies first, ${esc(w.man.name)} takes the regency.` : 'If he dies first and every man left is hostile, the line ends.'}`
+    : young ? `${esc(young.name)} is sixteen in ${S.year + 16 - young.age}. Until then, if the King dies, ${w.kind === 'regent' ? `${esc(w.man.name)} rules for him as regent` : 'the line ends: every man in the hall is hostile'}.`
     : inlaw ? `No son. If the King dies, ${esc(inlaw.name)}, ${kinOf(inlaw)}, takes the hall.`
     : 'No son. A daughter of sixteen may marry a jarl; he is kin then and may take the hall.';
-  return `<h2>${ico('men')}Children</h2><div class="hint">${rule}</div>` + S.children.map(c => `<div class="card row"><span>${esc(c.name)} <span class="stats">${c.sex === 'm' ? 'son' : 'daughter'}, ${c.age}${c.married ? `, wife of ${esc(c.married)}` : c.ofAge ? ', in the hall' : c.sex === 'f' && c.age >= 16 ? (hasJarl ? ' · of age. Tap a jarl to marry her to him' : ' · of age') : ''}</span></span></div>`).join('');
+  return foldH('children', 'men', 'Children', `${S.children.length}`) + `<div class="hint">${rule}</div>` + (UI.fold.children ? '' : S.children.map(c => `<div class="card row"><span>${esc(c.name)} <span class="stats">${c.sex === 'm' ? 'son' : 'daughter'}, ${c.age}${c.married ? `, wife of ${esc(c.married)}` : c.ofAge ? ', in the hall' : c.sex === 'f' && c.age >= 16 ? (hasJarl ? ' · of age. Tap a jarl to marry her to him' : ' · of age') : ''}</span></span></div>`).join(''));
 }
 function reignRow(d) {
   return `<div class="card"><span class="name">${esc(d.king)}</span> <span class="stats">${d.from}–${d.now ? 'now' : d.to}${d.title ? ' · ' + d.title : ''}</span><br><span class="stats">${d.bestRaid ? `Richest raid: ${esc(d.bestRaid.shore)}, ${d.bestRaid.loot} silver (${d.bestRaid.year}). ` : 'Never raided. '}Most holdings: ${d.bestHoldings}.</span></div>`;
@@ -449,13 +484,13 @@ function mapHTML(targets, o = {}) {
     const mine = x.id === HOME_ID || isHolding(S, x.id), tgt = targets && targets.includes(x.id);
     const cls = x.id === HOME_ID ? 'home' : isHolding(S, x.id) ? 'hold' : x.seen ? (x.holdable ? 'seen' : 'seen nohold') : '';
     const r = mine ? 4 : (x.seen || x.rumored) ? 2.5 + Math.min(3, x.baseLoot / 80) : 3; // dot size is loot, in tiers
-    const can = tappable && !mine;
+    const can = tappable && !mine, canH = !targets && !S.queue.length && isHolding(S, x.id); // a held coast opens its holding (Levi, 2026-10-26)
     const own = ownerOf(S, x.id), anchor = own && own.known && own.anchor === x.id;
     // the king's name under his seat opens his card (the Kings list lived here before TODO 19)
     const L = x.side === 'l', AB = x.side === 'a' || x.side === 'b', lx = L ? x.x - r - 3 : AB ? x.x : x.x + r + 3, ly = x.side === 'a' ? x.y - r - 4 : x.side === 'b' ? x.y + r + 11 : x.y + 3, kw = 8 + own?.name.length * 5.2 || 0;
     const kname = anchor ? `<g class="kname" ${targets ? '' : `onclick="event.stopPropagation();UI.man='${own.id}';render()"`}><rect x="${L ? x.x - r - kw : x.x + r}" y="${x.y + r + 2}" width="${kw}" height="12" fill="transparent"/><text class="lbl king${L ? ' l' : AB ? ' c' : ''}" x="${lx}" y="${x.side === 'a' ? ly - 9 : ly + 10}">${esc(own.name)}</text></g>` : '';
     const isNew = o.newIds && o.newIds.includes(x.id), hint = o.hint === x.id; // a coast first seen last summer blooms; the first spring's coast pulses
-    return `<g class="c ${tgt ? 'tgt' : targets ? 'dim' : ''}${can ? ' tap' : ''}${isNew ? ' bloom' : ''}" ${isNew ? `style="animation-delay:${(.35 + o.newIds.indexOf(x.id) * .12).toFixed(2)}s"` : ''} ${can ? `onclick="act(()=>setDestination(S,'${x.id}'))"` : ''}>${kname}${can ? `<circle class="hit" cx="${x.x}" cy="${x.y}" r="13"/>` : ''}<circle class="coast ${cls}" cx="${x.x}" cy="${x.y}" r="${r.toFixed(1)}"/>${S.destination === x.id && !targets ? `<circle class="dest" cx="${x.x}" cy="${x.y}" r="${(r + 4).toFixed(1)}"/>` : ''}${tgt || hint ? `<circle class="ring" cx="${x.x}" cy="${x.y}" r="${(r + 5).toFixed(1)}"/>` : ''}<text class="lbl${L ? ' l' : AB ? ' c' : ''}" x="${lx}" y="${ly}">${esc(x.name)}</text></g>`; }).join('')
+    return `<g class="c ${tgt ? 'tgt' : targets ? 'dim' : ''}${can || canH ? ' tap' : ''}${isNew ? ' bloom' : ''}" ${isNew ? `style="animation-delay:${(.35 + o.newIds.indexOf(x.id) * .12).toFixed(2)}s"` : ''} ${can ? `onclick="act(()=>setDestination(S,'${x.id}'))"` : canH ? `onclick="openHold('${x.id}')"` : ''}>${kname}${can || canH ? `<circle class="hit" cx="${x.x}" cy="${x.y}" r="13"/>` : ''}<circle class="coast ${cls}" cx="${x.x}" cy="${x.y}" r="${r.toFixed(1)}"/>${S.destination === x.id && !targets ? `<circle class="dest" cx="${x.x}" cy="${x.y}" r="${(r + 4).toFixed(1)}"/>` : ''}${tgt || hint ? `<circle class="ring" cx="${x.x}" cy="${x.y}" r="${(r + 5).toFixed(1)}"/>` : ''}<text class="lbl${L ? ' l' : AB ? ' c' : ''}" x="${lx}" y="${ly}">${esc(x.name)}</text></g>`; }).join('')
     + dark.map(x => `<circle class="coast dark" cx="${x.x}" cy="${x.y}" r="2"/>`).join('');
   // the fog: a lit pool of sea and coast around every known shore, dimmer land and deeper water everywhere else
   const fog = known.map(x => `<circle cx="${x.x}" cy="${x.y}" r="${x.seen ? 46 : 30}" fill="#fff"/>`).join('');
@@ -518,27 +553,38 @@ function manSheet(id) {
   const h = S.holdings.find(h => h.id === m.place);
   const whereNow = m.place === 'ship' ? 'on the ship' : m.place === 'home' ? 'at home' : `holding ${esc(h ? h.name : m.place)}`;
   const story = [];
-  if (m.isKing) { story.push(`King since ${S.reign.start}, generation ${S.gen}.`); if (m.titles.length) story.push(m.titles.map(t => `${TITLES[t].name}: ${TITLES[t].text}`).join(' ')); }
+  if (m.isKing && S.regency) story.push(`Regent for ${esc(S.regency.name)} since ${S.reign.start}; he steps down in ${S.regency.until}, the boy's sixteenth spring.`);
+  else if (m.isKing) { story.push(`King since ${S.reign.start}, generation ${S.gen}.`); if (m.titles.length) story.push(m.titles.map(t => `${TITLES[t].name}: ${TITLES[t].text}`).join(' ')); }
   else { if (m.son) story.push(`Son of ${esc(k.name)}.`); else if (m.kin) story.push(m.wed ? `Married ${esc(m.wed)}; kin to the line.` : m.sworn ? `Swore the Oath to ${esc(m.swornTo || 'the King')} in ${m.sworn}; he kneels to the heir without a price.` : 'Kin to the line.'); }
   story.push(`${m.raids ? `${m.raids} raid${m.raids === 1 ? '' : 's'}` : 'Never raided'}.${m.heldRun ? ` Has held land ${m.heldRun} summer${m.heldRun === 1 ? '' : 's'} running.` : ''}`);
   if (m.age) story.push(`Born ${S.year - m.age}. ${whereNow[0].toUpperCase() + whereNow.slice(1)}${m.men ? ` with ${nMen(m.men)}` : ''}.`);
-  const places = [['ship', 'Ship'], ['home', 'Home'], ...(m.isKing ? [] : S.holdings.map(x => [x.id, x.name]))];
   const daughters = S.children.filter(c => c.sex === 'f' && c.age >= 16 && !c.married);
   const cap = fCap(S, m), price = giftPrice(m), gifted = m.gifted === S.year;
   const verbs = !spring ? '<div class="hint">Verbs are spoken in spring.</div>' : `
-    <h2>Send him</h2><div class="where">${places.map(([pid, nm]) => `<button class="small ${m.place === pid ? 'sel' : ''}" onclick="act(()=>place(S,'${m.id}','${pid}'))">${esc(nm)}</button>`).join('')}</div>
-    <div class="row" style="margin-top:10px"><span>Men he leads</span><div class="men"><button onclick="act(()=>addMen(S,'${m.id}',-5))">−</button><span class="n">${m.men}<div class="cap">of ${cap}</div></span><button onclick="moreMen('${m.id}')">+</button><button class="fill" ${m.men < cap ? '' : 'disabled'} onclick="fillMan('${m.id}')">Fill</button></div></div>${whyHint(m)}
+    <h2>Where he stands</h2><div class="where">${[['ship', 'Ship'], ['home', 'Home']].map(([pid, nm]) => `<button class="small ${m.place === pid ? 'sel' : ''}" onclick="act(()=>place(S,'${m.id}','${pid}'))">${nm}</button>`).join('')}${h ? `<button class="small sel" onclick="openHold('${h.id}')">${esc(h.name)} ›</button>` : ''}</div>
+    ${assignHTML(m)}
+    <div class="row" style="margin-top:12px"><span>Men he leads</span>${menStep(m)}</div>${whyHint(m)}
     ${m.isKing ? '' : `<h2>Warm him</h2>
     <div class="where"><button class="small" ${S.silver < price || gifted ? 'disabled' : ''} onclick="act(()=>gift(S,'${m.id}'))">${gifted ? 'Gifted this year' : `Gift ${price} silver`}</button><span class="hint" style="margin:0;align-self:center">once a year · +${T.giftWarm}</span></div>
     ${!m.kin && daughters.length ? `<div class="where" style="margin-top:8px">${daughters.map(d => `<button class="small" onclick="act(()=>marry(S,'${d.id}','${m.id}'))">Marry ${esc(d.name)} to him</button>`).join('')}<span class="hint" style="margin:0;align-self:center">he is kin then · +30</span></div>` : ''}`}`;
   const children = m.isKing && S.children.length ? `<h2>Children</h2><p class="stats">${S.children.map(c => `${esc(c.name)} ${c.age}${c.married ? `, wife of ${esc(c.married)}` : ''}`).join(' · ')}</p>` : '';
-  return `<div class="overlay" onclick="if(event.target===this){UI.man=null;render()}"><div class="scene">
-    <h1>${esc(m.name)}${m.isKing ? '<span class="tag">King</span>' : ''}${kinTag(m)}${closeX('UI.man=null;render()')}</h1>
-    <p>${statLine(m)}</p>
+  // the card opens large: a portrait's place (art per man is coming), then who he is, then what can be done with him (Levi, 2026-10-26)
+  return `<div class="overlay" onclick="if(event.target===this)closeCard()"><div class="scene card-big">
+    <h1>${esc(m.name)}${m.isKing ? kingTag() : ''}${kinTag(m)}${closeX('closeCard()')}</h1>
+    <div class="portrait${m.isKing ? ' king' : ''}"><span>${esc(m.name[0])}</span><div class="pstats">${['combat', 'rule', 'follow'].map(k => `<div><small>${k === 'follow' ? 'Follow' : k[0].toUpperCase() + k.slice(1)}</small><b>${m[k]}</b></div>`).join('')}${m.age ? `<div><small>Age</small><b>${m.age}</b></div>` : ''}</div></div>
     ${m.isKing ? '' : `<h2>Toward the King</h2>${stanceHTML(m)}`}
     <h2>His story</h2><p>${story.join(' ')}</p>${children}
     ${verbs}
-    <div class="actions"><button onclick="UI.man=null;render()">Back</button></div></div></div>`;
+    <div class="actions"><button onclick="closeCard()">Back</button></div></div></div>`;
+}
+// Assign a holding: a list opened on purpose, each holding with what this man would make of it, then a confirm (Levi, 2026-10-26)
+function assignHTML(m) {
+  if (m.isKing || !S.holdings.length) return '';
+  if (UI.assign !== 'man') return `<button class="wide" onclick="UI.assign='man';UI.assignTo=null;render()">Assign a holding ›</button>`;
+  const opts = S.holdings.map(h => { const v = holdPreview(S, m, h), j = S.notables.find(x => x.place === h.id), here = j === m, on = UI.assignTo === h.id;
+    return `<div class="aopt${on ? ' sel' : ''}${here ? ' here' : ''}" ${here ? '' : `onclick="UI.assignTo='${h.id}';render()"`}><div class="row"><span class="name">${esc(h.name)}</span><span class="stats t-${holdTone(v.now)}">${here ? 'his now · ' : ''}${pct(v.now)}</span></div>
+      <div class="stats">pays ${h.pay} · unrest ${h.unrest} · up to ${pct(v.full)} with ${fCap(S, m)} men${j && !here ? ` · ${esc(j.name)} holds it` : !j ? ' · no jarl' : ''}</div></div>${on ? `<div class="aconf"><div class="hint">${v.need.sentence(esc(m.name), 'stay')} It pays ${h.pay} a year while he holds it.${j ? ` ${esc(j.name)} goes home.` : ''}</div><button class="primary" onclick="act(()=>{place(S,'${m.id}','${h.id}');UI.assign=null;UI.assignTo=null})">Send ${esc(m.name)} to ${esc(h.name)}</button></div>` : ''}`; }).join('');
+  return `<div class="alist"><div class="hint">His odds of holding each, Rule ${m.rule} × his ${nMen(m.men)} against its unrest:</div>${opts}<button class="small" onclick="UI.assign=null;UI.assignTo=null;render()">Cancel</button></div>`;
 }
 function realmList(k) {
   return k.coasts.map(id => { const x = shoreOf(id); return `<span class="realm-coast ${isHolding(S, id) ? 'mine' : x.seen ? '' : 'dark'}">${esc(x.name)}${isHolding(S, id) ? ' (yours)' : id === k.anchor ? ' (his seat)' : ''}</span>`; }).join(', ');
@@ -546,7 +592,7 @@ function realmList(k) {
 function rulerSheet(k) {
   const spring = S.phase === 'spring', price = giftPrice(k), gifted = k.gifted === S.year;
   const held = k.coasts.filter(c => c !== k.anchor && isHolding(S, c)).length, rest = k.coasts.length - 1;
-  return `<div class="overlay" onclick="if(event.target===this){UI.man=null;render()}"><div class="scene">
+  return `<div class="overlay" onclick="if(event.target===this)closeCard()"><div class="scene">
     <h1>${ico('crown')}${esc(k.name)}${closeX('UI.man=null;render()')}</h1><p class="stats">${esc(k.title)}</p>
     <h2>Toward the King</h2>${k.broken ? '<div class="stance st-loyal">kneels</div><div class="hint">His realm answers to you. He will not rise again.</div>' : stanceHTML(k)}
     <h2>His realm</h2><p>${realmList(k)}</p>
@@ -558,7 +604,6 @@ function rulerSheet(k) {
 // ---- The winter card (audit 3, option A: the Turn) ----------------------------------------
 // One card lies face down on the winter night, turns, and takes the tone of what it says: grave (oxblood), good (pine), warning (chestnut), routine (iron).
 // Under it, the rest of the winter as weighted rows; past fifty, the King's own card, which the button turns.
-const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 function cardRead(sc) {
   const k = S.king, o = { tone: 'quiet', glyph: 'hall', title: sc.title, lead: sc.lines[0] || '', chips: [], rows: [], note: '' };
   const kids = S.children.filter(c => !c.ofAge), ofAge = S.notables.filter(m => m.son && !m.isKing).length;
@@ -621,15 +666,16 @@ function winterCardHTML(sc) {
 function turnRoll(b) { UI.rolled = S.year; b.disabled = true; const f = $('.rollc .flip'); if (f) f.classList.remove('down'); setTimeout(render, reducedMotion ? 0 : 650); }
 // the death card names how he died and who takes the hall, or that no one can (audit 3, TODO 29)
 function deathHTML(sc) {
-  const k = S.king, r = S.reign, sons = S.notables.filter(m => m.son && !m.isKing), inlaw = !sons.length && S.notables.filter(m => m.kin && !m.son && !m.isKing).sort((a, b) => a.age - b.age)[0];
+  const k = S.king, r = S.reign, w = successor(S), sons = w.sons || [], inlaw = w.kind === 'inlaw' && w.man, regent = w.kind === 'regent' && w;
   const cause = sc.cause === 'slain' ? 'Slain in the door of his hall.' : sc.cause === 'fell' ? `Fell in the shield wall at ${esc(sc.at)}.` : sc.kid ? `Died in his bed, the winter ${esc(sc.kid)} was born.` : sc.cause === 'age' ? 'Died in his bed.' : '';
   const boys = S.children.filter(c => c.sex === 'm' && !c.ofAge);
   const heir = sons.length ? `<div class="heir">${sons.length === 1 ? 'His heir' : 'His sons'}: <b>${sons.map(m => `${esc(m.name)}, ${m.age}`).join(' · ')}</b></div>`
+    : regent ? `<div class="heir">No son of age. <b>${esc(regent.man.name)}</b> rules for ${esc(regent.boy.name)}, ${regent.boy.age}, until ${regent.until}.</div>`
     : inlaw ? `<div class="heir">No son of age. <b>${esc(inlaw.name)}</b>, ${kinOf(inlaw)}, takes the hall.</div>`
     : `<div class="heir broken">No son of age. No kin to take the hall. The line is broken.${boys.length ? `<small>${boys.map(c => `${esc(c.name)} is ${c.age}`).join(' · ')}</small>` : ''}</div>`;
   const card = `<div class="dead in"><h3>${ico('death')}${esc(k.name)} is dead</h3>${cause ? `<div class="cause">${cause}</div>` : ''}<div class="meta">${k.age} winters · king ${r.start}–${S.year}${r.title ? ` · ${esc(r.title)}` : ''}</div>
     <p>${r.bestRaid ? `The year ${r.bestRaid.year}: ${esc(r.bestRaid.shore)} fell and the ship came home with ${r.bestRaid.loot} silver.` : 'He never took a shore.'} ${r.bestHoldings ? `At most ${plural(r.bestHoldings, 'holding')} answered to him.` : 'No holding ever answered to him.'}</p>${heir}</div>`;
-  const foot = sons.length ? cardFoot('The heir', 'the jarls weigh him', 'primary', 'act(()=>startSuccession(S))') : inlaw ? cardFoot(`${inlaw.name} takes the hall`, 'a new king', 'primary', 'act(()=>startSuccession(S))') : cardFoot('The line is broken', 'the dynasty saga', 'grave', 'act(()=>startSuccession(S))');
+  const foot = sons.length ? cardFoot('The heir', 'the jarls weigh him', 'primary', 'act(()=>startSuccession(S))') : regent ? cardFoot(`${regent.man.name} holds the hall`, `regent for ${regent.boy.name}`, 'primary', 'act(()=>startSuccession(S))') : inlaw ? cardFoot(`${inlaw.name} takes the hall`, 'a new king', 'primary', 'act(()=>startSuccession(S))') : cardFoot('The line is broken', 'the dynasty saga', 'grave', 'act(()=>startSuccession(S))');
   return `<div class="overlay night"><div class="stage">${card}</div>${foot}</div>`;
 }
 
@@ -793,7 +839,7 @@ function overlayHTML(sc) {
   if (sc.t === 'moment') { const beat = UI.momentOf !== sc && !reducedMotion; UI.momentOf = sc; return `<div class="overlay night"><div class="stage">${momentCard(sc, 0, beat)}</div>${cardFoot('On', '', 'primary', 'act(()=>next(S))')}</div>`; } // a king kneels, a son comes of age (TODO 41A.5)
   const btn = (t, fn, cls = 'primary') => `<button class="${cls}" onclick="act(()=>${fn})">${t}</button>`;
   let h = '';
-  if (sc.t === 'intro') h = `<h1>${ico('hall')}${S.year}. Spring.</h1><p>You are ${esc(S.king.name)}, twenty, with a hall, forty men, and one ship.</p><p><b>Tap a coast. Put men aboard. Press Sail.</b></p><p>Men on the ship raid. Men on the land hold. Men at home eat. Each named man leads ten men for every point of his Followability.</p><p>Every summer the fleet sails. Every winter one card turns. Past fifty, every winter rolls against you. If the King dies before a son is sixteen, and no jarl has married into the line, the line ends. The year, up top, opens the Saga.</p><div class="actions">${btn('Begin', 'next(S)')}</div>`;
+  if (sc.t === 'intro') h = `<h1>${ico('hall')}${S.year}. Spring.</h1><p>You are ${esc(S.king.name)}, twenty, with a hall, forty men, and one ship.</p><p><b>Tap a coast. Put men aboard. Press Sail.</b></p><p>Men on the ship raid. Men on the land hold. Men at home eat. Each named man leads ten men for every point of his Followability.</p><p>Every summer the fleet sails. Every winter one card turns. Past fifty, every winter rolls against you. If the King dies before a son is sixteen, his kin or his most loyal jarl rules for the boy as regent; if every man in the hall is hostile, the line ends. The year, up top, opens the Saga.</p><div class="actions">${btn('Begin', 'next(S)')}</div>`;
   else if (sc.t === 'fork') h = `<h1>${ico('fork')}${esc(S.king.name)} is ${S.king.age}</h1><p>What they call him is what he did. Choose one.</p>${sc.offers.map(k => `<div class="pick" onclick="act(()=>takeTitle(S,'${k}'))"><span class="name">${TITLES[k].name}</span><br><span class="stats">${TITLES[k].text}</span></div>`).join('')}`;
   else if (sc.t === 'noSail') h = `<h1>Summer</h1><p>The ship stays beached. The land contests itself.</p><div class="actions">${btn('On', 'next(S)')}</div>`;
   else if (sc.t === 'arrive') { const Sh = strengthShip(S), king = S.notables.find(m => m.isKing && m.place === 'ship'), xs = sc.targets.map(shoreOf), all = xs.every(x => winOdds(Sh, x.def) < 0.4);
