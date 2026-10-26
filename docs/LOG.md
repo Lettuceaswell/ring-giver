@@ -2,6 +2,10 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-26 (session 18, portraits: the audit, the audition and the layer rule, no game code)
+
+Levi opened the portrait question: a painterly head-and-shoulders portrait for every character, thousands of them, kin who resemble their parents, faces that age. Ideation, not a go. Machine audited (RTX 3060 12 GB, 16 GB RAM is the squeeze, 184 GB of models on G:, the Linux ComfyUI reads them), ai-toolkit installed at `~/ai-toolkit`, Z-Image full-precision + training adapter + ControlNet Union 2.1 + FLUX.2 Klein base pulled. Plan page `pages/2026-10-25-portrait-pipeline.html` (https://claude.ai/artifact/JBv9fzS4GL1TyscWRVgcMP): Route A "The Deck" (bake a gene-bucketed library overnight, ship it) recommended first, Route B "The Forge" (the PC mints unique children from both parents' faces on the home wifi) as the upgrade. Style audition `pages/2026-10-25-style-audition.html` (https://claude.ai/artifact/HMGBLJUivtZDE9cv4BY9M5): five looks on the same three faces out of Z-Image, no training. **Levi picked D, Knife Impasto.** Written up as **TODO 43** with the layer rule he agreed to: the bust is the person (genes, culture, age), cut out; background, crown and cloak are layers the game stacks by status, so succession and foreign kings cost nothing at play time. Next: the proof (cut-outs and a crown layer on Norse, Saxon and Frankish busts). Full-size audition images in `G:\ai\lora-lab\datasets\portrait_style\audition\`.
+
 ## 2026-10-25 (session 17, the CK3 steer, no code)
 
 Levi named what he wants from CK3 (development; diplomacy good, bad and neutral; legacy and a stronger line; religious difference without reformation; many paths, not only expansion) and what he does not (intrigue, piety). Written up as **TODO 42**, nine items with recommendations (a wife and the blood with the regency, kings who answer, faith, worth and Build, trade, great deeds, fosterage, the house), with what the round-1 panel said about each: they back "it's just raiding" (goal 2.1 of 5) but never asked for faith or development. **All nine logged as undecided**, at Levi's call, to come back to. Nothing built.

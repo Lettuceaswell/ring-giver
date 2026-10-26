@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sea King Portrait Pipeline</title>
+<style>
+:root{--bg:#fafaf9;--surface:#fff;--text:#1c1917;--muted:#78716c;--border:#e7e5e4;--accent:#3d7d8e;--good:#16a34a;--warn:#d97706;--bad:#dc2626;--radius:12px}
+@media (prefers-color-scheme:dark){:root{--bg:#2B2E33;--surface:#353A40;--text:#E8DFCC;--muted:#C9A58E;--border:#4A4F55;--accent:#5A95A6}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px;max-width:1100px;margin:0 auto;padding:32px 20px}
+nav.toc{position:sticky;top:24px;align-self:start;font-size:14px}
+nav.toc a{display:block;color:var(--muted);text-decoration:none;padding:4px 0;border-left:2px solid transparent;padding-left:10px}
+nav.toc a.active,nav.toc a:hover{color:var(--accent);border-color:var(--accent)}
+main{max-width:760px;min-width:0}
+@media (max-width:800px){.layout{grid-template-columns:1fr;gap:16px}nav.toc{position:static}}
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;margin-bottom:32px}
+.hero .date{color:var(--muted);font-size:14px}
+.hero h1{margin:4px 0 12px;font-size:30px;line-height:1.2}
+.bottom-line{font-size:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:20px}
+.stat{border:1px solid var(--border);border-radius:10px;padding:14px}
+.stat .v{font-size:26px;font-weight:700}
+.stat .l{color:var(--muted);font-size:13px}
+.good{color:var(--good)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+section{margin:40px 0;scroll-margin-top:20px}
+h2{font-size:22px;margin:0 0 12px}
+h3{font-size:17px;margin:20px 0 6px}
+p{margin:8px 0}
+.callout{border-left:4px solid var(--accent);background:var(--surface);padding:14px 18px;border-radius:8px;margin:16px 0}
+.callout.risk{border-color:var(--bad)}.callout.decision{border-color:var(--warn)}
+.callout b:first-child{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;background:var(--surface)}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--muted);font-weight:600}
+details{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin:12px 0}
+summary{cursor:pointer;font-weight:600}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.option{border:2px solid var(--border);border-radius:var(--radius);padding:16px;background:var(--surface);cursor:pointer}
+.option input{margin-right:6px}.option:has(input:checked){border-color:var(--accent)}
+.option .tag{font-size:12px;color:var(--accent);font-weight:600}
+.option ul{padding-left:18px;margin:8px 0}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+.row .what{flex:1 1 220px}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.seg label{padding:8px 12px;cursor:pointer;font-size:14px;min-height:40px;display:flex;align-items:center}
+.seg input{display:none}.seg label:has(input:checked){background:var(--accent);color:#fff}
+textarea,select{font:inherit;width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text)}
+.respond{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--border);padding:12px 0;display:flex;gap:12px;align-items:center}
+.respond button{font:inherit;font-weight:600;padding:12px 20px;border:0;border-radius:10px;background:var(--accent);color:#fff;cursor:pointer}
+.respond .hint{color:var(--muted);font-size:13px}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px}
+.step b{display:block;font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+.pill{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);margin-left:6px}
+.pill.ok{color:var(--good);border-color:var(--good)}.pill.new{color:var(--accent);border-color:var(--accent)}.pill.no{color:var(--warn);border-color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" id="toc"></nav>
+<main>
+
+<header class="hero">
+  <div class="date">25 Oct 2026 · Claude · Decide</div>
+  <h1>Sea King Portrait Pipeline</h1>
+  <p class="bottom-line">Your PC can do this. I audited the machine, picked the two best ways to paint thousands of consistent Viking faces on it, and started downloading the models. <strong>Read the two routes, pick one (my pick is marked), and answer the four taste questions at the bottom.</strong> Nothing is built yet.</p>
+  <div class="stats">
+    <div class="stat"><div class="v">RTX 3060</div><div class="l">12 GB VRAM · the one real limit</div></div>
+    <div class="stat"><div class="v warn">16 GB</div><div class="l">system RAM · the weak spot</div></div>
+    <div class="stat"><div class="v">184 GB</div><div class="l">of models already on G:</div></div>
+    <div class="stat"><div class="v good">569 GB</div><div class="l">free on G: · ~100 MB/s downloads</div></div>
+  </div>
+</header>
+
+<section id="recommendation">
+  <h2>Recommendation</h2>
+  <div class="callout decision"><b>My pick</b><strong>Route A, "The Deck", built so Route B, "The Forge", bolts on later.</strong> Paint a library of a few thousand portraits overnight, sorted by inheritable looks, and ship it with the game. Then, as an upgrade, let the PC mint truly unique children from their parents' faces when the family plays at home. Every piece of A is reused by B, so nothing is wasted.</div>
+  <p>Why not B first: it needs your PC switched on while anyone plays, and it needs a genetics system in the game before a single face can be requested. A ships a polished game on its own, works offline on the phone, and is the fallback B needs anyway.</p>
+</section>
+
+<section id="audit">
+  <h2>What the machine already has</h2>
+  <p>Short version: you are further along than you think. The engines, the trainer, a style LoRA recipe, and a face-detection safety net are all already here. The gaps were a modern trainer and a few model files, which are downloading now.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Area</th><th>Found</th><th>Verdict</th></tr></thead>
+    <tbody>
+    <tr><td>GPU / RAM</td><td>RTX 3060 12 GB, Ryzen 7 5700G, 16 GB RAM (8 GB in use, 7 GB of swap already touched)</td><td>12 GB VRAM is enough for every model below. RAM is the squeeze: training a modern model wants ~32 GB and will lean on swap. It works, slower.</td></tr>
+    <tr><td>ComfyUI</td><td>Two installs. <code>~/ComfyUI</code> (Linux, v0.40, Oct 13, running right now from another session) reads the shared model folder on G:. <code>G:\ai\ComfyUI</code> is the old Windows install.</td><td>Use the Linux one. It already sees everything on G:.</td></tr>
+    <tr><td>Image engines on disk</td><td><strong>Z-Image Turbo</strong> (6 GB, your current house default), <strong>FLUX.2 Klein 4B</strong> (edits with reference pictures), FLUX Kontext ×3 (older editor), FLUX.1 dev (17 GB, too heavy to be useful here), seven SDXL checkpoints (Juggernaut, RealVis, DreamShaper, ZavyChroma…)</td><td>Z-Image and Klein are the two that matter. SDXL stays as a backup.</td></tr>
+    <tr><td>Control &amp; consistency tools</td><td>SDXL ControlNet Promax, SDXL IP-Adapter Plus, 5 upscalers, face / hand / person detectors (YOLO), SAM segmenter</td><td>Face detector is the automatic quality gate. The SDXL tools are the backup lane.</td></tr>
+    <tr><td>Trainers</td><td>kohya sd-scripts on Linux (SDXL only, no Z-Image), kohya_ss on Windows, <code>lora-lab</code> with a working recipe, two LoRAs you trained: <strong>carly</strong> (a person) and <strong>saga_ink</strong> v1+v2 (the House Hansen ink style, trigger <code>hnsrvk ink</code>)</td><td>You have already done the hard part once. The ink LoRA proves the workflow. Today I added <strong>ai-toolkit</strong>, the trainer that handles Z-Image, Klein and even the week-old FLUX 3.</td></tr>
+    <tr><td>Hugging Face login</td><td>None on this machine</td><td>Needed only for the gated FLUX 3 Klein (see downloads).</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="problem">
+  <h2>The problem in plain words</h2>
+  <p>"Thousands of characters that look hand-painted by one artist, where kids resemble their parents and everyone ages" breaks into four separate jobs. Each has a known tool.</p>
+  <div class="flow">
+    <div class="step"><b>1 · One hand</b>Every face in the same brushwork. Tool: a <em>style LoRA</em> (a small add-on that teaches the model your look), same as saga_ink.</div>
+    <div class="step"><b>2 · Same frame</b>Head and shoulders, same crop, same eye line, every time. Tool: <em>ControlNet</em> with a few pose templates.</div>
+    <div class="step"><b>3 · Looks like family</b>A child's face built from the parents' looks. Tool: the game's <em>genes</em> become prompt words (Route A) or reference images (Route B).</div>
+    <div class="step"><b>4 · Grows old</b>The same person at 8, 25, 50, 70. Tool: an <em>edit model</em> (Klein) that repaints one portrait at a new age.</div>
+  </div>
+  <p>There is also a fifth, quieter job: where the pictures live. The game is a static site on a phone. It cannot run an AI model, so either the pictures are made ahead of time (A), or a computer at home makes them on request (B).</p>
+</section>
+
+<section id="routes">
+  <h2>The two routes</h2>
+  <div class="options">
+    <label class="option"><div class="tag">RECOMMENDED · FIRST</div><input type="radio" name="route" data-key="route" value="A" checked><strong>Route A · The Deck</strong>
+      <p>Paint a big library in advance, sorted by looks. The game deals a portrait like a card.</p>
+      <ul>
+        <li>Define about 8 visible genes (face shape, skin tone, hair colour, hair texture, eye colour, nose, brow and jaw, build), each with 3 to 5 options. That is the whole genetics system.</li>
+        <li>Each character's genes pick a "bucket". Each bucket holds several painted identities, each at four ages. A child's genes come from the parents with a small mutation chance, so it lands in a nearby bucket and looks like kin.</li>
+        <li>Roughly 300 identities × 4 ages × 2 sexes ≈ 2,400 portraits. Z-Image paints one in about 8 seconds on your card: one overnight run. Ageing is done by Klein from the adult portrait, so it is the same person.</li>
+        <li>At 384 px WebP the whole deck is about 60 MB. Loaded on demand and cached, fine on a phone.</li>
+      </ul>
+      <p><strong>Cost:</strong> no new infrastructure. <strong>Limit:</strong> the deck is finite, so two unrelated characters in a huge world can share a face. More identities per bucket pushes that risk down.</p>
+    </label>
+    <label class="option"><div class="tag">UPGRADE · LATER</div><input type="radio" name="route" data-key="route" value="B"><strong>Route B · The Forge</strong>
+      <p>Your PC runs a small portrait server on the home wifi. When a child is born in a family game, the phone sends both parents' portraits and gets back a brand-new face painted from them.</p>
+      <ul>
+        <li>Klein (and FLUX 3 Klein, if we get it) takes up to 10 reference pictures. "Their daughter at age eight, same painting" is one request.</li>
+        <li>Every character is unique and genuinely resembles the parents, not just the gene buckets. Ageing is minted as the years pass.</li>
+        <li>About 10 to 20 seconds per face. Hidden by minting at pregnancy, not birth.</li>
+        <li>Falls back to the Deck when the server is not reachable (away from home, PC off).</li>
+      </ul>
+      <p><strong>Flag:</strong> this needs the PC on while anyone plays, a small always-running service, and the Deck already built as its safety net. ~80% version: the Deck with more identities per bucket. Your call; I'll build either.</p>
+    </label>
+  </div>
+  <details><summary>Backup lane: SDXL, if Z-Image disappoints</summary><p>SDXL with the DMD2 4-step add-on paints a portrait in under 2 seconds and has the biggest library of control tools. Its weakness is obeying detail ("grey eyes, red beard, age 60" often gets ignored), which matters a lot for genes. Z-Image follows instructions far better, which is why it leads. SDXL stays installed as plan C.</p></details>
+</section>
+
+<section id="foundation">
+  <h2>The shared foundation (both routes)</h2>
+  <h3>1 · A portrait style LoRA</h3>
+  <p>Train on Z-Image (the un-sped-up "base" version, which trains cleaner) with ai-toolkit, 8-bit, at 768 px. Dataset: 40 to 80 portraits we generate and you pick, the same pick-page process as saga_ink. About an evening of training. <em>Taste call for you below:</em> the brand's illustration layer is pen-and-ink; you said painterly. Those are different LoRAs, and they can coexist (ink for icons, paint for faces).</p>
+  <h3>2 · A framing lock</h3>
+  <p>Z-Image ControlNet Union (downloaded today) with three or four head-and-shoulders pose templates. Every portrait gets the same crop and eye line, which is what makes a wall of 40 faces read as one artist and lets the UI assume where the face is.</p>
+  <h3>3 · A gene-to-prompt compiler</h3>
+  <p>A small script: genes in, prompt out, always the same words for the same genes. This is the piece the game will need in its own code too, so I'd write it once in plain JS and use it both to bake the deck and inside the game.</p>
+  <h3>4 · An age and kinship editor</h3>
+  <p>FLUX.2 Klein 4B (on disk) for "the same man at 60" and, in Route B, "the child of these two". FLUX 3 Klein (10 days old, 5.6B, leads the blind tests for exactly this) is the stronger candidate but is gated behind a free Hugging Face licence click. Worth grabbing as an experiment.</p>
+  <h3>5 · Quality gate and finish</h3>
+  <p>The face detector already on disk rejects any portrait with no face, two faces, or a face off-centre, automatically. Then crop to square, grade into the Forge palette (oat skin tones, iron shadows), save WebP. No human looks at 2,400 images; you look at a contact sheet of rejects and a sample.</p>
+  <h3>6 · Your family's faces</h3>
+  <p>No per-person training needed. Klein takes three to five photos of a person as references plus the style LoRA and paints them in the house style. The carly LoRA you already trained is a working fallback if references alone don't hold the likeness.</p>
+</section>
+
+<section id="downloads">
+  <h2>Downloaded today</h2>
+  <p>All Apache-2.0 (free for any use), all into the shared G: model folder the Linux ComfyUI already reads.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>File</th><th>Size</th><th>What for</th></tr></thead>
+    <tbody>
+    <tr><td>Z-Image training adapter v2 (ostris)</td><td>0.3 GB</td><td>Lets a LoRA trained on Z-Image keep its 8-step speed</td></tr>
+    <tr><td>Z-Image ControlNet Union 2.1 lite + full</td><td>2 + 6.7 GB</td><td>Pose / depth framing lock (lite fits beside the model in 12 GB)</td></tr>
+    <tr><td>FLUX.2 Klein 4B <em>base</em></td><td>7.8 GB</td><td>The trainable version of the editor you already have</td></tr>
+    <tr><td>Z-Image Turbo bf16 + Z-Image (base) bf16</td><td>12.3 + 12.3 GB</td><td>Full-precision copies the trainer needs</td></tr>
+    <tr><td><strong>ai-toolkit</strong> (ostris) in <code>~/ai-toolkit</code></td><td>~8 GB env</td><td>The trainer: Z-Image, Klein, FLUX 3, Qwen-Image all supported</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout"><b>Needs you</b>FLUX 3 Klein is gated. Make or log into a Hugging Face account, open <a href="https://huggingface.co/black-forest-labs/flux-3-image-klein-comfy">the model page</a>, accept the licence, then run <code>! ~/ComfyUI/.venv/bin/hf auth login</code> here and I'll pull it (about 11 GB). Licence: free for non-commercial and small-business use, fine for a family game.</div>
+</section>
+
+<section id="risks">
+  <h2>Risks, honestly</h2>
+  <div class="callout risk"><b>RAM</b>16 GB with swap already in use. Training will run but may crawl or stall at the loading step. A 32 GB kit for this board is about $60 and would remove the risk entirely. Not required to start.</div>
+  <p><strong>Untested on this card:</strong> Z-Image LoRA training on 12 GB is documented by others, not yet by us. The first test run (step 2 below) answers that in one evening.</p>
+  <p><strong>Painterly edits:</strong> Klein is proven for photos; whether it re-ages a painted face without drifting out of style is the real unknown. Step 4 below tests it on five faces before anything depends on it.</p>
+  <p><strong>Shared faces:</strong> in Route A, a world of thousands will reuse identities. Fine for extras, noticeable among jarls you talk to every winter. Jarls and family get the deeper buckets.</p>
+</section>
+
+<section id="plan">
+  <h2>The build order</h2>
+  <p>Each step is one session and ends with something you look at. Nothing in the game changes until step 6.</p>
+  <div class="row"><div class="what"><strong>1 · Finish setup.</strong> Downloads, trainer install, a one-portrait smoke test of Z-Image + ControlNet. <span class="pill new">in progress</span></div>
+    <div class="seg"><label><input type="radio" name="s1" data-key="steps.setup" value="approve" checked>Approve</label><label><input type="radio" name="s1" data-key="steps.setup" value="reject">Reject</label><label><input type="radio" name="s1" data-key="steps.setup" value="later">Later</label></div></div>
+  <div class="row"><div class="what"><strong>2 · Style audition.</strong> Three painterly looks × 12 portraits on a pick page, same process as saga_ink. You pick; the picks become the training set.</div>
+    <div class="seg"><label><input type="radio" name="s2" data-key="steps.audition" value="approve" checked>Approve</label><label><input type="radio" name="s2" data-key="steps.audition" value="reject">Reject</label><label><input type="radio" name="s2" data-key="steps.audition" value="later">Later</label></div></div>
+  <div class="row"><div class="what"><strong>3 · Train portrait LoRA v1</strong> overnight. Contact sheet in the morning.</div>
+    <div class="seg"><label><input type="radio" name="s3" data-key="steps.train" value="approve" checked>Approve</label><label><input type="radio" name="s3" data-key="steps.train" value="reject">Reject</label><label><input type="radio" name="s3" data-key="steps.train" value="later">Later</label></div></div>
+  <div class="row"><div class="what"><strong>4 · The two tests that decide everything.</strong> A gene grid (does the model obey eye, hair, age, face shape?) and a Klein age/kinship test on five faces.</div>
+    <div class="seg"><label><input type="radio" name="s4" data-key="steps.tests" value="approve" checked>Approve</label><label><input type="radio" name="s4" data-key="steps.tests" value="reject">Reject</label><label><input type="radio" name="s4" data-key="steps.tests" value="later">Later</label></div></div>
+  <div class="row"><div class="what"><strong>5 · Bake the Deck.</strong> Overnight run, automatic quality gate, you see rejects and a sample.</div>
+    <div class="seg"><label><input type="radio" name="s5" data-key="steps.bake" value="approve" checked>Approve</label><label><input type="radio" name="s5" data-key="steps.bake" value="reject">Reject</label><label><input type="radio" name="s5" data-key="steps.bake" value="later">Later</label></div></div>
+  <div class="row"><div class="what"><strong>6 · Genes into the game.</strong> The 8-gene schema, inheritance with mutation, age bands, and portraits on every character card.</div>
+    <div class="seg"><label><input type="radio" name="s6" data-key="steps.game" value="approve" checked>Approve</label><label><input type="radio" name="s6" data-key="steps.game" value="reject">Reject</label><label><input type="radio" name="s6" data-key="steps.game" value="later">Later</label></div></div>
+  <div class="row"><div class="what"><strong>7 · The Forge</strong> (Route B) as the home-wifi upgrade.</div>
+    <div class="seg"><label><input type="radio" name="s7" data-key="steps.forge" value="approve">Approve</label><label><input type="radio" name="s7" data-key="steps.forge" value="reject">Reject</label><label><input type="radio" name="s7" data-key="steps.forge" value="later" checked>Later</label></div></div>
+</section>
+
+<section id="questions">
+  <h2>Four taste calls</h2>
+  <p>These change how the portraits look, so they are yours.</p>
+  <p><label>1 · Brushwork. The brand's illustration is pen-and-ink; you said painterly. Which do the faces get?
+  <select data-key="taste.brush"><option value="oil">Painterly oil, visible brushstrokes, Norse-saga illustration feel (my pick)</option><option value="gouache">Flat gouache, poster-like, limited palette</option><option value="inkwash">Ink line with a colour wash, closest to saga_ink</option><option value="audition">Show me all three in the audition and I'll pick</option></select></label></p>
+  <p><label>2 · Colour. Full colour, or held inside the Forge palette (oat, iron, woad, oxblood) so every face matches the UI?
+  <select data-key="taste.colour"><option value="forge">Forge palette only (my pick: the wall of faces reads as one object)</option><option value="full">Full colour, graded to sit on the dark UI</option></select></label></p>
+  <p><label>3 · Family presets. Paint your family from photos?
+  <select data-key="taste.family"><option value="yes">Yes, from 3 to 5 photos each (you'll supply them)</option><option value="later">Later, after the style is settled</option><option value="no">No</option></select></label></p>
+  <p><label>4 · Hugging Face login for FLUX 3 Klein?
+  <select data-key="taste.hf"><option value="yes">Yes, I'll log in when prompted</option><option value="skip">Skip it, use FLUX.2 Klein</option></select></label></p>
+  <p><textarea data-key="notes" rows="3" placeholder="Anything else: a reference artist, a game whose portraits you love, a hard no."></textarea></p>
+</section>
+
+<section id="appendix">
+  <h2>Appendix</h2>
+  <details><summary>Numbers behind the estimates</summary>
+    <p>Z-Image Turbo, 8 steps, 1024 px on an RTX 3060: community reports 6 to 9 s per image; I used 8. Klein 4B, 4 steps: 5 to 8 s; the editor pass is counted at 10. Deck of 2,400 at 8 s ≈ 5.3 h, plus 1,800 age edits at 10 s ≈ 5 h: two nights, or one with the quality gate pruning first. Previous SDXL LoRA on this card ran at 1.84 s per step; Z-Image at 768 px in 8-bit is reported at 3 to 5 s per step, so 2,000 steps ≈ 2 to 3 h. WebP at 384 px, painterly, averages 20 to 30 KB.</p>
+  </details>
+  <details><summary>Sources</summary>
+    <p><a href="https://github.com/Tongyi-MAI/Z-Image/issues/36">Z-Image LoRA on 12 GB (GitHub issue)</a> · <a href="https://neurocanvas.net/blog/zimage-lora-training-guide/">Z-Image LoRA guide, ai-toolkit</a> · <a href="https://kawaiipromptlab.com/en/tutorials/lora-training-guide/">Z-Image training adapter notes</a> · <a href="https://docs.bfl.ml/flux_2/flux2_klein_training">FLUX.2 Klein training, Black Forest Labs</a> · <a href="https://huggingface.co/blog/black-forest-labs/flux-2-klein-lora">Klein LoRA in under 60 minutes</a> · <a href="https://www.omnichar.org/lora-training/flux-2">Klein 4B at 8.6 GB VRAM</a> · <a href="https://stable-diffusion-art.com/z-image-controlnet-union/">Z-Image ControlNet Union 2.1 in ComfyUI</a> · <a href="https://comfyui-wiki.com/en/news/2025-12-02-z-image-turbo-controlnet-union">ControlNet Union release note</a> · <a href="https://huggingface.co/black-forest-labs/flux-3-image-klein">FLUX 3 Image Klein model card</a> · <a href="https://bfl.ai/blog">BFL blog, FLUX 3 Klein, 15 Oct 2026</a> · <a href="https://vdf.ai/blog/best-local-image-generation-models/">Local image models, Oct 2026 roundup</a></p>
+  </details>
+  <details><summary>Machine audit, raw</summary>
+    <p>Linux ComfyUI: Python 3.12, torch 2.11 cu128, triton, onnxruntime; no xformers, insightface or diffusers. Custom nodes: controlnet_aux, GGUF, IPAdapter_plus. Model folder <code>/mnt/g/ai/ComfyUI/models</code> (142 GB) plus <code>sd.webui</code> (42 GB). sd-scripts at commit 11d8ced (Oct 20). ai-toolkit cloned to <code>~/ai-toolkit</code> with its own venv (Python 3.12, torch 2.13 cu130). HF cache for the trainer set to <code>/mnt/g/ai/hf-cache</code>. Game: <code>game.js</code> characters carry name, combat, rule, follow, age, sex; no appearance fields yet.</p>
+  </details>
+</section>
+
+<div class="respond"><button id="respondBtn">Copy my response</button><span class="hint">Paste it back to me and I'll start.</span></div>
+</main>
+</div>
+<script>
+try{
+  const toc=document.getElementById('toc'),secs=[...document.querySelectorAll('main section[id]')];
+  if(secs.length<4){toc.remove();document.querySelector('.layout').style.gridTemplateColumns='1fr';}
+  else{secs.forEach(s=>{const a=document.createElement('a');a.href='#'+s.id;a.textContent=s.querySelector('h2').textContent;toc.appendChild(a)});
+  const links=[...toc.querySelectorAll('a')];
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(l=>l.classList.toggle('active',l.hash==='#'+e.target.id))}),{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(s=>io.observe(s));}
+}catch(e){}
+try{
+  document.getElementById('respondBtn')?.addEventListener('click',e=>{
+    const out={},set=(o,k,v)=>{const p=k.split('.');p.slice(0,-1).forEach(x=>o=o[x]=o[x]||{});o[p.at(-1)]=v};
+    document.querySelectorAll('[data-key]').forEach(el=>{
+      if((el.type==='radio')&&!el.checked)return;
+      const v=el.type==='checkbox'?el.checked:el.value;
+      set(out,el.dataset.key,v);});
+    const summary=Object.entries(out).map(([k,v])=>k+': '+(typeof v==='object'?JSON.stringify(v):v)).join(' | ');
+    const text='RESPONSE to "'+document.title+'"\n'+summary+'\n\n'+JSON.stringify(out,null,2);
+    const done=()=>{e.target.textContent='Copied ✓';setTimeout(()=>e.target.textContent='Copy my response',1500)};
+    navigator.clipboard.writeText(text).then(done).catch(()=>{const t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch(_){}t.remove();done()});});
+}catch(e){}
+</script>
+</body>
+</html>

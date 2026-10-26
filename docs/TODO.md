@@ -297,3 +297,17 @@ The Saga lists each king's deeds; that is what a good king looks like.
 **Recommend:** a byname earned by two kings of the line in a row becomes the house's: every king after starts with it ("the house of the Iron Side"). Deeds (42.7) stay with the line. No currency: the legacy is what the line did.
 
 **Build order, if all approved:** 42.1 (words only) → 42.2 the wife and the regency (closes 41B.1) → 42.3 in its steps → 42.4 faith → 42.5 worth and Build → 42.6 trade → 42.7 deeds (they name what the rest made possible) → 42.8 → 42.9. The persona harness learns each new verb as it lands (a courtier who marries and treats, a merchant who trades, a builder who sits and builds) and measures whether each path keeps a line alive as well as raiding does.
+
+## 43. Portraits: a painted face for every character (Levi, 2026-10-25/26, decided in part)
+Levi: a painterly head-and-shoulders portrait for every character in one consistent style, thousands of them, kin who visibly inherit from their parents, faces that age, a handful of family presets in the same hand. Not CK3's 3D heads. Made by his own AI pipeline on the PC. Nothing in the game carries appearance yet (`makeMan` has name, stats, age, sex); that is expected and is not a limit on the design.
+
+**Decided (Levi, 2026-10-26):**
+- **43.1 The style is D, Knife Impasto** from the audition (`pages/2026-10-25-style-audition.html`): thick palette-knife oil, scraped strokes, near-monochrome iron and oat with oxblood, dark ground. The audition's picks seed the portrait LoRA.
+- **43.2 The layer rule.** The *bust* is the person: face, hair, beard, age band, build, culture. One painted bust per character per age band, cut out, always in the same frame (the pose lock). Everything the person *holds* is a layer the game stacks on top in the same hand: background by status and place (Wessex throne room, Frankish court, Norse high seat, a jarl's hall, a ship, a farm, open sea), a head layer (Saxon crown, Frankish crown, Norse circlet, helmet, none), a shoulder layer (king's cloak and brooch, jarl's cloak, plain). So Ecbert's successor is a Saxon bust from the deck on the Wessex background with the Saxon crown; the player's heir is his already-aged bust on the hall with the circlet; a dead king's card keeps his last composition. No generation at play time.
+- **43.3 Culture is a prompt dictionary** over the same genes: Saxon, Frankish, Irish, Norse each get their own hair, beard and dress vocabulary, so a grandson still carries his grandfather's nose.
+
+**Open:**
+- 43.4 Route: A "The Deck" (bake ~2,400 busts bucketed by ~8 genes × 4 age bands, ship ~60 MB) first, B "The Forge" (the PC mints unique children from both parents on the home wifi) later. Recommended, not yet called.
+- 43.5 The proof, next: can a knife-impasto bust be cut out cleanly (fallback: a painted frame layer that hides the seam), and does one crown layer sit on three different heads. Norse, Saxon and Frankish busts on two backgrounds, with and without a crown.
+- 43.6 Taste calls still open from the plan page: Forge palette only vs full colour; family presets from photos; Hugging Face login for FLUX 3 Klein.
+- 43.7 The gene schema in the game (the 8 genes, inheritance with mutation, age bands) comes after the proof.
