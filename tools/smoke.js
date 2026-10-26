@@ -1,6 +1,10 @@
 // headless dynasty: fake DOM + localStorage, runs the real coast/world/game/ui files, drives every spring and every scene. Usage: node tools/smoke.js
+// SEED=word fixes every roll (the game's uid draws on Math.random, so without it two runs differ); DAY=2026-10-26 fixes the world's day. Default: a fixed seed and day, so the gate is the same run every time.
 const fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..');
+const SEED = process.env.SEED || 'smoke', DAY = process.env.DAY || '2026-10-26';
+{ let a = 0; for (const ch of SEED) a = (a * 31 + ch.charCodeAt(0)) | 0; Math.random = () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+global.Date = class extends Date { toISOString() { return DAY + 'T12:00:00.000Z'; } };
 const store = {};
 global.localStorage = { getItem: k => (k in store ? store[k] : null), setItem: (k, v) => { store[k] = String(v); }, removeItem: k => { delete store[k]; } };
 const app = { innerHTML: '' };
@@ -18,7 +22,7 @@ check('setup empty');
 if (!app.innerHTML.includes('Ring Giver')) { console.log('no setup'); process.exit(1); }
 startGame('ragnar'); check('intro');
 let year0 = S.year, homes = 0, lines = 1, deaths = 0, stays = 0, fights = 0, winters = 0, skips = 0, landfalls = 0, maxYears = 700;
-const r = rng('smoke');
+const r = rng(SEED);
 function drive() {
   const sc = S.queue[0];
   if (!sc) return false;
@@ -82,7 +86,7 @@ while (S && maxYears-- > 0) {
   } else act(() => sail(S));
   check('after sail');
 }
-console.log(JSON.stringify({ from: year0, to: S && S.year, gens: S && S.gen, deaths, regents, stepdowns, fights, stays, winters, landfalls, skipsOK: skips > 0, homes, lines, renders, reloads, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
+console.log(JSON.stringify({ seed: SEED, day: DAY, from: year0, to: S && S.year, gens: S && S.gen, deaths, regents, stepdowns, fights, stays, winters, landfalls, skipsOK: skips > 0, homes, lines, renders, reloads, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
 // the end card and begin again
 if (S && S.queue[0] && S.queue[0].t === 'end') { render(); check('end'); act(() => { archive(S, 'reached 1066'); S = null; }); check('setup after end'); if (!app.innerHTML.includes('Past kings')) { console.log('no past kings'); fails++; } }
 // a fresh run: two-tap abandon

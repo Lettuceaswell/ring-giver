@@ -1,0 +1,281 @@
+{
+ "at": "2026-10-26T20:26:36.684Z",
+ "head": "8197fc6",
+ "tag": "run0",
+ "seeds": 8,
+ "gate": "ok",
+ "smoke": {
+  "ok": true,
+  "bad": [],
+  "seed": "smoke",
+  "day": "2026-10-26",
+  "from": 793,
+  "to": 863,
+  "gens": 7,
+  "deaths": 31,
+  "regents": 2,
+  "stepdowns": 2,
+  "fights": 276,
+  "stays": 113,
+  "winters": 315,
+  "landfalls": 113,
+  "skipsOK": true,
+  "homes": 35,
+  "lines": 4,
+  "renders": 9270,
+  "reloads": 335,
+  "fails": 0,
+  "log": 230,
+  "holdings": 1,
+  "men": 41,
+  "silver": 129,
+  "lost": 1
+ },
+ "personas": {
+  "raider": {
+   "broke": 1,
+   "lossPct": 29.725742032040827,
+   "luckPct": 2.8054220841509396,
+   "starveYears": 2.625,
+   "chestAvg": 30.50885933310075,
+   "holdAt850": 0,
+   "finalHoldings": 0,
+   "kingFell": 2.375,
+   "endYear": 844.5,
+   "gens": 4.5
+  },
+  "rover": {
+   "broke": 0.375,
+   "lossPct": 2.8290898092559598,
+   "luckPct": 14.312472035203374,
+   "starveYears": 9.875,
+   "chestAvg": 44.4643845640341,
+   "holdAt850": 0,
+   "finalHoldings": 0,
+   "kingFell": 1.875,
+   "endYear": 992.625,
+   "gens": 11.125
+  },
+  "settler": {
+   "broke": 0,
+   "lossPct": 2.4936886600467476,
+   "luckPct": 8.936842887859784,
+   "starveYears": 18.625,
+   "chestAvg": 231.1881868131868,
+   "holdAt850": 32.8625,
+   "finalHoldings": 32.875,
+   "kingFell": 0,
+   "endYear": 1066,
+   "gens": 14.375
+  },
+  "miser": {
+   "broke": 0.625,
+   "lossPct": 2.7157738095238098,
+   "luckPct": 25.432900432900432,
+   "starveYears": 0,
+   "chestAvg": 458.4024153292417,
+   "holdAt850": 1.78,
+   "finalHoldings": 1,
+   "kingFell": 0.25,
+   "endYear": 934.25,
+   "gens": 25.75
+  },
+  "reckless": {
+   "broke": 0.75,
+   "lossPct": 46.4010989010989,
+   "luckPct": 0.5036630036630036,
+   "starveYears": 2.875,
+   "chestAvg": 84.2040293040293,
+   "holdAt850": 17.266666666666666,
+   "finalHoldings": 7.875,
+   "kingFell": 1.75,
+   "endYear": 870.875,
+   "gens": 13.625
+  },
+  "hall-sitter": {
+   "broke": 0,
+   "lossPct": 0.7409811189274578,
+   "luckPct": 3.190287966823008,
+   "starveYears": 10.375,
+   "chestAvg": 2658.166208791209,
+   "holdAt850": 24.600000000000005,
+   "finalHoldings": 29,
+   "kingFell": 0,
+   "endYear": 1066,
+   "gens": 14.375
+  },
+  "courtier": {
+   "broke": 0.125,
+   "lossPct": 0,
+   "luckPct": 0,
+   "starveYears": 20,
+   "chestAvg": 193.0525183150183,
+   "holdAt850": 25.75714285714286,
+   "finalHoldings": 28.5,
+   "kingFell": 0.375,
+   "endYear": 1033,
+   "gens": 13.5
+  },
+  "levi": {
+   "broke": 0,
+   "lossPct": 1.9876355430448345,
+   "luckPct": 7.042740175116877,
+   "starveYears": 20,
+   "chestAvg": 529.9317765567765,
+   "holdAt850": 28.737499999999997,
+   "finalHoldings": 32.75,
+   "kingFell": 1.5,
+   "endYear": 1066,
+   "gens": 16.5
+  }
+ },
+ "bands": [
+  {
+   "name": "raider breaks",
+   "value": 1,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a plan that never holds land should not reach 1066"
+  },
+  {
+   "name": "reckless breaks",
+   "value": 0.75,
+   "lo": 0.5,
+   "hi": null,
+   "ok": true,
+   "why": "sailing blind at any odds should usually end the line"
+  },
+  {
+   "name": "miser breaks",
+   "value": 0.625,
+   "lo": 0.35,
+   "hi": null,
+   "ok": true,
+   "why": "a rich unguarded hall should draw sails"
+  },
+  {
+   "name": "levi lives",
+   "value": 1,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a careful plan should usually reach 1066"
+  },
+  {
+   "name": "settler lives",
+   "value": 1,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a careful plan should usually reach 1066"
+  },
+  {
+   "name": "hall-sitter lives",
+   "value": 1,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a careful plan should usually reach 1066"
+  },
+  {
+   "name": "courtier lives",
+   "value": 0.875,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a careful plan should usually reach 1066"
+  },
+  {
+   "name": "levi loses fights %",
+   "value": 1.9876355430448345,
+   "lo": 3,
+   "hi": 15,
+   "ok": false,
+   "why": "the fight has to be able to go wrong without being a coin toss"
+  },
+  {
+   "name": "levi luck in play %",
+   "value": 7.042740175116877,
+   "lo": 4,
+   "hi": 10,
+   "ok": true,
+   "why": "the roll decides a fight sometimes, not often (audit 4)"
+  },
+  {
+   "name": "levi holdings at 850",
+   "value": 28.737499999999997,
+   "lo": 8,
+   "hi": 30,
+   "ok": true,
+   "why": "not every coast by 850: the \"automatic win\" complaint (TODO 25)"
+  },
+  {
+   "name": "levi king falls / line",
+   "value": 1.5,
+   "lo": 0,
+   "hi": 3,
+   "ok": true,
+   "why": "the King at sea is a risk, not a habit"
+  },
+  {
+   "name": "idle silver (careful chest avg)",
+   "value": 903.0846726190478,
+   "lo": null,
+   "hi": 300,
+   "ok": false,
+   "why": "silver with nothing to buy is the year-seven itch (41B.2, TODO 33)"
+  }
+ ],
+ "lints": [
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 11.5px"
+  },
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 9.5px"
+  },
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 11px"
+  }
+ ],
+ "notes": [],
+ "fuzz": {
+  "ok": true,
+  "bad": [],
+  "seed": "fuzz-2026-10-26T20",
+  "day": "2026-10-26",
+  "from": 793,
+  "to": 1001,
+  "gens": 22,
+  "deaths": 43,
+  "regents": 6,
+  "stepdowns": 3,
+  "fights": 391,
+  "stays": 155,
+  "winters": 465,
+  "landfalls": 157,
+  "skipsOK": true,
+  "homes": 55,
+  "lines": 4,
+  "renders": 14097,
+  "reloads": 490,
+  "fails": 0,
+  "log": 698,
+  "holdings": 0,
+  "men": 5,
+  "silver": 14,
+  "lost": 0
+ },
+ "fateHash": "c06892e611e1",
+ "bytes": 268708,
+ "todo": {
+  "decided": 7,
+  "built": 24
+ }
+}
