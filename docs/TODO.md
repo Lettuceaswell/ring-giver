@@ -346,3 +346,4 @@ The builder persona priced 41B.2's buildings. One-off buildings that pay back ar
 - **B. Rescale `richHall`** (300 → about 450) so "rich" means rich by the autumn chest's standard, as the rule was tuned. An 8-seed sweep was chaos (levi's hall fell 9 / 12.6 / 13.6 / 12.8 times at 300 / 400 / 500 / 600); it needs 16 seeds before and after, one run.
 - **C. The sail's loss taken after the market.** The card is turned on the autumn chest, the 30% is taken from what is left after the men are bought. Two chests on one card; not recommended.
 **Recommend:** A. Answer by letter.
+**Decided (Levi, 2026-10-26): A.** The sail tax stays as the hall's fear; the three info rows in `measure.js` keep watching it. Nothing to build. `richHall` is not touched for this.
