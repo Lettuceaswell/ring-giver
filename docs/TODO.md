@@ -253,7 +253,7 @@ The temptation Levi described in 39 only shows up by chance: in the saved spring
 ## 42. The CK3 decisions: more than location and raid (Levi, 2026-10-25, undecided)
 Levi: "Right now it's a game of selecting locations and clicking raid." What he wants from CK3: development; diplomacy, good, bad and neutral, with other rulers; legacy and strengthening a line; religious differences (not reformation); many paths, not only expansion. What he does not: intrigue, piety.
 
-**Status: all undecided (Levi, 2026-10-25).** Every item below, 42.1 to 42.9, is parked for him to come back to. None approved, none rejected; build nothing from 42 until he calls them by number.
+**Status (2026-10-26): 42.1, 42.2, 42.3 decided A.** 42.4 to 42.9 still parked; build nothing from them until he calls them by number.
 
 **The panel agrees, mostly (round 1, TODO 41).** Two of them call it "a raid-and-hold game" in their first sentence. Goal is the panel's lowest score (2.1 of 5), and 7 of 8 asked for a target. Theo: "The game behind those screens is shallower than they are... Silver piles up with nothing to spend it on." Jen, year 4: "stuck in a loop: raid, get ~70, the hall eats ~50, buy 10 men." Dana: "Kings don't react to what I do to them"; her father's killer knelt "and I was given no choice and no line." Mikkel: a kneeling king "gives no tribute and no levies". Ingrid: "Freydis and Ragnhild given mothers and choices; silver I can give (rings to Bjorn, a bride-price, a new ship)." Rafa liked the one other path that exists: hold a realm three summers and its king kneels. **Where they are silent:** nobody asked for faith or for development, and nobody missed intrigue or piety. Those two are Levi's taste, not the panel's. The panel also played only twenty years and three of them died in 799, so nobody saw the middle of the game, where most of this would live.
 
@@ -261,9 +261,11 @@ Levi: "Right now it's a game of selecting locations and clicking raid." What he 
 
 ### 42.1 What stays out
 No intrigue (no schemes, spies, murder plots, secrets), no piety or any faith currency, no reformation of the Old Gods, no prestige or renown. **Recommend:** write it into GDD §12 so nothing drifts back in.
+**Decided (Levi, 2026-10-26): A.** Written into GDD §12 next session; words only.
 
 ### 42.2 A wife, and the blood (strengthening the line)
 Today children have no mother and every son is his father ±1. **Recommend:** the King takes a wife: from a jarl's house (he becomes kin), from a king's house (an alliance, 42.4), or a free woman of a coast he holds (no politics). Births need her. She carries three stats like a man; each child takes each stat from the better parent, ±1. Choosing a bride is choosing what kind of sons the line gets. **Gifts of the blood:** three rare marks (Strong: Combat may reach 6; Wise: Rule 6; Beloved: Followability 6), carried to each child at 50%, 80% if both parents carry it. A queen with a mark is worth courting for generations. **She is also the regency (41B.1):** the King dies with a son under sixteen and she holds the hall for the boy, the Oath deferred to his sixteenth spring, as long as a jarl or her own kin stands with her. One new person, no new screen: she is a Man card.
+**Decided (Levi, 2026-10-26): A.** The wife as recommended: three houses to take her from, births need her, stats from the better parent, the three marks of the blood, and she is the regent with the jarl of 41B.1 as the fallback. Not built yet.
 
 ### 42.3 Kings who answer (diplomacy, good, bad and neutral)
 Today a ruler has a stance and one verb, a gift. **Recommend:** verbs on his card, each gated by his stance and paid in what exists:
@@ -273,6 +275,7 @@ Today a ruler has a stance and one verb, a gift. **Recommend:** verbs on his car
 - **Kneeling gives something** (Mikkel): a king who kneels pays tribute and answers your call to war. **When your father's killer kneels, you choose** (Dana): take his knee, or his head (his realm opens, every king sours).
 - **Kings are mortal.** They age, die and are followed by a son; the stance halves as yours does, marriages and truces carry over at a word colder. Two hundred years of diplomacy need new faces.
 **Flag:** the largest item here. Build in steps: kneeling gives tribute and the call; truce; tribute and Danegeld; marriage and alliance; mortal kings.
+**Decided (Levi, 2026-10-26): A.** All of it, in the steps above; the father's killer kneeling is a choice. Not built yet.
 
 ### 42.4 Faith: the Old Gods and the Cross (religious difference, no reformation)
 Every coast already has a culture; faith follows it: norse coasts keep the Old Gods, Saxon, Frankish and Gaelic coasts the Cross. Every named man carries one: men from the sea the Old Gods, locals their coast's, sons the line's. **Recommend:**
@@ -350,3 +353,10 @@ The builder persona priced 41B.2's buildings. One-off buildings that pay back ar
 - **C. The sail's loss taken after the market.** The card is turned on the autumn chest, the 30% is taken from what is left after the men are bought. Two chests on one card; not recommended.
 **Recommend:** A. Answer by letter.
 **Decided (Levi, 2026-10-26): A.** The sail tax stays as the hall's fear; the three info rows in `measure.js` keep watching it. Nothing to build. `richHall` is not touched for this.
+
+## 47. The stats: is 5 a cap on the game? (Levi, 2026-10-26, open)
+Levi: "stats are insufficient as they are today. We need to expand them. Maybe more than three. Maybe maxing out at 5 is capping our game."
+What a man is today: Combat, Rule, Following, each 1–5 as five dots, and every formula reads the number straight (ship strength = Combat × men, a holding's guard = Rule × men, the cap on his following = Following × 10). They only rise: Combat every third raid, Rule every third held summer, Following on every big win; the one fall is a feud. So a veteran is 5/5/5 inside twelve summers and from then on every old man reads the same, which is the real complaint: the scale stops telling men apart, not that it stops at five. 42.2 (decided A) already adds the sixth: the marks of the blood (Strong, Wise, Beloved) let a stat reach 6, rare and inherited.
+- **A. Same three, more motion (recommended).** Keep three stats and five dots as the read (a sixth, the mark, as a star). Make them move both ways: Combat falls a step past 45 and after a rout; Rule falls when a holding is lost; Following falls when men walk or starve; growth slows with each step (the third raid, then the fifth, then the eighth). A man is then a shape over time, not a bar that fills. Every formula and constant stays as it is. One run with the harness, before and after.
+- **B. Wider scale, more stats.** 1–10, or a fourth stat (Cunning, Faith, Trade, Seamanship) for the paths of 42.3–42.6. Flag: every formula multiplies by the number, so 1–10 doubles the spread of power and retunes every constant in `T`; ten dots do not fit a thumb row at 390 px; a fourth stat is a new noun (GDD §12) and only earns its place when a path reads it (Trade for 42.6, a bargaining stat for 42.3). Better taken when those land, one stat per path that needs it.
+**Recommend:** A now; B's fourth stat when 42.3 or 42.6 lands and asks for it, by number. Answer by letter.

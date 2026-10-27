@@ -2,6 +2,10 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-26 (42.1, 42.2, 42.3 decided; TODO 47 filed)
+
+Levi: **A, A, A** on the first three of TODO 42 (what stays out into GDD §12; the wife and the blood; kings who answer, in steps). Levi's note that the stats are insufficient and 5 may cap the game filed as **TODO 47** with a recommendation (A: same three stats, moving both ways; B: a wider scale or a fourth stat when a path asks for it). Nothing built.
+
 ## 2026-10-26 (41B.5, 41B.6, 41B.7 decided)
 
 Levi: **A, A, A.** The wash on held coasts with pinch-zoom (41B.5 + TODO 15); a champion offered after a rout, once per reign-decade (41B.6); period names, "hire men at the thing", monasteries with weak walls (41B.7). Queue rows Q22, Q23, Q15 now class B. Not built yet.
