@@ -52,6 +52,7 @@ Levi wants to touch his people: children, marriages, neighbors, an opinion syste
 
 ## 14. Moving the hall
 Vestfold → Lindisfarne as a long game, with development catching up. **Flag:** development / culture is a new noun with its own clock. ~80% version, no new noun: a one-time **Move the hall** to any holding you have held five quiet years. The hall's yield becomes that holding's, "within reach" recomputes from there, the old hall becomes an ordinary holding. **Recommend:** decide 4 first (what the home hall is), then this falls out of it.
+**Decided (Levi, 2026-10-26): A.** Falls out of 42.5: the hall may move once to a holding of worth 4 or more. Not built yet.
 
 ## 15. A real map
 Built today: tap a coast to target it, dot size by loot, hollow dot for cannot-hold, Landfall shows the three. Still asked for, in order of cost:
@@ -62,9 +63,11 @@ Built today: tap a coast to target it, dot size by loot, hollow dot for cannot-h
 
 ## 16. More winter events
 Levi likes them and is open to more. Item 6 capped the deck at ten. **Recommend:** raise the cap to sixteen once a list exists; draft the list next session; same rule as before, no card introduces a new noun.
+**Decided (Levi, 2026-10-26): A.** The deck drafted to sixteen as a page for him to cut (Q14); no card introduces a new noun.
 
 ## 17. Unholdable shores
 Lindisfarne, Paris, Tours, Galicia, Lisbon cannot be held. It now says so before you sail. The question is whether that rule stays. **Recommend:** keep it, and let the world say why in one line each (a monastery, a walled city three turns upstream, too far). Famous shores that can never be owned are what keep raiding worth doing after the map is full.
+**Decided (Levi, 2026-10-26): A.** They stay unholdable; the world says why in one line each. Not built yet.
 
 ---
 
@@ -118,6 +121,7 @@ Five screens, one round each, in order of use: spring Map pane · Winter sheet �
 **Round 2 decided (2026-10-23):** A, The Ledger. The Winter sheet is "Autumn N": a counted account of the year (chest in spring, loot, a rent row per holding, the hall's bill with the plain figure struck through when a title or a hard winter changed it), events weighted by kind, the market as one card with what the men buy ("+37 ship strength under Ragnar") and the room among the named men, collapsing to one line when nothing can be bought, and a sticky "Into winter · one card turns". Built session 8. Not taken from B or C: the waterfall bar; bought men going straight to a leader (they still sit unled until Fill).
 **Round 3 decided (2026-10-24, session 10):** the winter card. Audit page https://claude.ai/artifact/HCnFYiyjm25E4SSc3oozDd with three live options on real playtest saves: A, The Turn (my pick: a face-down card that turns, toned by kind; the King's roll as a second card you turn); B, The Hall at Night (a drawing of the fjord, high seat, benches and children that the card acts on); C, The Saga Page (the winter as a saga sentence, Ahead, and a strip of the reign's winters). Shared by all three: the fight as Guard vs Fleet, effects in numbers, deaths in bed grouped, the gathering fleet (27) and the full bench (26) as rows, the King's old-age roll on the card, and a death card that names the cause and the heir or the broken line (29). **Decided: A, The Turn. Built session 10.** Found on the way (all fixed in the build): duplicate names among named men (two Odos, two Osrics in one hall), "His 0 men" / "His 1 men", "This is what that costs." printed when the hall held, and the death card's "At most 0 holdings".
 **Round 4 (2026-10-24, session 11):** the Fight sheet (Landfall, the fight, Plunder or stay). Audit page https://claude.ai/artifact/T7ttHAvgb7SxcSNheD5bx9 with three live options on real playtest saves: A, The Clash (my pick: two ranks of marks, the odds strip's needle, the ranks close and the verdict stamps); B, The Raid on the Chart (the fight on the lit map, the defenders' ring breaks, the loot runs home into the chest); C, The Roll Call (the crew as the body, each man's row resolving). Shared: the odds strip (the roll's range banded driven back / narrow / victory / rout, the needle lands on the day), the raid's account (loot, men and their worth, the net, the coast arming, the owner's stance), the crew with the fallen on the card and the King's fall as the title, the foot button naming what follows, Plunder or stay as a trade with each jarl's hold chance, and Turn for home at Landfall (31). **Decided (Levi): A, with more ceremony:** genuine rolls you watch instead of the needle, losses scattered, a mark when men fall, slower by default and skippable by a tap; and the King's risk stated clearly. **Built session 12:** combat is three exchanges (`battle()`, `ROLL` 0.82–1.18, luck in play 6.5% of the levi persona's fights against 5.9%), the battle sheet, the reckoning, Plunder or stay as a trade, Landfall with odds and Turn for home, the King's risk on the commit sheet, Board all's fix. Left: TODO 33; feel the battle's length on the phone.
+**Round 5 decided (Levi, 2026-10-26): A, skipped.** The Hall was reshaped by Levi himself in TODO 44; the audit's five rounds close at four.
 **Next: round 5, the Hall pane.**
 Left over from round 3: the turn's timing and the King's card need a phone (TODO 29); the quiet-years line still does not mention full benches (TODO 26).
 
@@ -143,6 +147,7 @@ A hostile king's fleet comes only after a full year hostile (`wroth`), but only 
 
 ## 28. Overreach "stirs" may be noise
 Past ten holdings each stirs at a small chance, about one ledger event a year late game. Judge in play whether it reads as pressure or as clutter.
+**Decided (Levi, 2026-10-26): A.** Keep them, grouped into one ledger line a year. Not built yet.
 
 ---
 
@@ -154,6 +159,7 @@ Named men falling in fights (the summary card) and the King slain in the hall do
 
 ## 30. Does 0.5 odds read as a gamble?
 Settler-style fighting at 0.5 odds now loses about 30%. Confirm the commit sheet's odds temperature makes 0.5 read as a coin toss, not a fair fight.
+**Decided (Levi, 2026-10-26): A.** The commit sheet calls 0.5 a coin toss in so many words. Not built yet.
 
 ---
 
@@ -247,13 +253,14 @@ Each is the UI or the copy saying what the rules already do, or a plain bug. No 
 
 ## 40. A king's coasts are no richer than free ones (open)
 The temptation Levi described in 39 only shows up by chance: in the saved springs a king's coasts average 104 / 97 / 91 base loot against 89 / 94 / 107 for free coasts (815 / 850 / 900), so the best net is as often a free coast as a king's. **Recommendation:** after he has played with the net on screen, if raiding a king never tempts, give a realm's coasts more loot than the free shore (×1.4, the seat ×2), so the richest returns sit under a king and the anger is the price. Not built: tune after play (TODO 11).
+**Decided (Levi, 2026-10-26): A.** A realm's coasts get more loot than free shores, the seat most of all; tuned with the harness. Not built yet.
 
 ---
 
 ## 42. The CK3 decisions: more than location and raid (Levi, 2026-10-25, undecided)
 Levi: "Right now it's a game of selecting locations and clicking raid." What he wants from CK3: development; diplomacy, good, bad and neutral, with other rulers; legacy and strengthening a line; religious differences (not reformation); many paths, not only expansion. What he does not: intrigue, piety.
 
-**Status (2026-10-26): 42.1, 42.2, 42.3 decided A.** 42.4 to 42.9 still parked; build nothing from them until he calls them by number.
+**Status (2026-10-26): all nine decided A** (42.8 once per lifetime). Build in the order at the foot of 42.
 
 **The panel agrees, mostly (round 1, TODO 41).** Two of them call it "a raid-and-hold game" in their first sentence. Goal is the panel's lowest score (2.1 of 5), and 7 of 8 asked for a target. Theo: "The game behind those screens is shallower than they are... Silver piles up with nothing to spend it on." Jen, year 4: "stuck in a loop: raid, get ~70, the hall eats ~50, buy 10 men." Dana: "Kings don't react to what I do to them"; her father's killer knelt "and I was given no choice and no line." Mikkel: a kneeling king "gives no tribute and no levies". Ingrid: "Freydis and Ragnhild given mothers and choices; silver I can give (rings to Bjorn, a bride-price, a new ship)." Rafa liked the one other path that exists: hold a realm three summers and its king kneels. **Where they are silent:** nobody asked for faith or for development, and nobody missed intrigue or piety. Those two are Levi's taste, not the panel's. The panel also played only twenty years and three of them died in 799, so nobody saw the middle of the game, where most of this would live.
 
@@ -283,12 +290,15 @@ Every coast already has a culture; faith follows it: norse coasts keep the Old G
 - A king of the other faith never warms past loyal, and will not marry into a heathen house (or will, if the bride is baptized).
 - Raid a church or monastery coast (Lindisfarne, Tours, the famous Cross places) and every Cross king hears of it (a small sour each). Monasteries get weak walls that recover slowly (41B.7), so the sack is rich, easy, and costs you Christendom's opinion.
 - **The baptism** is a one-time deed (42.7): Cross kings warm and the cap lifts, Old-Gods jarls and kings sour and some walk. The line keeps the faith the King dies in; there is no reform and no going back.
+**Decided (Levi, 2026-10-26): A.** As recommended. Not built yet.
 
 ### 42.5 Development (building, not only taking)
 **Recommend:** every coast gets one number, its worth, 1 to 5, shown as a word (poor, modest, fair, rich, great). It replaces the hidden drift that makes a raided coast poorer: a raid knocks a step off, quiet years bring it back. Loot and rent scale with it. On a holding or Vestfold the King can **Build** in spring: silver raises it a step (a hall, a market, a church or a hof), more silver each step. Vestfold's worth is the hall's: more pay, a stronger guard, room on the benches. A rich holding raises its local in fewer quiet years. The tension is the point: raid a coast you mean to hold and you hold a poorer place. It is the silver sink the panel asked for (Theo, 41B.2). Moving the hall (TODO 14) falls out of it: the hall may move to a holding of worth 4 or more. **Flag:** a new number on every coast, but it takes over one that is already there, hidden.
+**Decided (Levi, 2026-10-26): A.** Worth 1–5 as a word, Build raises it, loot and rent scale with it; TODO 14 falls out of it. Not built yet.
 
 ### 42.6 Trade (a path that is not a fight)
 **Recommend:** at a coast whose king is cool or better (or a free coast), the ship may **Trade** instead of raid: no fight, no men lost. It pays by the worth of that coast and of Vestfold and by the men aboard, more at the markets (Hedeby, Birka, Dorestad, Dublin, York), and it warms the coast's king. Raid a coast and nobody trades there for ten years. Trading does not arm a coast, so late in the game it out-earns raiding: that answers TODO 33 with a second road instead of a nerf. It reuses the whole Sail arc; the picker shows a trade profit beside the raid profit.
+**Decided (Levi, 2026-10-26): A.** Trade as recommended. Not built yet.
 
 ### 42.7 Great deeds (CK3's Decisions panel, and the goal)
 The panel's lowest score was goal. **Recommend:** a short list of one-time deeds on the King's card, each with its conditions shown as progress ("Agder ✓ · Rogaland ✓ · Hordaland, Gudrød's"), each with a lasting effect on the line. First list, one or two per path:
@@ -301,12 +311,15 @@ The panel's lowest score was goal. **Recommend:** a short list of one-time deeds
 - *A market town* (a holding at worth 5): it becomes a market for trade (42.6).
 - *Settle the West* (Faroes, Iceland: off the map's edge, far, empty): free land with no defenders and no king, at the price of the voyage.
 The Saga lists each king's deeds; that is what a good king looks like.
+**Decided (Levi, 2026-10-26): A.** The deeds as listed; each deed gets a card (TODO 49). Not built yet.
 
 ### 42.8 Fosterage (education, and diplomacy through a child)
 **Recommend:** a son from 6 to 15 can be fostered: at home (he grows toward the King), with a jarl (toward the jarl's best stat; the jarl warms every year and kneels to the boy at the Oath), or at a king's court (he grows; that king sends no fleet while the boy is with him, a Cross court sends him home baptized, and if the king turns hostile the boy is a hostage). Haakon the Good was fostered by Æthelstan and came home Christian. One placement for a child, like a man's.
+**Decided (Levi, 2026-10-26): A, once per lifetime.** A child is fostered once; the placement stands until he is sixteen or is called home. Not built yet.
 
 ### 42.9 The house remembers (legacy)
 **Recommend:** a byname earned by two kings of the line in a row becomes the house's: every king after starts with it ("the house of the Iron Side"). Deeds (42.7) stay with the line. No currency: the legacy is what the line did.
+**Decided (Levi, 2026-10-26): A.** Not built yet.
 
 **Build order, if all approved:** 42.1 (words only) → 42.2 the wife and the regency (closes 41B.1) → 42.3 in its steps → 42.4 faith → 42.5 worth and Build → 42.6 trade → 42.7 deeds (they name what the rest made possible) → 42.8 → 42.9. The persona harness learns each new verb as it lands (a courtier who marries and treats, a merchant who trades, a builder who sits and builds) and measures whether each path keeps a line alive as well as raiding does.
 
@@ -320,6 +333,7 @@ Levi: a painterly head-and-shoulders portrait for every character in one consist
 
 **Open:**
 - 43.4 Route: A "The Deck" (bake ~2,400 busts bucketed by ~8 genes × 4 age bands, ship ~60 MB) first, B "The Forge" (the PC mints unique children from both parents on the home wifi) later. Recommended, not yet called.
+  **Decided (Levi, 2026-10-26): A, The Deck first.** Levi runs the portrait pipeline himself and cues it; the game does not wait on it and the loop does not run it.
 - 43.5 The proof (`pages/2026-10-26-layer-proof.html`, 2026-10-26): cut-outs and painted backgrounds pass (Levi). Crowns as sprites fail (Levi: wrong size, no wrap, the back in front of the head): a flat sticker cannot know the shape of the head. Replaced by **painted-on crowns**: the edit model (FLUX.2 Klein 4B, ~14 s) repaints the bare bust wearing the crown, same brushwork, hair over the band, back hidden. `pages/2026-10-26-crown-test.html`, awaiting Levi. If it passes, 43.2 changes: a crown is never a layer; a crowned ruler is a second painted version of his own bust, baked for the ruler pool only. Backgrounds stay layers. Pipeline rule learned: paint busts on a flat pale ground (dark grounds eat dark cloaks) and cut with BiRefNet (the fast matting model beheads grey tunics).
 - 43.6 Taste calls still open from the plan page: Forge palette only vs full colour; family presets from photos; Hugging Face login for FLUX 3 Klein.
 - 43.7 The gene schema in the game (the 8 genes, inheritance with mutation, age bands) comes after the proof.
@@ -360,3 +374,17 @@ What a man is today: Combat, Rule, Following, each 1–5 as five dots, and every
 - **A. Same three, more motion (recommended).** Keep three stats and five dots as the read (a sixth, the mark, as a star). Make them move both ways: Combat falls a step past 45 and after a rout; Rule falls when a holding is lost; Following falls when men walk or starve; growth slows with each step (the third raid, then the fifth, then the eighth). A man is then a shape over time, not a bar that fills. Every formula and constant stays as it is. One run with the harness, before and after.
 - **B. Wider scale, more stats.** 1–10, or a fourth stat (Cunning, Faith, Trade, Seamanship) for the paths of 42.3–42.6. Flag: every formula multiplies by the number, so 1–10 doubles the spread of power and retunes every constant in `T`; ten dots do not fit a thumb row at 390 px; a fourth stat is a new noun (GDD §12) and only earns its place when a path reads it (Trade for 42.6, a bargaining stat for 42.3). Better taken when those land, one stat per path that needs it.
 **Recommend:** A now; B's fourth stat when 42.3 or 42.6 lands and asks for it, by number. Answer by letter.
+**Decided (Levi, 2026-10-26): A.** Same three stats, moving both ways, growth slowing by step; harness before and after. Not built yet.
+
+## 48. Pounds of silver? (Levi, 2026-10-26, open)
+Levi: "can we use Pounds of Silver instead of 'silver'? Is that weird? Does it misalign everything mathematically?"
+It misaligns nothing: the silver is a count, and a unit is a word on the count. A man at 3, a raid at 70, a chest at 500 stay as they are; only the noun changes, and it becomes one token in `world.js` so every string reads it. What it does change is the register and the length of every number on the phone. Historically silver was weighed: the Norse reckoned in **marks** (about 200 g, eight ounces, the *øre*), the English and Franks in **pounds** (the Danegeld of 991 was ten thousand pounds). A man for three pounds of silver is lavish but not silly; a man for three marks is about right for a thrall's price.
+- **A. Marks of silver (recommended).** The saga's own word: "seventy marks", "a chest of five hundred marks". Short enough for a row at 390 px; the hall-sitter's thousands read as a hoard. The English chronicle's "pounds" can appear where a Saxon speaks (a Danegeld card, 42.3).
+- **B. Pounds of silver.** What the chronicles count in and what an English reader knows. Longer on a row ("72 pounds of silver"), and "lb" is the wrong register, so the short form would be "72 pounds".
+**Recommend:** A. Either is a copy pass with no number touched; the harness is unchanged. Answer by letter.
+
+## 49. A card for every great deed (Levi, 2026-10-26, open)
+Levi: "a nice shiny holofoil card per great deed with your player character's portrait at the age they achieved it." Portraits come from 43; he cues that pipeline himself.
+- **A. Build the card with 42.7, the portrait slot ready (recommended).** A deed turns as a moment card on the winter night (the frame 41A.5 made), and then lives in the Saga as a card of its own: the King's bust at the age band he did it in (43.2's age bands make this free; the letter frame until the busts land), the deed's name, the year, its lasting effect in one line. The shine is a CSS layer (a gradient that moves with the phone's tilt, or with a thumb when there is no gyro): no library, no image. One kind of card for all eight deeds.
+- **B. Wait for the portraits.** The deeds ship as Saga lines until the busts exist, then the card.
+**Recommend:** A; the card is most of the reward of a deed, and the slot costs nothing now. Answer by letter.

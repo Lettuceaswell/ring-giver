@@ -2,6 +2,10 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-26 (the last blast: 47, 42.4–42.9, 43.4, 14, 16, 17, 28, 30, 40, round 5 decided; 48 and 49 filed)
+
+Levi: **A** on all of it (42.8 once per lifetime; round 5 skipped; 43.4 The Deck, which he runs himself). Two notes filed with recommendations: **TODO 48** pounds of silver (recommend marks), **TODO 49** a holofoil card per great deed with the King's bust at the age he did it (recommend building the card with 42.7, the slot ready). The build order for the night and after: 42.1 words → 47 stats → 41B.7 names and the thing → 41B.5 wash and zoom → 41B.6 champion → 42.2 the wife → 42.3 in steps → 42.5 worth → 42.6 trade → 42.4 faith → 42.7 deeds → 42.8 → 42.9 → 14, 16, 17, 28, 30, 40.
+
 ## 2026-10-26 (42.1, 42.2, 42.3 decided; TODO 47 filed)
 
 Levi: **A, A, A** on the first three of TODO 42 (what stays out into GDD §12; the wife and the blood; kings who answer, in steps). Levi's note that the stats are insufficient and 5 may cap the game filed as **TODO 47** with a recommendation (A: same three stats, moving both ways; B: a wider scale or a fourth stat when a path asks for it). Nothing built.
