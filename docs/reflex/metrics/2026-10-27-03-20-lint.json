@@ -1,0 +1,88 @@
+{
+ "at": "2026-10-27T03:20:32.120Z",
+ "head": "6703367",
+ "tag": "lint",
+ "seeds": 16,
+ "gate": "ok",
+ "smoke": {
+  "ok": true,
+  "bad": [],
+  "seed": "smoke",
+  "day": "2026-10-26",
+  "from": 793,
+  "to": 902,
+  "gens": 14,
+  "deaths": 24,
+  "regents": 4,
+  "stepdowns": 1,
+  "fights": 184,
+  "stays": 62,
+  "winters": 256,
+  "markets": 217,
+  "landfalls": 150,
+  "skipsOK": true,
+  "homes": 69,
+  "lines": 4,
+  "renders": 7740,
+  "reloads": 305,
+  "fails": 0,
+  "log": 410,
+  "holdings": 0,
+  "men": 0,
+  "silver": 17,
+  "lost": 0
+ },
+ "personas": {},
+ "bands": [],
+ "lints": [
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 11.5px"
+  },
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 9.5px"
+  },
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 11px"
+  }
+ ],
+ "notes": [],
+ "fuzz": {
+  "ok": true,
+  "bad": [],
+  "seed": "fuzz-2026-10-27T03",
+  "day": "2026-10-26",
+  "from": 793,
+  "to": 862,
+  "gens": 4,
+  "deaths": 20,
+  "regents": 1,
+  "stepdowns": 1,
+  "fights": 224,
+  "stays": 95,
+  "winters": 270,
+  "markets": 212,
+  "landfalls": 124,
+  "skipsOK": true,
+  "homes": 41,
+  "lines": 4,
+  "renders": 8435,
+  "reloads": 316,
+  "fails": 0,
+  "log": 252,
+  "holdings": 1,
+  "men": 22,
+  "silver": 64,
+  "lost": 1
+ },
+ "bytes": 291294,
+ "todo": {
+  "decided": 30,
+  "built": 28
+ }
+}

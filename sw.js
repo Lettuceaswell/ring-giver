@@ -1,4 +1,4 @@
-const V = 'seaking-v19';
+const V = 'seaking-v20';
 const FILES = ['./', './index.html', './coast.js', './world.js', './game.js', './ui.js', './manifest.json', './icon.svg', './icon-192.png', './icon-512.png',
   './fonts/fraunces.woff2', './fonts/hanken-grotesk.woff2', './fonts/jetbrains-mono.woff2', './mark/ring-small.svg'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });

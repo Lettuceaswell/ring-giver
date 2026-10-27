@@ -114,9 +114,35 @@ function fitMap() {
   const freeC = (bandH + (H - footH)) / 2 / H;
   let w = x1 - x0, h = y1 - y0; const want = W / H; if (w / h > want) h = w / want; else w = h * want;
   const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 + (0.5 - freeC) * h;
-  svg.setAttribute('viewBox', `${(cx - w / 2).toFixed(1)} ${(cy - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
+  svg._base = { cx, cy, w, h }; applyZoom(svg);
 }
 if (typeof addEventListener === 'function') addEventListener('resize', fitMap);
+// ---- Pinch-zoom and pan on the Map pane (TODO 15, 41B.5): the fit is the base; a pinch scales it (1x to 4x), a drag moves it inside the base, a double tap puts it back ----
+UI.zoom = { k: 1, cx: null, cy: null };
+function applyZoom(svg) {
+  const b = svg._base, z = UI.zoom; if (!b) return;
+  z.k = Math.max(1, Math.min(4, z.k)); const w = b.w / z.k, h = b.h / z.k;
+  if (z.cx == null) { z.cx = b.cx; z.cy = b.cy; }
+  z.cx = Math.max(b.cx - (b.w - w) / 2, Math.min(b.cx + (b.w - w) / 2, z.cx)); z.cy = Math.max(b.cy - (b.h - h) / 2, Math.min(b.cy + (b.h - h) / 2, z.cy));
+  svg.setAttribute('viewBox', `${(z.cx - w / 2).toFixed(1)} ${(z.cy - h / 2).toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}`);
+}
+if (typeof document !== 'undefined' && document.addEventListener && typeof Map === 'function') {
+  const PTR = new Map(); let pinch = null, dragged = false, lastTap = 0;
+  const mapSvg = e => e.target && e.target.closest ? e.target.closest('.pane.map svg.map') : null;
+  const upp = svg => (svg._base.w / UI.zoom.k) / svg.clientWidth; // map units per pixel
+  document.addEventListener('pointerdown', e => { const svg = mapSvg(e); if (!svg || !svg._base) return; if (!PTR.size) dragged = false; PTR.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (svg.setPointerCapture) try { svg.setPointerCapture(e.pointerId); } catch (x) {}
+    if (PTR.size === 2) { const [a, b] = [...PTR.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, k: UI.zoom.k }; } });
+  document.addEventListener('pointermove', e => { const p = PTR.get(e.pointerId); if (!p) return; const svg = $('.pane.map svg.map'); if (!svg || !svg._base) return; const u = upp(svg), z = UI.zoom;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y;
+    if (PTR.size === 1) { if (dragged || Math.hypot(dx, dy) > 6) { dragged = true; z.cx -= dx * u; z.cy -= dy * u; applyZoom(svg); } }
+    else if (PTR.size === 2 && pinch) { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...PTR.values()]; dragged = true; z.k = pinch.k * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d; z.cx -= dx * u / 2; z.cy -= dy * u / 2; applyZoom(svg); return; }
+    p.x = e.clientX; p.y = e.clientY; });
+  const up = e => { if (!PTR.has(e.pointerId)) return; PTR.delete(e.pointerId); if (PTR.size < 2) pinch = null;
+    if (!PTR.size && !dragged) { const now = Date.now(); if (now - lastTap < 320) { UI.zoom = { k: 1, cx: null, cy: null }; const svg = $('.pane.map svg.map'); if (svg) applyZoom(svg); dragged = true; } lastTap = now; } };
+  document.addEventListener('pointerup', up); document.addEventListener('pointercancel', up);
+  document.addEventListener('click', e => { if (dragged && mapSvg(e)) { e.stopPropagation(); e.preventDefault(); dragged = false; } }, true); // a drag is not a tap on a coast
+  document.addEventListener('wheel', e => { const svg = mapSvg(e); if (!svg || !svg._base) return; e.preventDefault(); UI.zoom.k *= e.deltaY < 0 ? 1.15 : 1 / 1.15; applyZoom(svg); }, { passive: false });
+}
 // numbers in the band count from last year's value to this one (data-count holds the target)
 function countUp(root) {
   if (reducedMotion || !root.querySelectorAll || typeof requestAnimationFrame !== 'function') return;
@@ -513,7 +539,9 @@ function mapHTML(targets, o = {}) {
   const edges = EDGES.filter(([a, b]) => S.shores[a].known || S.shores[b].known).filter(([a, b]) => (S.shores[a].known || dark.includes(S.shores[a])) && (S.shores[b].known || dark.includes(S.shores[b])))
     .map(([a, b]) => `<line class="edge${S.shores[a].known && S.shores[b].known ? '' : ' dark'}" x1="${S.shores[a].x}" y1="${S.shores[a].y}" x2="${S.shores[b].x}" y2="${S.shores[b].y}"/>`).join('');
   // known realms, tinted: one blob per king, drawn under the coast dots (GDD §15.3)
-  const realms = Object.values(S.rulers).filter(k => k.known).map(k => `<g class="realm" style="color:var(--${k.tint})">${EDGES.filter(([a, b]) => k.coasts.includes(a) && k.coasts.includes(b)).map(([a, b]) => `<line x1="${S.shores[a].x}" y1="${S.shores[a].y}" x2="${S.shores[b].x}" y2="${S.shores[b].y}"/>`).join('')}${k.coasts.map(id => `<circle cx="${S.shores[id].x}" cy="${S.shores[id].y}" r="11"/>`).join('')}</g>`).join('');
+  const wash = ids => `${EDGES.filter(([a, b]) => ids.includes(a) && ids.includes(b)).map(([a, b]) => `<line x1="${S.shores[a].x}" y1="${S.shores[a].y}" x2="${S.shores[b].x}" y2="${S.shores[b].y}"/>`).join('')}${ids.map(id => `<circle cx="${S.shores[id].x}" cy="${S.shores[id].y}" r="11"/>`).join('')}`;
+  const realms = Object.values(S.rulers).filter(k => k.known).map(k => `<g class="realm${k.broken ? ' broken' : ''}" style="color:var(--${k.tint})">${wash(k.coasts.filter(id => !isHolding(S, id)))}</g>`).join('')
+    + `<g class="realm mine">${wash([HOME_ID, ...S.holdings.map(h => h.id)])}</g>`; // the player's coasts in his own colour, over a king's; a broken king's wash fades (41B.5)
   const dots = known.map(x => {
     const mine = x.id === HOME_ID || isHolding(S, x.id), tgt = targets && targets.includes(x.id);
     const cls = x.id === HOME_ID ? 'home' : isHolding(S, x.id) ? 'hold' : x.seen ? (x.holdable ? 'seen' : 'seen nohold') : '';
