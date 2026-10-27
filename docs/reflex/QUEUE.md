@@ -31,7 +31,8 @@ Class per RUBRIC.md (A build now · B decided, build in order · C never build, 
 | Q14 | Draft the winter deck's list to sixteen cards (TODO 16) as a page for Levi; no card introduces a new noun | C (prepare) | Juice / Saga | 2 | TODO 16 | a list, not code |
 | ~~Q15~~ | ~~41B.7: period names, the thing, the monasteries~~ **built session 20** (with TODO 17's lines) | B | Saga | — | | the names table waits for 42.3's mortal kings to read past 793 |
 | ~~Q22~~ | ~~41B.5: the wash and pinch-zoom~~ **built session 20** | B | Thumb / Juice | — | | Q4's label nudge is what is left on the map |
-| Q23 | **41B.6 decided A:** a champion offered on the reckoning after a rout, a seaman card the player can refuse, once per reign-decade; the bench cap tuned with the harness | B | People / Want | 4 | decided 2026-10-26 | teach a persona to take him |
+| ~~Q23~~ | ~~41B.6: the champion after a rout~~ **built session 20** | B | People / Want | — | | |
+| Q25 | The personas now refuse a sure raid worth under five men (`FLOOR` in personas.js) and sail blind instead; levi sails blind ~90 summers a line because by 850 every free coast is drained or a king's seat. That is the late-game "nothing to raid" measured; TODO 40 (decided A: a king's coasts richer) is the answer, and `turned home` reads 0 since no landfall is ever under 0.2 | A (evidence) | Want / Teeth | 4 | session 20 | build 40 next in the Want lane |
 
 ## Waiting on the Director (do not build; keep the recommendation current)
 

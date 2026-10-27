@@ -793,12 +793,20 @@ function reckonHTML(sc) {
   if (sc.owner) r.push([`${esc(sc.owner.name)}, whose coast`, sc.owner.st0 === sc.owner.st1 ? `still ${sc.owner.st1}` : `${sc.owner.st0} → ${sc.owner.st1}`]);
   const led = sc.crew.filter(c => c.isKing || c.men0 > 0 || c.fell), idle = sc.crew.filter(c => !(c.isKing || c.men0 > 0 || c.fell));
   const gains = c => { if (c.fell) return c.isKing ? '<em>fell in the shield wall</em>' : `<em>fell</em>${c.unled ? ` · ${c.unled === 1 ? 'one man walks' : `${c.unled} men walk`} home unled` : ''}`;
-    const g = []; if (c.men0 - c.men1) g.push(`−${nMen(c.men0 - c.men1)}`); if (c.f1 > c.f0) g.push(`<b>Follow ${c.f0} → ${c.f1}</b>`); if (c.c1 > c.c0) g.push(`<b>Combat ${c.c0} → ${c.c1}</b> · raid ${c.raids}`);
+    const g = []; if (c.men0 - c.men1) g.push(`−${nMen(c.men0 - c.men1)}`); if (c.f1 > c.f0) g.push(`<b>Follow ${c.f0} → ${c.f1}</b>`); if (c.c1 > c.c0) g.push(`<b>Combat ${c.c0} → ${c.c1}</b> · raid ${c.raids}`); if (c.c1 < c.c0) g.push(`<em>Combat ${c.c0} → ${c.c1}</em> · he led them in`);
     if (!c.isKing && c.d > 0) g.push(`<b>↑</b> ${c.st1}`); else if (!c.isKing && c.d < 0) g.push(`<em>↓</em> ${c.st1}`); return g.join(' · ') || 'unhurt'; };
   const tag = c => c.isKing ? 'King' : c.son ? 'son' : c.sworn ? 'sworn' : c.kin ? 'kin' : '';
   return `<div class="acct">${r.map(([a, b, c]) => `<span class="${c || ''}">${a}</span><span class="${c || ''}">${b}</span>`).join('')}</div>
     <h2>The crew</h2><div class="bcrew">${led.map(c => `<div class="cm${c.fell ? ' fell' : c.f1 > c.f0 || c.c1 > c.c0 ? ' up' : ''}"><i></i><div><div class="n">${esc(c.name)}${tag(c) ? `<small>${tag(c)}</small>` : ''}</div><div class="g">${gains(c)}</div></div><div class="m">${c.fell ? '—' : `<b>${c.men1}</b> of ${c.men0}`}</div></div>`).join('')}</div>
-    ${idle.length ? `<div class="cnote">${esc(idle.map(c => c.name).join(', '))} sailed with no men to lead.</div>` : ''}`;
+    ${idle.length ? `<div class="cnote">${esc(idle.map(c => c.name).join(', '))} sailed with no men to lead.</div>` : ''}${championHTML(sc)}`;
+}
+// a champion after a rout (41B.6): his line, his stats, and two buttons that undo each other; the state shows on the row
+function championHTML(sc) {
+  const c = sc.champion; if (!c) return '';
+  const st = c.taken === true ? 'taken' : c.taken === false ? 'gone' : '';
+  return `<h2>A champion</h2><div class="champ ${st}"><div class="n">${esc(c.name)}<small>of ${esc(shoreOf(sc.shore).name)}</small></div><div class="g">${esc(c.line)}</div>
+    <div class="st">C <b>${c.combat}</b> · R <b>${c.rule}</b> · F <b>${c.follow}</b> · age ${c.age} · a bench ${benchRoom(S) || c.taken ? 'is free' : 'is not free'}</div>
+    <div class="actions"><button class="${c.taken ? '' : 'primary'}" ${c.taken || !benchRoom(S) ? 'disabled' : ''} onclick="act(()=>takeChampion(S))">${c.taken ? 'He sails with the King' : 'Take him'}</button><button ${c.taken === false ? 'disabled' : ''} onclick="act(()=>refuseChampion(S))">${c.taken === false ? 'He stays with his own' : c.taken ? 'Leave him' : 'Refuse'}</button></div></div>`;
 }
 function fightFoot(sc) {
   const nx = S.queue[1], king = sc.crew.find(c => c.isKing && c.fell);

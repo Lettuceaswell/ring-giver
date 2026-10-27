@@ -21,8 +21,9 @@
 module.exports = function (G) {
   const { has, isHolding, winOdds, strengthShip, stanceWord, fCap, stayUnrest, holdPay, menRoom, giftPrice, HOME_ID, T } = G;
   const jarlsOf = s => s.notables.filter(m => !m.isKing);
+  const FLOOR = T.manPrice * 5; // a sure raid worth less than this (five men's worth; at ten men's the persona sailed blind half its years) does not beat sailing blind (session 20: a drained monastery sits at five silver, sure, forever, and the personas stopped exploring)
   const seenCands = (s, S) => Object.values(s.shores).filter(x => x.seen && x.id !== HOME_ID && !isHolding(s, x.id))
-    .map(x => ({ x, p: winOdds(S, x.def), ev: x.loot * winOdds(S, x.def) }));
+    .map(x => ({ x, p: winOdds(S, x.def), ev: x.loot * winOdds(S, x.def) })).filter(o => o.ev >= FLOOR);
   const holdable = (s, x) => x.holdable;
 
   const DEFAULT_TITLES = ['ironside', 'deepchest', 'landtaker', 'fairdealer', 'hallward', 'seawolf', 'ringgiver', 'lawgiver', 'beloved', 'oldwise', 'farsailor', 'silvertongue'];

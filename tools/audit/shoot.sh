@@ -3,7 +3,7 @@
 #   tools/audit/shoot.sh setup            builds the harness dir (symlinks to the game, a driver page, saved states) and starts a server on :8766
 #   tools/audit/shoot.sh NAME 'HASH'      shoots http://127.0.0.1:8766/index.html#HASH to tools/audit/out/NAME.png at 390x844, 2x
 # HASH keys (driver page): state=<name from states/>  pane=map|ship|hall  saga=1  picker=1  man=<index into S.notables>  ruler=1
-#   dest=<coast id or empty>  board=1  unboard=1  rumor=<coast id>  delta=<silver>&dmen=<men>  nobeat=1 (skips the arrival and ledger beats)  buy=<n> (buy n men; shoot it on a market sheet)  hall=<tier 0-3> (set the hall's tier)  hallsheet=1 (open the hall sheet)  silver=<n> (set the chest)  fresh=1&start=ragnar  market=1 (queue a market sheet behind queue[0]; with shift=1, shoot the market)  shift=1 (drop queue[0])  next=1 (run next(S): what follows the card)  still=1 (no animations: shoot an opened sheet settled)  zoom=<k>&zx=<x>&zy=<y> (the map pinched to k around a map point)  rolled=1 (the King's card turned)  answer=yes|no (the suitor answered)  click=<selector>[|<selector>] (tap these after render)  scroll=<px> (scroll the open sheet, before any click)
+#   dest=<coast id or empty>  board=1  unboard=1  rumor=<coast id>  delta=<silver>&dmen=<men>  nobeat=1 (skips the arrival and ledger beats)  buy=<n> (buy n men; shoot it on a market sheet)  hall=<tier 0-3> (set the hall's tier)  hallsheet=1 (open the hall sheet)  silver=<n> (set the chest)  fresh=1&start=ragnar  market=1 (queue a market sheet behind queue[0]; with shift=1, shoot the market)  shift=1 (drop queue[0])  next=1 (run next(S): what follows the card)  still=1 (no animations: shoot an opened sheet settled)  zoom=<k>&zx=<x>&zy=<y> (the map pinched to k around a map point)  champ=1|taken|gone (a champion on the fight's reckoning)  played=1 (the battle already fought: the reckoning shows)  rolled=1 (the King's card turned)  answer=yes|no (the suitor answered)  click=<selector>[|<selector>] (tap these after render)  scroll=<px> (scroll the open sheet, before any click)
 set -e
 ROOT=$(cd "$(dirname "$0")/../.." && pwd); H=$ROOT/tools/audit/harness; OUT=$ROOT/tools/audit/out
 if [ "$1" = setup ]; then
@@ -22,7 +22,7 @@ driver='''<script>window.onerror=(m,s,l)=>{document.title="ERR "+m+" "+l};
   if(h.get('hall')){S.hall=+h.get('hall');S.hallYears=[S.year-12,S.year-6,S.year-1].slice(0,S.hall);} if(h.get('silver')){S.silver=+h.get('silver');} if(h.get('hallsheet')){UI.hall=true;}
   if(h.get('market')){S.queue.push({t:'market'});} if(h.get('shift')){S.queue.shift();} if(h.get('next')){act(()=>next(S));}
   const q=h.get('pane');if(q)UI.pane=q;if(h.get('saga'))UI.saga=true;if(h.get('picker'))UI.picker=true;
-  if(h.get('zoom')){UI.zoom={k:+h.get('zoom'),cx:h.get('zx')?+h.get('zx'):null,cy:h.get('zy')?+h.get('zy'):null};}if(h.get('man')){UI.man=S.notables[+h.get('man')].id;}if(h.get('ruler')){UI.man=Object.values(S.rulers).find(k=>k.known).id;}
+  if(h.get('played')&&S.queue[0]&&S.queue[0].t==='fight'){UI.fightDone=fightKey(S.queue[0]);}if(h.get('champ')&&S.queue[0]&&S.queue[0].t==='fight'){S.queue[0].champion={name:'Osric',combat:4,rule:1,follow:3,age:24,line:LINES.champion[0]('Osric',S.shores[S.queue[0].shore].name),taken:h.get('champ')==='taken'?true:h.get('champ')==='gone'?false:null};}if(h.get('zoom')){UI.zoom={k:+h.get('zoom'),cx:h.get('zx')?+h.get('zx'):null,cy:h.get('zy')?+h.get('zy'):null};}if(h.get('man')){UI.man=S.notables[+h.get('man')].id;}if(h.get('ruler')){UI.man=Object.values(S.rulers).find(k=>k.known).id;}
   if(h.get('dest')!==null){S.destination=h.get('dest')||null;}
   if(h.get('board')){boardAll(S);} if(h.get('unboard')){for(const m of S.notables)m.place='home';}
   if(h.get('rumor')){S.rumorOffer=h.get('rumor');}
@@ -31,7 +31,7 @@ driver='''<script>window.onerror=(m,s,l)=>{document.title="ERR "+m+" "+l};
   if(h.get('buy')){UI.buy=+h.get('buy');act(()=>buyMen(S,UI.buy));}
   if(h.get('still')){const st=document.createElement('style');st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}';document.head.appendChild(st);}
   render();
-  if(h.get('scroll')){const e=document.querySelector('.scene');if(e)e.scrollTop=+h.get('scroll');}
+  if(h.get('scroll')){const e=document.querySelector('.battle .stage')||document.querySelector('.scene');if(e)e.scrollTop=+h.get('scroll');}
   if(h.get('click')){for(const sel of h.get('click').split('|')){const e=document.querySelector(sel);if(e)e.click();}}};
 })();</script>
 <script src="ui.js"></script><script>__after()</script>'''

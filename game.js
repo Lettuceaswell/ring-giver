@@ -15,7 +15,8 @@ const T = { startMen: 40, menPerF: 10, manPrice: 3, upkeep: 1, rumor: 20, startY
   build: { market: 300, longhouse: 300, palisade: 200 }, marketPay: 0.5, longhouseMen: 5, palisadeCalm: 20,
   hall: { price: [400, 800, 1600], bench: 1, quiet: 1, seaman: 1, oath: 0.15 },
   grow: [2, 3, 5, 8], growF: [1, 1, 2, 3], ageFall: [50, 60],
-  holyMend: 1.03, holyWall: 2, holySack: 0.3 }; // 41B.7, a monastery: its treasure comes back at holyMend a year (a town's at 1.1), its wall rises a tenth a sack and never past holyWall x its own; a sack leaves holySack of its treasure (a town keeps 0.6): the monks flee with the rest, so it is raided once a generation, as Lindisfarne was // TODO 47: a stat rises by doing, slower each step (raids or held summers to the next step, by the stat as it stands; big wins for Following), and falls by what goes wrong: a lost fight (the man who led), a holding lost, a named man who walks from a hungry hall, and the arm at 50 and 60; swept at 16 seeds, TODO 47: 3/5/8/12 and 46/56 took the King's Combat from 4.9 to 3.7 and doubled the idle chest // 41B.2 (reflex run 3), raise the hall: three tiers in spring; each adds a bench, takes a year off the wait for a new man, +1 to the seaman's weight in the winter deck, and 15% off the next Oath's price; cumulative // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
+  holyMend: 1.03, holyWall: 2, holySack: 0.3,
+  championEvery: 10, championWall: 80 }; // a champion comes only from a line worth breaking (defenders at least championWall: a monastery's monks make none); // 41B.6: after a rout, once in this many years of a reign and only with a bench free, a fighter of the broken coast asks to follow the King; the reckoning lets the player refuse him // 41B.7, a monastery: its treasure comes back at holyMend a year (a town's at 1.1), its wall rises a tenth a sack and never past holyWall x its own; a sack leaves holySack of its treasure (a town keeps 0.6): the monks flee with the rest, so it is raided once a generation, as Lindisfarne was // TODO 47: a stat rises by doing, slower each step (raids or held summers to the next step, by the stat as it stands; big wins for Following), and falls by what goes wrong: a lost fight (the man who led), a holding lost, a named man who walks from a hungry hall, and the arm at 50 and 60; swept at 16 seeds, TODO 47: 3/5/8/12 and 46/56 took the King's Combat from 4.9 to 3.7 and doubled the idle chest // 41B.2 (reflex run 3), raise the hall: three tiers in spring; each adds a bench, takes a year off the wait for a new man, +1 to the seaman's weight in the winter deck, and 15% off the next Oath's price; cumulative // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -407,6 +408,10 @@ function chooseTarget(s, id) {
     return { name: m.name, isKing: !!m.isKing, kin: !!m.kin, sworn: !!m.sworn && !m.wed, son: !!m.son, men0: x.men, men1: m.men, c0: x.c, c1: m.combat, f0: x.f, f1: m.follow, st0: stanceWord(x.stance), st1: stanceWord(m.stance), d: (m.stance || 0) - x.stance, raids: m.raids, fell, at: fell ? fellAt.get(m) : null, unled: fell && !m.isKing ? m.men : 0 }; });
   const res = { t:'fight', shore: id, S, D, Sr: Math.round(S * b.mean), mean: +b.mean.toFixed(3), win, margin, loot, loot0, losses, odds: winOdds(S, D), fallP: +fallP.toFixed(4), risk: +fightRisk(S, D, has(s,'ironside')).fall.toFixed(4),
     phases, crew, def0, def1: sh.def, owner: own0 ? { name: own0.name, st0: stanceWord(own0.stance + T.raidSour), st1: stanceWord(own0.stance) } : null, wolf: has(s,'seawolf') };
+  // a champion after a rout (41B.6): once a reign-decade, with a bench free, a fighter of the broken line asks to follow the King; Take him or Refuse on the reckoning
+  if (win && margin > 1 && D >= T.championWall && benchRoom(s) && s.year - (s.reign.champion ?? -999) >= T.championEvery) {
+    const cr = rng(s.day + ':champion:' + s.year + id), nm = freshName(s, LOCAL_NAMES[sh.culture], cr, sh.name);
+    res.champion = { name: nm, combat: 3 + cr.int(0, 2), rule: 1 + cr.int(0, 1), follow: 2 + cr.int(0, 1), age: 18 + cr.int(0, 10), line: cr.pick(LINES.champion)(nm, sh.name), taken: null }; s.reign.champion = s.year; }
   s.queue.shift(); // the arrive card
   s.queue.unshift(res);
   const canStay = win && sh.holdable && (sh.walked || ship.some(m => !m.isKing && !fallen.includes(m)));
@@ -424,6 +429,10 @@ function turnHome(s) {
   log(s, 'The ship turned for home. Nothing on those coasts was worth the men.');
   next(s);
 }
+// the champion's two buttons are an undo pair: Take him puts him on the ship, Refuse takes him off again, until the reckoning is left (41B.6)
+function takeChampion(s) { const sc = s.queue[0], c = sc && sc.t === 'fight' && sc.champion; if (!c || c.taken) return; if (!benchRoom(s)) return;
+  const m = makeMan(c.name, c.combat, c.rule, c.follow, { age: c.age, place: 'ship', sailed: true }); s.notables.push(m); c.taken = true; c.id = m.id; s.deeds.champions = (s.deeds.champions || 0) + 1; log(s, `${c.name} of ${s.shores[sc.shore].name} follows the King home.`); }
+function refuseChampion(s) { const sc = s.queue[0], c = sc && sc.t === 'fight' && sc.champion; if (!c) return; if (c.taken) { s.notables = s.notables.filter(m => m.id !== c.id); s.deeds.champions--; s.log = s.log.filter(l => !(l.y === s.year && /follows the King home/.test(l.t))); } c.taken = false; }
 function plunder(s, loot, id) {
   s.silver += loot; if (s.yr) { s.yr.loot += loot; s.yr.from = s.shores[id].name; }
   if (!s.reign.bestRaid || loot > s.reign.bestRaid.loot) s.reign.bestRaid = { loot, shore: s.shores[id].name, year: s.year };

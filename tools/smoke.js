@@ -14,7 +14,7 @@ global.navigator = {};
 const src = ['coast.js', 'world.js', 'game.js', 'ui.js'].map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
 // expose everything: strip top-level const/let so they become globals under eval in sloppy mode
 const code = src.replace(/^(const|let) /gm, 'var ');
-let fails = 0, markets = 0, renders = 0, regents = 0, stepdowns = 0;
+let fails = 0, champions = 0, markets = 0, renders = 0, regents = 0, stepdowns = 0;
 const check = (where) => { renders++; const h = app.innerHTML; for (const bad of ['undefined', 'NaN', '[object', 'null silver']) if (h.includes(bad)) { fails++; console.log('BAD', where, bad, h.slice(Math.max(0, h.indexOf(bad) - 120), h.indexOf(bad) + 40).replace(/\s+/g, ' ')); if (fails > 8) process.exit(1); } };
 eval(code);
 // start
@@ -27,7 +27,9 @@ function drive() {
   const sc = S.queue[0];
   if (!sc) return false;
   if (sc.t === 'arrive') { landfalls++; const Sh = strengthShip(S); if (sc.targets.every(id => winOdds(Sh, S.shores[id].def) < 0.2) && r() < 0.6) { homes++; act(() => turnHome(S)); } else act(() => chooseTarget(S, sc.targets[0])); }
-  else if (sc.t === 'fight') { fights++; check('battle'); UI.fightDone = fightKey(sc); render(); check('battle fought'); if (!app.innerHTML.includes('bverdict')) { console.log('no verdict', S.year); fails++; } act(() => next(S)); }
+  else if (sc.t === 'fight') { fights++; check('battle'); UI.fightDone = fightKey(sc); render(); check('battle fought'); if (!app.innerHTML.includes('bverdict')) { console.log('no verdict', S.year); fails++; }
+    if (sc.champion) { champions++; if (!app.innerHTML.includes('class="champ')) { console.log('no champion row', S.year); fails++; } const n0 = S.notables.length; act(() => takeChampion(S)); if (S.notables.length !== n0 + 1 || sc.champion.taken !== true) { console.log('champion not taken', S.year); fails++; } check('champion taken'); act(() => refuseChampion(S)); if (S.notables.length !== n0 || sc.champion.taken !== false) { console.log('champion not refused', S.year); fails++; } check('champion refused'); if (r() < 0.7) act(() => takeChampion(S)); }
+    act(() => next(S)); }
   else if (sc.t === 'stay') { const ship = S.notables.filter(m => m.place === 'ship' && !m.isKing); if (ship.length && r() < 0.6) { stays++; act(() => chooseStay(S, ship[0].id)); } else if (sc.walked && r() < 0.5) { act(() => chooseStay(S, 'walked')); } else act(() => choosePlunder(S)); }
   else if (sc.t === 'winter') { winters++; check('winter'); act(() => closeWinter(S)); }
   else if (sc.t === 'market') { markets++; if (!canMarket(S)) { console.log('market opened on a chest that cannot buy', S.year); fails++; } if (S.silver > 60 && r() < 0.7) act(() => buyMen(S, 10)); check('market'); if (!app.innerHTML.includes('id="bbuy"')) { console.log('market sheet has no buy', S.year); fails++; } act(() => next(S)); }
@@ -113,7 +115,7 @@ while (S && maxYears-- > 0) {
   } else act(() => sail(S));
   check('after sail');
 }
-console.log(JSON.stringify({ seed: SEED, day: DAY, from: year0, to: S && S.year, gens: S && S.gen, deaths, regents, stepdowns, fights, stays, winters, markets, landfalls, skipsOK: skips > 0, homes, lines, renders, reloads, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
+console.log(JSON.stringify({ seed: SEED, day: DAY, from: year0, to: S && S.year, gens: S && S.gen, deaths, regents, stepdowns, fights, stays, winters, markets, champions, landfalls, skipsOK: skips > 0, homes, lines, renders, reloads, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
 // the end card and begin again
 if (S && S.queue[0] && S.queue[0].t === 'end') { render(); check('end'); act(() => { archive(S, 'reached 1066'); S = null; }); check('setup after end'); if (!app.innerHTML.includes('Past kings')) { console.log('no past kings'); fails++; } }
 // a fresh run: two-tap abandon
