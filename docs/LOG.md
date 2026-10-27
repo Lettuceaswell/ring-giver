@@ -2,6 +2,10 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-26 (41B.5, 41B.6, 41B.7 decided)
+
+Levi: **A, A, A.** The wash on held coasts with pinch-zoom (41B.5 + TODO 15); a champion offered after a rout, once per reign-decade (41B.6); period names, "hire men at the thing", monasteries with weak walls (41B.7). Queue rows Q22, Q23, Q15 now class B. Not built yet.
+
 ## 2026-10-26 (TODO 46 decided)
 
 Levi: **A**, keep the sail tax. The fleet draws on the autumn chest as 41B.4 left it; the measure's info rows keep watching; nothing to build.

@@ -28,11 +28,13 @@ Class per RUBRIC.md (A build now · B decided, build in order · C never build, 
 | Q12 | LLM playtest round 2: two agents from `spring-850` (one in-genre, one outside), the brief's categories, to measure 41A and see the middle game nobody saw | A (evidence) | Want / People | 3 | LOG 15 "next round" | ~300k tokens per agent; run on the evidence cadence |
 | Q13 | Mono micro-labels at 9.5 / 11 / 11.5 px: look at them on the phone shots; keep or lift to 12 | A | Thumb | 2 | lint | judge |
 | Q14 | Draft the winter deck's list to sixteen cards (TODO 16) as a page for Levi; no card introduces a new noun | C (prepare) | Juice / Saga | 2 | TODO 16 | a list, not code |
-| Q15 | Period names per anchor and "hire men at the thing" (41B.7) — a names table ready for his yes | C (prepare) | Saga | 2 | panel, history teacher | prepare only |
+| Q15 | **41B.7 decided A:** period names per anchor, the market renamed "hire men at the thing", monasteries with their own line and weak walls that recover slowly; copy and names, no rule | B | Saga | 4 | panel, history teacher; decided 2026-10-26 | names first, then the thing, then the monasteries |
+| Q22 | **41B.5 decided A:** a wash in the player's colour on held coasts, a broken king's wash fading, and pinch-zoom and pan (TODO 15) in the same session | B | Thumb / Juice | 4 | decided 2026-10-26 | one session; shoot every map state after |
+| Q23 | **41B.6 decided A:** a champion offered on the reckoning after a rout, a seaman card the player can refuse, once per reign-decade; the bench cap tuned with the harness | B | People / Want | 4 | decided 2026-10-26 | teach a persona to take him |
 
 ## Waiting on the Director (do not build; keep the recommendation current)
 
-41B.5 paint the player's coasts (+ pinch-zoom, TODO 15) · 41B.6 named men on demand · 41B.7 period and tone · TODO 40 richer king coasts · TODO 28 stirs as noise · TODO 30 0.5 as a gamble · TODO 14 moving the hall · TODO 16 more winter events · TODO 17 unholdable shores · all of TODO 42 (42.1–42.9) · 43.4 portrait route · round 5 of the audit.
+TODO 40 richer king coasts · TODO 28 stirs as noise · TODO 30 0.5 as a gamble · TODO 14 moving the hall · TODO 16 more winter events · TODO 17 unholdable shores · all of TODO 42 (42.1–42.9) · 43.4 portrait route · round 5 of the audit.
 
 ## Sources harvested (so a run does not re-read them)
 
