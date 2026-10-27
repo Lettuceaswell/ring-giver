@@ -2,6 +2,10 @@
 
 Newest first. Read this before touching anything.
 
+## 2026-10-26 (reflex run 3: the band that moved, an evidence run)
+
+The measure opened on a band out: levi's luck in play 7.0 → 2.9 against 4–10, with session 19's two changes shipped between runs and no measure run after them. Bisected in worktrees: the hall tiers change nothing for levi; the card before the market (41B.4 A) does it, because the rival deck's rich-chest weight and the hall-slay roll now read the autumn chest, before the men are bought. At 16 seeds the luck move is mostly dice (5.9 → 4.7, per-seed 0–16%), but the sail tax is real: silver to sails 354 → 1,418 a line, Kings slain in their door 1.3 → 3.6. A `richHall` sweep at 8 seeds was chaos, not a lever; not shipped. **Shipped:** `measure.js` at 16 seeds with three watched info rows (sails, silver to sails, kings in the door) and a like-for-like warning when the seed count changes; the gates line in CLAUDE.md asks any session that changes a rule outside the loop to run the measure. No game file changed. **TODO 46** filed: keep the tax (recommended), rescale `richHall`, or take the loss after the market. After: gate ok, fuzz clean, luck 4.73 pass, lost 1.33 WARN as since run 0.
+
 ## 2026-10-26 (session 19: the card before the market, the hall tiers)
 
 Levi's calls: **41B.4 A** (turn the winter card before the market) and **build both**, the reorder and the hall tiers (41B.2's third step). Run as a lean delegation: two scouts and two builders on cheaper models, the plan and the sign-off here.

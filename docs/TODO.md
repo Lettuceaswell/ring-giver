@@ -339,3 +339,10 @@ The builder persona priced 41B.2's buildings. One-off buildings that pay back ar
 - **C. Priced by the coast.** A Market costs ten years of that coast's rent, a Longhouse ten years of its men's price, so a rich coast's buildings are dear and a poor one's cheap. Not yet swept; a run's work with the harness.
 **Recommend:** A now; sweep C after the hall tiers land, when the whole sink can be seen at once. Answer by letter.
 **Decided (Levi, 2026-10-26): A.** Dear and few stands as built (300/300/200). C stays a sweep for after the hall tiers, not a change.
+
+## 46. The sail tax: the strange fleet draws on the autumn chest (reflex run 3, 2026-10-26)
+41B.4 A turned the winter card before the market. A side effect nobody priced: the rival deck's "a rich chest draws sails" weight and the hall-slay roll now read the chest before the men are bought, so a good summer draws the fleet before it can be turned into men. The levi persona at 16 seeds, before → after the reorder: sails up the fjord 51 → 59 a line, **silver a fallen hall gave the fleet 354 → 1,418 a line, Kings killed in their own door 1.3 → 3.6 a line**, the hall fell 6.6 → 8.6 times, the chest 548 → 612 (he keeps more back). The fight bands barely moved (luck in play 5.9 → 4.7, both in band). Three ways to go:
+- **A. Keep it (recommended).** The fjord is where the careful player is afraid in year seven, and the guard (King stays home, a jarl's following) is the verb that answers it; one King in the door every 75 years is a card, not a habit. The three info rows in `measure.js` keep watching it.
+- **B. Rescale `richHall`** (300 → about 450) so "rich" means rich by the autumn chest's standard, as the rule was tuned. An 8-seed sweep was chaos (levi's hall fell 9 / 12.6 / 13.6 / 12.8 times at 300 / 400 / 500 / 600); it needs 16 seeds before and after, one run.
+- **C. The sail's loss taken after the market.** The card is turned on the autumn chest, the 30% is taken from what is left after the men are bought. Two chests on one card; not recommended.
+**Recommend:** A. Answer by letter.

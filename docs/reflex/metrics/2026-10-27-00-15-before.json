@@ -1,0 +1,311 @@
+{
+ "at": "2026-10-27T00:15:57.048Z",
+ "head": "c3da74f",
+ "tag": "before",
+ "seeds": 8,
+ "gate": "ok",
+ "smoke": {
+  "ok": true,
+  "bad": [],
+  "seed": "smoke",
+  "day": "2026-10-26",
+  "from": 793,
+  "to": 864,
+  "gens": 8,
+  "deaths": 29,
+  "regents": 1,
+  "stepdowns": 1,
+  "fights": 277,
+  "stays": 121,
+  "winters": 304,
+  "markets": 260,
+  "landfalls": 84,
+  "skipsOK": true,
+  "homes": 21,
+  "lines": 4,
+  "renders": 10596,
+  "reloads": 368,
+  "fails": 0,
+  "log": 262,
+  "holdings": 1,
+  "men": 22,
+  "silver": 133,
+  "lost": 1
+ },
+ "personas": {
+  "raider": {
+   "broke": 1,
+   "lossPct": 27.681441265757304,
+   "luckPct": 2.202445827888045,
+   "starveYears": 1.375,
+   "chestAvg": 36.90454884279767,
+   "holdAt850": 0,
+   "finalHoldings": 0,
+   "kingFell": 2,
+   "endYear": 832.75,
+   "gens": 3.875
+  },
+  "rover": {
+   "broke": 0.5,
+   "lossPct": 1.8438645428705231,
+   "luckPct": 11.068039587515909,
+   "starveYears": 7.25,
+   "chestAvg": 50.46990231990232,
+   "holdAt850": 0,
+   "finalHoldings": 0,
+   "kingFell": 1.875,
+   "endYear": 968.75,
+   "gens": 10.25
+  },
+  "settler": {
+   "broke": 0,
+   "lossPct": 2.8433875372302766,
+   "luckPct": 10.114485368953218,
+   "starveYears": 18.5,
+   "chestAvg": 249.03525641025638,
+   "holdAt850": 32.8625,
+   "finalHoldings": 32.875,
+   "kingFell": 0,
+   "endYear": 1066,
+   "gens": 15
+  },
+  "miser": {
+   "broke": 0.625,
+   "lossPct": 2.7157738095238098,
+   "luckPct": 25.432900432900432,
+   "starveYears": 0,
+   "chestAvg": 458.4024153292417,
+   "holdAt850": 1.78,
+   "finalHoldings": 1,
+   "kingFell": 0.25,
+   "endYear": 934.25,
+   "gens": 25.75
+  },
+  "reckless": {
+   "broke": 0.75,
+   "lossPct": 47.17948717948718,
+   "luckPct": 0.22893772893772896,
+   "starveYears": 2.375,
+   "chestAvg": 99.5195054945055,
+   "holdAt850": 16.46666666666667,
+   "finalHoldings": 7.75,
+   "kingFell": 2,
+   "endYear": 870.875,
+   "gens": 18.75
+  },
+  "hall-sitter": {
+   "broke": 0,
+   "lossPct": 0.497843392055183,
+   "luckPct": 2.8624416391380696,
+   "starveYears": 8,
+   "chestAvg": 3331.819597069597,
+   "holdAt850": 24.550000000000004,
+   "finalHoldings": 28,
+   "kingFell": 0,
+   "endYear": 1066,
+   "gens": 14.375
+  },
+  "courtier": {
+   "broke": 0.25,
+   "lossPct": 0,
+   "luckPct": 0,
+   "starveYears": 13.25,
+   "chestAvg": 193.24116300366302,
+   "holdAt850": 25.25,
+   "finalHoldings": 24.625,
+   "kingFell": 0.25,
+   "endYear": 999.125,
+   "gens": 15.125
+  },
+  "builder": {
+   "broke": 0.25,
+   "lossPct": 0.9667277772532233,
+   "luckPct": 4.611818966291826,
+   "starveYears": 8.75,
+   "chestAvg": 492.291163003663,
+   "holdAt850": 21.933333333333334,
+   "finalHoldings": 23.25,
+   "kingFell": 0.625,
+   "endYear": 999.125,
+   "gens": 12.75
+  },
+  "levi": {
+   "broke": 0,
+   "lossPct": 0.7448227150139015,
+   "luckPct": 2.891521425493501,
+   "starveYears": 19.5,
+   "chestAvg": 437.50045787545787,
+   "holdAt850": 28.1,
+   "finalHoldings": 32.5,
+   "kingFell": 1.375,
+   "endYear": 1066,
+   "gens": 17.625
+  }
+ },
+ "bands": [
+  {
+   "name": "raider breaks",
+   "value": 1,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a plan that never holds land should not reach 1066"
+  },
+  {
+   "name": "reckless breaks",
+   "value": 0.75,
+   "lo": 0.5,
+   "hi": null,
+   "ok": true,
+   "why": "sailing blind at any odds should usually end the line"
+  },
+  {
+   "name": "miser breaks",
+   "value": 0.625,
+   "lo": 0.35,
+   "hi": null,
+   "ok": true,
+   "why": "a rich unguarded hall should draw sails"
+  },
+  {
+   "name": "levi lives",
+   "value": 1,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a careful plan should usually reach 1066"
+  },
+  {
+   "name": "settler lives",
+   "value": 1,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a careful plan should usually reach 1066"
+  },
+  {
+   "name": "hall-sitter lives",
+   "value": 1,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a careful plan should usually reach 1066"
+  },
+  {
+   "name": "courtier lives",
+   "value": 0.75,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a careful plan should usually reach 1066"
+  },
+  {
+   "name": "levi loses fights %",
+   "value": 0.7448227150139015,
+   "lo": 3,
+   "hi": 15,
+   "ok": false,
+   "why": "the fight has to be able to go wrong without being a coin toss"
+  },
+  {
+   "name": "levi luck in play %",
+   "value": 2.891521425493501,
+   "lo": 4,
+   "hi": 10,
+   "ok": false,
+   "why": "the roll decides a fight sometimes, not often (audit 4)"
+  },
+  {
+   "name": "levi holdings at 850",
+   "value": 28.1,
+   "lo": 8,
+   "hi": 30,
+   "ok": true,
+   "why": "not every coast by 850: the \"automatic win\" complaint (TODO 25)"
+  },
+  {
+   "name": "levi king falls / line",
+   "value": 1.375,
+   "lo": 0,
+   "hi": 3,
+   "ok": true,
+   "why": "the King at sea is a risk, not a habit"
+  },
+  {
+   "name": "builder lives",
+   "value": 0.75,
+   "lo": 0.75,
+   "hi": null,
+   "ok": true,
+   "why": "a plan that spends on the land should still reach 1066 (41B.2)"
+  },
+  {
+   "name": "builder chest",
+   "value": 492.291163003663,
+   "lo": null,
+   "hi": 300,
+   "ok": false,
+   "why": "the buildings are the sink: a builder has no idle silver (41B.2, reflex run 2)"
+  },
+  {
+   "name": "idle silver (careful chest avg)",
+   "value": 1052.8991185897435,
+   "lo": null,
+   "hi": 300,
+   "ok": false,
+   "why": "silver with nothing to buy is the year-seven itch (41B.2, TODO 33)"
+  }
+ ],
+ "lints": [
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 11.5px"
+  },
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 9.5px"
+  },
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 11px"
+  }
+ ],
+ "notes": [],
+ "fuzz": {
+  "ok": true,
+  "bad": [],
+  "seed": "fuzz-2026-10-27T00",
+  "day": "2026-10-26",
+  "from": 793,
+  "to": 881,
+  "gens": 10,
+  "deaths": 36,
+  "regents": 0,
+  "stepdowns": 0,
+  "fights": 302,
+  "stays": 129,
+  "winters": 330,
+  "markets": 282,
+  "landfalls": 81,
+  "skipsOK": true,
+  "homes": 23,
+  "lines": 4,
+  "renders": 10814,
+  "reloads": 386,
+  "fails": 0,
+  "log": 360,
+  "holdings": 0,
+  "men": 44,
+  "silver": 253,
+  "lost": 1
+ },
+ "fateHash": "a376ea799b1a",
+ "bytes": 280327,
+ "todo": {
+  "decided": 9,
+  "built": 24
+ }
+}
