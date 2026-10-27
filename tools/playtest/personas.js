@@ -47,6 +47,7 @@ module.exports = function (G) {
     guard: true,                // when a king is hostile or the chest is rich, the hall keeps a guard: the King if he stays home, else the free jarl with the most Rule, his full following, before the crew
     kingSails: () => true,
     jarlsSail: () => true,
+    wife: (s, o) => { const i = o.findIndex(b => b.marks.length); return i >= 0 ? i : 0; }, // a mark of the blood first, else the first offered (a jarl's daughter when there is one)
     extras(s) { // shared gifts: warm a sour garrison jarl
       for (const h of s.holdings) { const j = s.notables.find(m => m.place === h.id); if (j && ['sour', 'hostile'].includes(stanceWord(j.stance)) && s.silver >= 40) G.gift(s, j.id); }
     },
@@ -124,6 +125,7 @@ module.exports = function (G) {
     titles: prio(['hallward', 'lawgiver', 'deepchest', 'ringgiver', 'landtaker']),
   };
   P.courtier = { ...base,
+    wife: (s, o) => { const k = o.findIndex(b => b.kind === 'king'), m = o.findIndex(b => b.marks.length); return k >= 0 ? k : m >= 0 ? m : 0; }, // a king's daughter: an ally
     extras(s) {
       base.extras(s);
       // gifts: warm every jarl under "loyal" while the chest is comfortable; placate rulers who have gone cool or worse

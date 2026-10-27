@@ -16,7 +16,8 @@ const T = { startMen: 40, menPerF: 10, manPrice: 3, upkeep: 1, rumor: 20, startY
   hall: { price: [400, 800, 1600], bench: 1, quiet: 1, seaman: 1, oath: 0.15 },
   grow: [2, 3, 5, 8], growF: [1, 1, 2, 3], ageFall: [50, 60],
   holyMend: 1.03, holyWall: 2, holySack: 0.3,
-  championEvery: 10, championWall: 80 }; // a champion comes only from a line worth breaking (defenders at least championWall: a monastery's monks make none); // 41B.6: after a rout, once in this many years of a reign and only with a bench free, a fighter of the broken coast asks to follow the King; the reckoning lets the player refuse him // 41B.7, a monastery: its treasure comes back at holyMend a year (a town's at 1.1), its wall rises a tenth a sack and never past holyWall x its own; a sack leaves holySack of its treasure (a town keeps 0.6): the monks flee with the rest, so it is raided once a generation, as Lindisfarne was // TODO 47: a stat rises by doing, slower each step (raids or held summers to the next step, by the stat as it stands; big wins for Following), and falls by what goes wrong: a lost fight (the man who led), a holding lost, a named man who walks from a hungry hall, and the arm at 50 and 60; swept at 16 seeds, TODO 47: 3/5/8/12 and 46/56 took the King's Combat from 4.9 to 3.7 and doubled the idle chest // 41B.2 (reflex run 3), raise the hall: three tiers in spring; each adds a bench, takes a year off the wait for a new man, +1 to the seaman's weight in the winter deck, and 15% off the next Oath's price; cumulative // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
+  championEvery: 10, championWall: 80,
+  markOne: 0.5, markBoth: 0.8, brideMark: { jarl: 0.25, king: 0.5, free: 0.15 }, brideAge: 36 }; // 42.2: a mark of the blood passes to each child at markOne, markBoth when both parents carry it; a bride carries one at brideMark by her house; a jarl of brideAge or more has a daughter to give // a champion comes only from a line worth breaking (defenders at least championWall: a monastery's monks make none); // 41B.6: after a rout, once in this many years of a reign and only with a bench free, a fighter of the broken coast asks to follow the King; the reckoning lets the player refuse him // 41B.7, a monastery: its treasure comes back at holyMend a year (a town's at 1.1), its wall rises a tenth a sack and never past holyWall x its own; a sack leaves holySack of its treasure (a town keeps 0.6): the monks flee with the rest, so it is raided once a generation, as Lindisfarne was // TODO 47: a stat rises by doing, slower each step (raids or held summers to the next step, by the stat as it stands; big wins for Following), and falls by what goes wrong: a lost fight (the man who led), a holding lost, a named man who walks from a hungry hall, and the arm at 50 and 60; swept at 16 seeds, TODO 47: 3/5/8/12 and 46/56 took the King's Combat from 4.9 to 3.7 and doubled the idle chest // 41B.2 (reflex run 3), raise the hall: three tiers in spring; each adds a bench, takes a year off the wait for a new man, +1 to the seaman's weight in the winter deck, and 15% off the next Oath's price; cumulative // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -34,13 +35,17 @@ const unled = n => n ? ` ${n === 1 ? 'One man walks' : `${n} men walk`} home unl
 const deathOdds = s => s.king.age > 50 ? 0.05 * (s.king.age - 50) * (has(s,'oldwise') ? 0.5 : 1) : 0;
 function makeMan(name, c, r, f, extra = {}) {
   return { id: uid(), name, combat: clamp(c,1,5), rule: clamp(r,1,5), follow: clamp(f,1,5), place: 'home', men: 0, age: 25,
-    kin: false, raids: 0, raidRun: 0, heldRun: 0, winRun: 0, stance: 0, why: [], ...extra };
+    kin: false, raids: 0, raidRun: 0, heldRun: 0, winRun: 0, stance: 0, why: [], marks: [], ...extra };
 }
 // ---- Stats move both ways (TODO 47): a run of doing raises a stat when it reaches T.grow[stat − 1], and a fall ends the run ----
 const RUN = { combat: 'raidRun', rule: 'heldRun', follow: 'winRun' };
-function grow(m, stat, table) { if (m[stat] >= 5) return false; const run = RUN[stat]; m[run] = (m[run] || 0) + 1; if (m[run] < table[m[stat] - 1]) return false; m[run] = 0; m[stat]++; return true; }
+// the marks of the blood (42.2): Strong, Wise, Beloved let one stat reach six; carried in the blood, never earned
+const MARKS = { strong: 'combat', wise: 'rule', beloved: 'follow' }, MARK_NAMES = { strong: 'Strong', wise: 'Wise', beloved: 'Beloved' };
+const statTop = (m, stat) => (m.marks || []).some(k => MARKS[k] === stat) ? 6 : 5;
+const markWord = k => `${MARK_NAMES[k]}: ${MARKS[k] === 'combat' ? 'Combat' : MARKS[k] === 'rule' ? 'Rule' : 'Following'} may reach six`;
+function grow(m, stat, table) { if (m[stat] >= statTop(m, stat)) return false; const run = RUN[stat]; m[run] = (m[run] || 0) + 1; if (m[run] < table[m[stat] - 1]) return false; m[run] = 0; m[stat]++; return true; }
 function fall(m, stat) { m[RUN[stat]] = 0; if (m[stat] <= 1) return false; m[stat]--; return true; }
-const toGrow = (m, stat, table) => m[stat] >= 5 ? 0 : table[m[stat] - 1] - (m[RUN[stat]] || 0); // how many more before the next step
+const toGrow = (m, stat, table) => m[stat] >= statTop(m, stat) ? 0 : (table[m[stat] - 1] ?? table[table.length - 1]) - (m[RUN[stat]] || 0); // how many more before the next step
 // ---- Stance: one number per named man, read in words (GDD §15.1) ---------------
 // Deeds move it; it is a view of the King, never a currency.
 const STANCE = [[60, 'devoted'], [20, 'loyal'], [-20, 'cool'], [-60, 'sour'], [-Infinity, 'hostile']];
@@ -48,6 +53,7 @@ function stanceWord(v) { return STANCE.find(([lo]) => (v || 0) >= lo)[1]; }
 function moveStance(s, m, d, why) {
   if (!m || !d || m.isKing) return;
   m.stance = clamp((m.stance || 0) + d, -100, 100);
+  if (m.ally && s.queen && s.queen.id === m.ally) m.stance = Math.max(m.stance, STANCE.find(x => x[1] === 'cool')[0]); // an ally by marriage never falls below cool while she lives (42.2)
   if (m.wroth != null && stanceWord(m.stance) !== 'hostile') m.wroth = null; // a king warmed out of hostility must stay hostile a full year again before his fleet sails
   if (m.moved && m.moved.y === s.year) m.moved.d += d; else m.moved = { y: s.year, d };
   const w = m.why = m.why || [], last = w[w.length - 1];
@@ -136,7 +142,7 @@ function holdOdds(R, U) { return R <= 0 ? 0 : clamp((R * 1.15 - U) / (R * 0.3), 
 const pct = p => `${p < 0.1 ? Math.round(1000 * p) / 10 : Math.round(100 * p)}%`;
 const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const nMen = n => `${n} ${n === 1 ? 'man' : 'men'}`;
-function holdWords(R, U) { const p = holdOdds(R, U); return `${pct(p)} · ${p >= .97 ? 'holds' : p >= .7 ? 'likely holds' : p >= .4 ? 'even' : p > 0 ? 'long odds' : 'cannot hold'}`; }
+function holdWords(R, U) { const p = holdOdds(R, U); return `${pct(p)} · ${p >= .97 ? 'holds' : p >= .7 ? 'likely holds' : p >= .4 ? 'a coin toss' : p > 0 ? 'long odds' : 'cannot hold'}`; }
 // a jarl and a holding's unrest, said as one sentence before the sums (TODO 41A.4): the chance as he stands, with all he could lead, the men that would make it sure,
 // and the sentence itself for the stay sheet ('stay', by spring) or the Hall pane ('hall', by summer)
 function holdNeed(r, men, cap, un) {
@@ -172,7 +178,7 @@ function raidValue(s, id) {
 // the odds in words: how likely, and how dear. A sure fight can still be a bloody one.
 function oddsWords(S, D) {
   const p = winOdds(S, D), q = S > 0 ? D / S : 9;
-  const chance = p >= .97 ? 'sure' : p >= .7 ? 'likely' : p >= .4 ? 'even' : p > 0 ? 'long odds' : 'hopeless';
+  const chance = p >= .97 ? 'sure' : p >= .7 ? 'likely' : p >= .4 ? 'a coin toss' : p > 0 ? 'long odds' : 'hopeless'; // TODO 30: 0.5 is a coin toss, said so
   const cost = q < .4 ? 'clean' : q < .65 ? 'fair' : 'bloody';
   return p > 0 ? `${pct(p)} · ${chance} · ${cost}` : `${pct(p)} · ${chance}`;
 }
@@ -429,6 +435,42 @@ function turnHome(s) {
   log(s, 'The ship turned for home. Nothing on those coasts was worth the men.');
   next(s);
 }
+// ---- The wife, and the blood (42.2): births need her; each child takes each stat from the better parent; a mark of the blood may pass ----
+const canWed = s => s.phase === 'spring' && !s.queue.length && !s.queen && !s.regency;
+function brideOf(s, r, kind, from, st, culture, at) {
+  const name = freshName(s, culture === 'norse' ? FEMALE_NAMES : LOCAL_FEMALE[culture] || FEMALE_NAMES, r, at);
+  const marks = r() < T.brideMark[kind] ? [r.pick(Object.keys(MARKS))] : [];
+  return { name, kind, from: from.id, fromName: from.name, combat: clamp(st.combat - 1 + r.int(0, 2), 1, 5), rule: clamp(st.rule - 1 + r.int(0, 2), 1, 5), follow: clamp(st.follow - 1 + r.int(0, 2), 1, 5), marks, age: 16 + r.int(0, 8) };
+}
+// the women the King could wed this spring, the same three all spring: a jarl's daughter (he is kin then), a king's daughter (an ally while she lives), a free woman of a coast he holds (no house, no politics)
+function brides(s) {
+  const r = rng(s.day + ':brides:' + s.year), out = [];
+  const jarl = r.pick(s.notables.filter(m => !m.isKing && !m.kin && !m.son && !m.queen && m.age >= T.brideAge));
+  if (jarl) out.push(brideOf(s, r, 'jarl', jarl, jarl, 'norse', jarl.name));
+  const king = r.pick(Object.values(s.rulers).filter(k => k.known && !k.broken && !k.ally && ['devoted', 'loyal', 'cool'].includes(stanceWord(k.stance))));
+  if (king) out.push(brideOf(s, r, 'king', king, { combat: 2 + r.int(0, 1), rule: 3 + r.int(0, 2), follow: 2 + r.int(0, 2) }, s.shores[king.anchor].culture, king.name));
+  const sh = s.shores[r.pick([HOME_ID, ...s.holdings.map(h => h.id)])];
+  out.push(brideOf(s, r, 'free', sh, { combat: 1 + r.int(0, 3), rule: 1 + r.int(0, 3), follow: 1 + r.int(0, 3) }, sh.culture, sh.name));
+  return out;
+}
+function wed(s, i) {
+  if (!canWed(s)) return; const b = brides(s)[i]; if (!b) return;
+  const q = { ...b, id: uid(), sex: 'f', queen: true, kin: true, wedYear: s.year, place: 'home', men: 0, stance: 0, why: [], raids: 0, raidRun: 0, heldRun: 0, winRun: 0, titles: [] };
+  s.queen = q; s.deeds.weddings = (s.deeds.weddings || 0) + 1;
+  const chips = [{ t: `Combat ${q.combat} · Rule ${q.rule} · Follow ${q.follow}` }, ...q.marks.map(k => ({ t: markWord(k), cls: 'up' }))];
+  let lead, house;
+  if (b.kind === 'jarl') { const j = s.notables.find(m => m.id === b.from); if (j) { j.kin = true; j.inlaw = q.name; moveStance(s, j, 30, `his daughter ${q.name} is Queen`); chips.push({ t: `${j.name} is kin · ${stanceWord(j.stance)}`, cls: 'up' }); } lead = `${b.fromName} gives his daughter. He is kin to the line now, and kin kneel.`; house = `daughter of ${b.fromName}`; }
+  else if (b.kind === 'king') { const k = s.rulers[b.from]; k.ally = q.id; moveStance(s, k, 30, `his daughter ${q.name} is Queen in Vestfold`); chips.push({ t: `${k.name}: an ally while she lives`, cls: 'up' }); lead = `${k.name} gives his daughter. While she lives he is an ally: his stance cannot fall below cool, whatever the ship does to his coasts.`; house = `daughter of ${b.fromName}`; }
+  else { lead = `A free woman of ${b.fromName}. No house comes with her, and no house asks anything of the hall.`; house = `of ${b.fromName}`; }
+  q.house = house;
+  log(s, `${s.king.name} weds ${q.name}, ${house}.`);
+  s.queue.push({ t:'moment', tone:'boon', glyph:'men', when:'Spring', title: `${s.king.name} weds ${q.name}`, lead: `${lead} Births need her; each child takes each stat from the better parent.`, chips, rows: [] });
+}
+// what a child is born with (42.2): each stat from the better parent, and each mark of the blood at markOne, markBoth when both carry it
+function bloodOf(f, m, r) {
+  const fm = f.marks || [], mm = m.marks || [], marks = [...new Set([...fm, ...mm])].filter(k => r() < (fm.includes(k) && mm.includes(k) ? T.markBoth : T.markOne));
+  return { combat: Math.max(f.combat, m.combat), rule: Math.max(f.rule, m.rule), follow: Math.max(f.follow, m.follow), marks };
+}
 // the champion's two buttons are an undo pair: Take him puts him on the ship, Refuse takes him off again, until the reckoning is left (41B.6)
 function takeChampion(s) { const sc = s.queue[0], c = sc && sc.t === 'fight' && sc.champion; if (!c || c.taken) return; if (!benchRoom(s)) return;
   const m = makeMan(c.name, c.combat, c.rule, c.follow, { age: c.age, place: 'ship', sailed: true }); s.notables.push(m); c.taken = true; c.id = m.id; s.deeds.champions = (s.deeds.champions || 0) + 1; log(s, `${c.name} of ${s.shores[sc.shore].name} follows the King home.`); }
@@ -474,6 +516,7 @@ function resolveLand(s) {
     if (grew) events.push({ k:'rule', t:`${k.name}'s Rule is ${k.rule} now.`, s:'three summers in his hall' });
   } else { lines.push(`The King was at sea. Vestfold paid nothing.`); rows.push({ n: 'Vestfold', v: 0, why: 'the King was at sea' }); }
   for (const m of s.notables) if (m.place === 'home' && m.men === 0 && !m.isKing) moveStance(s, m, -T.idleSour, 'sat idle, no men to lead');
+  const stirred = []; // the holdings that stir this autumn, one ledger line for all (TODO 28)
   for (const h of [...s.holdings]) {
     const j = s.notables.find(m => m.place === h.id);
     if (h.taken === s.year) { lines.push(`${h.name} is newly ours. No contest this summer.`); rows.push({ n: h.name, v: null, why: 'newly ours · pays from next year' }); continue; } // the jarl who stayed just won it
@@ -498,7 +541,7 @@ function resolveLand(s) {
       const free = reachFree(s);
       if (n > free && r() < Math.min(T.reachMax, T.reachRise * (n - free))) {
         const up = 15 + r.int(0, 25); h.unrest = unrestRise(s, h, up);
-        events.push({ k:'empty', t:`${h.name} stirs.`, s:`unrest ${h.unrest} next summer · ${n} holdings, and a King of Rule ${k.rule} keeps ${free} calm` });
+        stirred.push(h); // one ledger line for all of them, after the loop (TODO 28)
       }
       if (h.quiet > 0 && h.quiet % quietWait(s) === 0 && benchRoom(s)) {
         const sh = s.shores[h.id], nm = freshName(s, LOCAL_NAMES[sh.culture], rng(s.day + h.id + s.year), sh.name);
@@ -512,6 +555,7 @@ function resolveLand(s) {
       bigMoment(s, 'Autumn', 'land', events[events.length - 1], [...(lost ? [{ t:`−${nMen(lost)}`, cls:'down' }] : []), { t:`−${h.pay} a year`, cls:'down' }]);
     }
   }
+  if (stirred.length) { const n = s.holdings.length, free = reachFree(s), names = stirred.map(h => h.name); events.push({ k:'empty', n: stirred.length, t: `${names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] : names[0]} stir${names.length > 1 ? '' : 's'}.`, s: `unrest ${stirred.map(h => h.unrest).join(', ')} next summer · ${n} holdings, and a King of Rule ${k.rule} keeps ${free} calm` }); } // overreach, one line a year (TODO 28)
   // a hostile king does not wait for the winter deck: he comes for a holding that was his (TODO 25)
   for (const k of Object.values(s.rulers)) {
     if (!k.known || k.broken || stanceWord(k.stance) !== 'hostile') continue;
@@ -612,12 +656,13 @@ function winterCard(s) {
   // the old die in their beds: past sixty a named man's winters are counted, as the King's are past fifty (TODO 25). Told on this winter's card
   const dr = rng(s.day + ':age:' + s.year), aged = s.notables.filter(m => !m.isKing && m.age > 60 && dr() < T.oldAge * (m.age - 60));
   if (aged.length) s.notables = s.notables.filter(m => !aged.includes(m));
+  if (s.queen && s.queen.age > 60 && dr() < T.oldAge * (s.queen.age - 60)) { aged.push(s.queen); s.queen = null; } // the Queen dies by the same lot; the King may wed again (42.2)
   // a king's fleet takes a year to gather: only a king hostile last winter too sails on the hall (TODO 25), so the hostile word on his card is the warning
   for (const x of Object.values(s.rulers)) { const h = x.known && !x.broken && stanceWord(x.stance) === 'hostile'; if (!h) x.wroth = null; else if (x.wroth == null) x.wroth = s.year; }
   const foes = Object.values(s.rulers).filter(x => x.wroth != null && x.wroth < s.year);
   const deck = [];
   const kids = s.children.length;
-  if (k.age < 55 && !s.regency) deck.push(['birth', kids < 2 ? 7 : 4]);
+  if (k.age < 55 && !s.regency && s.queen && s.queen.age < 45) deck.push(['birth', kids < 2 ? 7 : 4]); // births need a Queen under forty-five (42.2)
   if (s.notables.some(m => !m.isKing && m.age > 45)) deck.push(['jarlDeath', 2]);
   deck.push(['wanderer', 2]); deck.push(['rival', 1 + 2 * foes.length + Math.min(6, 2 * Math.floor(s.silver / T.richHall))]); deck.push(['hardWinter', 1]); deck.push(['harvest', s.holdings.length ? 2 : 0]); // a rich chest draws sails
   if (benchRoom(s)) deck.push(['seaman', 2 + (s.hall || 0) * T.hall.seaman]);
@@ -629,7 +674,7 @@ function winterCard(s) {
   const sc = { t:'event', ev, lines: [], big: s.big || [] }; s.big = []; // the summer's big moments turn above the winter's own card (TODO 41A.5)
   if (ev === 'birth') {
     const sex = r() < 0.5 ? 'm' : 'f', name = freshName(s, sex === 'm' ? MALE_NAMES : FEMALE_NAMES, r);
-    s.children.push({ id: uid(), name, sex, age: 0, born: s.year });
+    s.children.push({ id: uid(), name, sex, age: 0, born: s.year, mother: s.queen.name, blood: bloodOf(k, s.queen, r) });
     sc.title = sex === 'm' ? 'A son is born' : 'A daughter is born'; sc.lines.push(rng(s.day + ':line:birth' + s.year).pick(LINES.birth[sex === 'm' ? 'son' : 'daughter'])({ name, king: k.name })); sc.kid = { name, sex }; s.winterKid = { y: s.year, name };
   } else if (ev === 'jarlDeath') {
     const old = s.notables.filter(m => !m.isKing && m.age > 45).sort((a, b) => b.age - a.age)[0];
@@ -688,6 +733,7 @@ function endWinter(s) {
 }
 function newYear(s) {
   s.year++; s.deeds.years++;
+  if (s.queen) s.queen.age++;
   for (const m of s.notables) { m.age++; if (T.ageFall.includes(m.age) && fall(m, 'combat')) log(s, `${m.name} is ${m.age}. ${rng(s.day + ':arm:' + m.id).pick(LINES.arm)} Combat ${m.combat}.`); } // the arm goes past 45 and 55 (TODO 47)
   for (const c of s.children) { c.age++; if (c.sex === 'm' && c.age === 16) comeOfAge(s, c); }
   if (s.year >= T.endYear) { s.dynasty.push(reignCard(s)); s.queue.push({ t:'end', reason: '1066' }); return; }
@@ -717,7 +763,8 @@ function newYear(s) {
 function comeOfAge(s, c) {
   const rg = s.regency && s.regency.boy === c.id ? s.regency : null;
   const r = rng(s.day + c.id), k = rg ? rg.father : s.king;
-  const m = makeMan(c.name, clamp(k.combat - 1 + r.int(0, 2), 1, 5), clamp(k.rule - 1 + r.int(0, 2), 1, 5), clamp(2 + r.int(0, 2), 1, 5), { age: 16, son: true, kin: true });
+  const b = c.blood || { combat: k.combat, rule: k.rule, follow: 3, marks: [] }; // a son born before 42.2 is his father's
+  const m = makeMan(c.name, clamp(b.combat - 1 + r.int(0, 2), 1, 5), clamp(b.rule - 1 + r.int(0, 2), 1, 5), clamp(b.follow - 1 + r.int(0, 2), 1, 5), { age: 16, son: true, kin: true, marks: [...(b.marks || [])] });
   s.notables.push(m); c.ofAge = true;
   if (rg) return stepDown(s, m);
   log(s, `${c.name} is sixteen and takes a seat in the hall.`);
@@ -744,7 +791,9 @@ function successor(s) {
   if (sons.length) return { kind: 'son', sons };
   const boy = s.children.filter(c => c.sex === 'm' && !c.ofAge).sort((a, b) => b.age - a.age)[0];
   if (boy) {
-    const regent = others.filter(m => m.kin || stanceWord(m.stance) !== 'hostile').sort((a, b) => (b.kin ? 1 : 0) - (a.kin ? 1 : 0) || b.stance - a.stance || b.rule - a.rule)[0];
+    const stands = others.filter(m => m.kin || stanceWord(m.stance) !== 'hostile');
+    if (s.queen && stands.length) return { kind: 'regent', man: s.queen, boy, until: s.year + 16 - boy.age, queen: true }; // the Queen holds the hall for her son while a jarl stands with her (42.2)
+    const regent = stands.sort((a, b) => (b.kin ? 1 : 0) - (a.kin ? 1 : 0) || b.stance - a.stance || b.rule - a.rule)[0];
     if (regent) return { kind: 'regent', man: regent, boy, until: s.year + 16 - boy.age };
   }
   const inlaw = others.filter(m => m.kin).sort((a, b) => a.age - b.age)[0]; // the youngest of the kin, who may yet raise sons
@@ -753,14 +802,19 @@ function successor(s) {
 }
 function startSuccession(s) {
   s.dynasty.push(reignCard(s));
+  // the King is dead: the summer is over (a landfall still queued behind his death card let him sail and fall twice, found by the harness in session 20), and what follows cuts in right behind the card, ahead of anything else
+  s.queue = s.queue.filter((q, i) => i === 0 || !['arrive', 'fight'].includes(q.t));
+  const after = [], push = sc => after.push(sc);
   const w = successor(s), father = s.regency ? s.regency.father : { name: s.king.name, combat: s.king.combat, rule: s.king.rule }; // a regent's death keeps the boy's own father
-  if (w.kind === 'son') s.queue.push({ t:'heir', sons: w.sons.map(m => m.id) });
+  if (w.kind === 'son') push({ t:'heir', sons: w.sons.map(m => m.id) });
   else if (w.kind === 'regent') {
-    s.queue.push({ t:'summary', title: 'A regent', lines: [`${w.boy.name} is ${w.boy.age}. ${w.man.name} rules for him until his sixteenth spring, in ${w.until}. Then he steps down and the boy is crowned.`] });
+    push({ t:'summary', title: 'A regent', lines: [`${w.boy.name} is ${w.boy.age}. ${w.man.name}${w.queen ? ', his mother,' : ''} rules for him until his sixteenth spring, in ${w.until}. Then ${w.queen ? 'she' : 'he'} steps down and the boy is crowned.`] });
+    if (w.queen) { s.notables.push(s.queen); s.queen = null; } // the Queen takes the high seat as a named person of the hall
     crown(s, w.man); s.regency = { boy: w.boy.id, name: w.boy.name, until: w.until, father };
   }
-  else if (w.kind === 'inlaw') { s.queue.push({ t:'summary', title: 'No son', lines: [`${w.man.name}, ${kinOf(w.man)}, takes the hall.`] }); crown(s, w.man); }
-  else s.queue.push({ t:'end', reason: 'noheir' });
+  else if (w.kind === 'inlaw') { push({ t:'summary', title: 'No son', lines: [`${w.man.name}, ${kinOf(w.man)}, takes the hall.`] }); crown(s, w.man); }
+  else push({ t:'end', reason: 'noheir' });
+  s.queue.splice(s.queue.length && s.queue[0].t === 'death' ? 1 : 0, 0, ...after);
   next(s);
 }
 function chooseHeir(s, id) { crown(s, s.notables.find(m => m.id === id)); next(s); }
@@ -769,6 +823,7 @@ function crown(s, heir, spring = s.phase === 'spring') {
   s.notables = s.notables.filter(m => m !== old);
   heir.isKing = true; heir.son = false; heir.kin = false; heir.titles = []; heir.offeredPairs = []; heir.place = 'home'; heir.sailed = false;
   s.king = heir; s.gen++; s.regency = null;
+  if (s.queen) { log(s, `${s.queen.name}, the old King's widow, goes back to her own people.`); s.queen = null; } // a new King takes his own wife (42.2)
   s.reign = { bestRaid: null, bestHoldings: s.holdings.length, title: null, start: s.year, oath: { knelt: 0, paidN: 0, paid: 0, walked: [] } }; // what the Oath did, for the coronation card (TODO 41A.8)
   s.deeds = Object.fromEntries(Object.keys(s.deeds).map(k => [k, 0]));
   s.children = s.children.filter(c => !c.ofAge && !c.married);
@@ -813,6 +868,7 @@ function migrate(s) {
   // The row is the one every rule reads; the King is that row (found by the LLM playtest driver, which reloads the page on every tap)
   s.king = s.notables.find(m => m.isKing) || s.king;
   if (s.guard === undefined) s.guard = null;
+  if (s.queen === undefined) s.queen = null; for (const m of s.notables) if (!m.marks) m.marks = []; // 42.2
   if (!s.big) s.big = [];
   if (s.allAboard === undefined) s.allAboard = false;
   if (s.kingHome === undefined) s.kingHome = false;

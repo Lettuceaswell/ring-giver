@@ -14,7 +14,7 @@ global.navigator = {};
 const src = ['coast.js', 'world.js', 'game.js', 'ui.js'].map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
 // expose everything: strip top-level const/let so they become globals under eval in sloppy mode
 const code = src.replace(/^(const|let) /gm, 'var ');
-let fails = 0, champions = 0, markets = 0, renders = 0, regents = 0, stepdowns = 0;
+let fails = 0, weddings = 0, champions = 0, markets = 0, renders = 0, regents = 0, stepdowns = 0;
 const check = (where) => { renders++; const h = app.innerHTML; for (const bad of ['undefined', 'NaN', '[object', 'null silver']) if (h.includes(bad)) { fails++; console.log('BAD', where, bad, h.slice(Math.max(0, h.indexOf(bad) - 120), h.indexOf(bad) + 40).replace(/\s+/g, ' ')); if (fails > 8) process.exit(1); } };
 eval(code);
 // start
@@ -85,6 +85,7 @@ while (S && maxYears-- > 0) {
     if (!grow(m, 'combat', T.grow) || m.combat !== 4 || m.raidRun !== 0 || toGrow(m, 'combat', T.grow) !== T.grow[3]) { console.log('grow combat', m.combat, m.raidRun); fails++; }
     if (grow(m, 'follow', T.growF) || m.follow !== 5 || toGrow(m, 'follow', T.growF) !== 0) { console.log('grow past five', m.follow); fails++; }
     m.heldRun = 2; if (!fall(m, 'rule') || m.rule !== 1 || m.heldRun !== 0 || fall(m, 'rule') || m.rule !== 1) { console.log('fall rule', m.rule, m.heldRun); fails++; }
+    const w = makeMan('Mark', 5, 5, 5, { marks: ['strong'] }); w.raidRun = T.grow[3] - 1; if (!grow(w, 'combat', T.grow) || w.combat !== 6 || grow(w, 'rule', T.grow)) { console.log('mark to six', w.combat, w.rule); fails++; } if (dots(6).indexOf('★') < 0) { console.log('no star'); fails++; }
     const old = migrate(JSON.parse(JSON.stringify(S))); for (const x of old.notables) { delete x.raidRun; delete x.winRun; } const mg = migrate(old); if (mg.notables.some(x => x.raidRun === undefined || x.winRun === undefined || x.raidRun !== (x.raids || 0) % 3)) { console.log('migrate runs'); fails++; }
     openMan(S.king.id) && 0; UI.man = S.king.id; render(); check('man card stats'); if (!app.innerHTML.includes('Combat rises')) { console.log('no stats line on the card'); fails++; } UI.man = null; render(); }
   // the hall (reflex run 3): the sheet opened at every tier; raised once with the chest forced high; short of silver, twice, and at the top it is refused
@@ -101,6 +102,7 @@ while (S && maxYears-- > 0) {
   { const m = S.notables.find(m => !m.isKing); if (m) { const was = m.men, cap = fCap(S, m); m.men = cap + 7; stepMen(S, m.id, -1); if (m.men !== cap + 5) { console.log('step over cap down', cap + 7, m.men); fails++; } stepMen(S, m.id, 1); if (m.men !== cap + 5) { console.log('step over cap up', cap + 5, m.men); fails++; } m.men = was; } }
   if (r() < 0.15) { act(() => kingStays(S, true)); act(() => boardAll(S)); if (S.king.place !== 'home') { console.log('king boarded with kingHome'); fails++; } act(() => kingStays(S, false)); }
   // decide: everyone aboard most years, king home some years
+  if (canWed(S)) { weddings++; openBrides(); check('brides'); if (!app.innerHTML.includes('A wife')) { console.log('no brides sheet', S.year); fails++; } const bs = brides(S); act(() => { closeBrides(); wed(S, Math.floor(r() * bs.length)); }); if (!S.queen) { console.log('not wed', S.year); fails++; } check('wed'); while (S.queue.length && S.queue[0].t === 'moment') act(() => next(S)); UI.man = S.queen && S.queen.id; render(); check('queen card'); UI.man = null; }
   if (r() < 0.8) act(() => boardAll(S)); else { act(() => boardAll(S)); act(() => place(S, S.king.id, 'home')); }
   const ship = S.notables.filter(m => m.place === 'ship');
   if (ship.length) {
@@ -115,7 +117,7 @@ while (S && maxYears-- > 0) {
   } else act(() => sail(S));
   check('after sail');
 }
-console.log(JSON.stringify({ seed: SEED, day: DAY, from: year0, to: S && S.year, gens: S && S.gen, deaths, regents, stepdowns, fights, stays, winters, markets, champions, landfalls, skipsOK: skips > 0, homes, lines, renders, reloads, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
+console.log(JSON.stringify({ seed: SEED, day: DAY, from: year0, to: S && S.year, gens: S && S.gen, deaths, regents, stepdowns, fights, stays, winters, markets, champions, weddings, landfalls, skipsOK: skips > 0, homes, lines, renders, reloads, fails, log: S && S.log.length, holdings: S && S.holdings.length, men: S && S.men, silver: S && S.silver, lost: S && S.lost.length }));
 // the end card and begin again
 if (S && S.queue[0] && S.queue[0].t === 'end') { render(); check('end'); act(() => { archive(S, 'reached 1066'); S = null; }); check('setup after end'); if (!app.innerHTML.includes('Past kings')) { console.log('no past kings'); fails++; } }
 // a fresh run: two-tap abandon

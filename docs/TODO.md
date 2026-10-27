@@ -147,7 +147,7 @@ A hostile king's fleet comes only after a full year hostile (`wroth`), but only 
 
 ## 28. Overreach "stirs" may be noise
 Past ten holdings each stirs at a small chance, about one ledger event a year late game. Judge in play whether it reads as pressure or as clutter.
-**Decided (Levi, 2026-10-26): A.** Keep them, grouped into one ledger line a year. Not built yet.
+**Decided (Levi, 2026-10-26): A.** Keep them, grouped into one ledger line a year. **Built session 20.**
 
 ---
 
@@ -159,7 +159,7 @@ Named men falling in fights (the summary card) and the King slain in the hall do
 
 ## 30. Does 0.5 odds read as a gamble?
 Settler-style fighting at 0.5 odds now loses about 30%. Confirm the commit sheet's odds temperature makes 0.5 read as a coin toss, not a fair fight.
-**Decided (Levi, 2026-10-26): A.** The commit sheet calls 0.5 a coin toss in so many words. Not built yet.
+**Decided (Levi, 2026-10-26): A.** The commit sheet calls 0.5 a coin toss in so many words. **Built session 20:** "a coin toss" replaces "even" in the odds and the hold words.
 
 ---
 
@@ -272,7 +272,7 @@ No intrigue (no schemes, spies, murder plots, secrets), no piety or any faith cu
 
 ### 42.2 A wife, and the blood (strengthening the line)
 Today children have no mother and every son is his father ±1. **Recommend:** the King takes a wife: from a jarl's house (he becomes kin), from a king's house (an alliance, 42.4), or a free woman of a coast he holds (no politics). Births need her. She carries three stats like a man; each child takes each stat from the better parent, ±1. Choosing a bride is choosing what kind of sons the line gets. **Gifts of the blood:** three rare marks (Strong: Combat may reach 6; Wise: Rule 6; Beloved: Followability 6), carried to each child at 50%, 80% if both parents carry it. A queen with a mark is worth courting for generations. **She is also the regency (41B.1):** the King dies with a son under sixteen and she holds the hall for the boy, the Oath deferred to his sixteenth spring, as long as a jarl or her own kin stands with her. One new person, no new screen: she is a Man card.
-**Decided (Levi, 2026-10-26): A.** The wife as recommended: three houses to take her from, births need her, stats from the better parent, the three marks of the blood, and she is the regent with the jarl of 41B.1 as the fallback. Not built yet.
+**Decided (Levi, 2026-10-26): A.** The wife as recommended: three houses to take her from, births need her, stats from the better parent, the three marks of the blood, and she is the regent with the jarl of 41B.1 as the fallback. **Built session 20:** `brides`, `wed`, `canWed`, `bloodOf`, `MARKS` in `game.js`; the Queen's row and Take a wife in the Hall's Home fold, the brides' sheet (three women, stats, marks, what comes with her, wed under the pick), her card, the wedding's moment card, children "born of" her with their marks; a mark lets a stat reach six (a star on the dots); an ally by marriage never falls below cool while she lives; the Queen dies by the jarls' lot past sixty and the King may wed again. Personas wed the first spring they can (the courtier takes a king's daughter). Found and fixed on the way: a King who fell at sea with a landfall still queued sailed and fell again the same summer (the heir scene went to the back of the queue); before tonight it read as the line ending. The harness's "miser breaks" band is now "miser kings slain in the door ≥ 5 a line", since the Queen's regency carries a broken line on.
 
 ### 42.3 Kings who answer (diplomacy, good, bad and neutral)
 Today a ruler has a stance and one verb, a gift. **Recommend:** verbs on his card, each gated by his stance and paid in what exists:

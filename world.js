@@ -23,6 +23,7 @@ function rng(seed) {
 // ---- Names ------------------------------------------------------------------
 const MALE_NAMES = ['Bjorn','Ivar','Halfdan','Sigurd','Ubbe','Hastein','Eirik','Harald','Gorm','Ketil','Thorfinn','Olaf','Ragnvald','Sven','Asmund','Egil','Hakon','Leif','Orm','Skuli','Vidar','Gunnar','Toke','Ulf','Knut','Arne','Frodi','Hroar','Ingolf','Styr'];
 const FEMALE_NAMES = ['Astrid','Gudrun','Thyra','Ingrid','Sigrid','Ragnhild','Aud','Hild','Solveig','Thora','Asa','Freydis','Bera','Gyda','Helga','Unn'];
+const LOCAL_FEMALE = { saxon: ['Æthelflæd','Eadgyth','Wulfrun','Cyneburh','Ælfwynn','Eadburh'], frank: ['Gisela','Judith','Hildegard','Bertha','Rotrud','Ermengard'], gael: ['Gormlaith','Mór','Derbforgaill','Sadb','Eithne','Bé Binn'] }; // brides of the other houses (42.2)
 const LOCAL_NAMES = {saxon:['Aelfric','Osric','Wulfstan','Cuthred','Eadric'], frank:['Rotbert','Hugo','Odo','Gerard','Walter'], gael:['Niall','Conall','Cormac','Donnchad','Aed'], norse:MALE_NAMES};
 
 // ---- Writing variants (TODO 41A.9): the saga says the same thing a few ways, picked by rng(day + ':line:' + key + year) so a given winter or fight always reads the same ----

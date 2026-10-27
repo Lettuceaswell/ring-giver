@@ -13,6 +13,8 @@ Class per RUBRIC.md (A build now · B decided, build in order · C never build, 
 | ~~Q20~~ | ~~**The sail tax** (TODO 46)~~ **decided A after run 3:** the strange fleet draws on the autumn chest and stays so; the three info rows in `measure.js` watch it; `richHall` is not a lever for this | C → closed | Teeth / Want | — | run 3 bisect | |
 | Q21 | A coast a king took back is held at `baseDef × 1.1` (`loseHolding`): his host is not there, so the retake is a sure fight; with more coasts taken (11 → 16.5 a line) levi sails blind less and the roll decides less. Arm it with the host that took it (`D` of the strike, decaying by `defMend`) so a coast lost is a fight to win back | A (tuning) | Teeth | 3 | run 3 | after Q5 says what the fight's floor should be; harness before/after at 16 seeds |
 | Q24 | The hall-sitter persona goes soft under TODO 47 (his King never raids, the arm only falls, sons inherit less) and his idle chest rose 2,666 → 4,179 at 16 seeds; the idle-silver band moved 931 → 1,318. Teach him to send his best jarl with a full following and to buy for the jarls, or accept that a line that sits goes soft and read the band on the other three careful personas | A (harness) | Want | 3 | session 20 | the band's own definition is the question |
+| Q26 | 42.3 kings who answer, in its steps (decided A): kneeling gives tribute and the call; truce; tribute and Danegeld; marriage and alliance (the ally floor of 42.2 is its first piece); mortal kings reading `RULER_NAMES` | B | People | 5 | decided 2026-10-26 | next in the decided order after 42.2 |
+| Q27 | 42.5 worth and Build, 42.6 trade, 42.4 faith, 42.7 deeds (with TODO 49's card when called), 42.8 fosterage, 42.9 the house; TODO 14, 16 (Q14), 40 | B | Want / People | 4 | decided 2026-10-26 | in the order at the foot of TODO 42 |
 | Q19 | The hall-sitter and the courtier never raise the hall: give the rich personas the verb (raise when silver − price ≥ bill + 60, like the builder) so the tier-3 sink is measured where the idle silver is (hall-sitter 13,000) | A (evidence) | Want | 3 | session 19 sweep | harness only |
 | Q2b | Buildings, the rest of the UI: the Hall's one-line holding row says what is built (a word each), the Winter sheet says what the longhouses sent (today a Saga line only), the ledger's "· the market" shown on the Rent row | A | Want / Thumb | 3 | run 2 | small |
 | Q2c | A moment card when a building is lost with its coast (revolt, walked, taken): the chips name the Market and the Longhouse with the −pay | A | Juice | 3 | run 2; TODO 41B.2 "a king who takes the coast back takes them too" | after Q2b |
@@ -40,6 +42,7 @@ TODO 40 richer king coasts · TODO 28 stirs as noise · TODO 30 0.5 as a gamble 
 
 ## Sources harvested (so a run does not re-read them)
 
+- Session 20 (2026-10-26): Levi's last blast of decisions (TODO 47, 42.1–42.9, 43.4, 14, 16, 17, 28, 30, 40, round 5) harvested into TODO and this queue.
 - Run 3 (2026-10-26): no new voice notes (`transcribe/transcriptions/` still the two below); no new Decided lines since TODO 45.
 
 - Levi's voice notes: `transcribe/transcriptions/2026-10-23_ring-giver-playtest-notes.txt` (all 15 handled, LOG session 3) · `2026-10-24_ring-giver-silver-arm-rings.txt` (not game feedback: a real-world arm-ring loyalty tier under House Hansen; out of the loop's scope, mentioned to Levi in run 0's report).

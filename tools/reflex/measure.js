@@ -42,7 +42,9 @@ if (PERSONAS) {
     // the rubric's bands (RUBRIC.md §Measured). Change a band only with a JOURNAL entry saying why.
     band('raider breaks', g('raider').broke, 0.75, null, 'a plan that never holds land should not reach 1066');
     band('reckless breaks', g('reckless').broke, 0.5, null, 'sailing blind at any odds should usually end the line');
-    band('miser breaks', g('miser').broke, 0.35, null, 'a rich unguarded hall should draw sails');
+    // the miser's line no longer breaks: since 42.2 the Queen holds the hall for the boy whenever a jarl stands with her, so the proxy "breaks" lost its meaning (0.63 → 0.19 in session 20); the sails are measured where they land, on the King in his door
+    info('miser breaks', g('miser').broke, 'lines that end; the Queen\'s regency carries most of them on (42.2)');
+    band('miser kings slain in the door / line', g('miser').kingSlain, 5, null, 'a rich unguarded hall should draw sails, and the sails should find the King (was "miser breaks ≥ 0.35" until 42.2)');
     for (const p of ['levi', 'settler', 'hall-sitter', 'courtier']) band(`${p} lives`, 1 - (g(p).broke ?? 1), 0.75, null, 'a careful plan should usually reach 1066');
     band('levi loses fights %', g('levi').lossPct, 3, 15, 'the fight has to be able to go wrong without being a coin toss');
     band('levi luck in play %', g('levi').luckPct, 4, 10, 'the roll decides a fight sometimes, not often (audit 4)');

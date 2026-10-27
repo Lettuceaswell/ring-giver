@@ -46,7 +46,7 @@ function destSub(x) {
   const l2 = [own && (k ? `${esc(own)}'s, ${k.st1 === k.st0 ? `stays <b class="st-${k.st0}">${k.st0}</b>` : `turns <b class="st-${k.st1}">${k.st1}</b>`}` : `${esc(own)}'s`), x.holdable ? `holds for ${holdPay(x)} a year` : 'cannot be held'].filter(Boolean).join(' · ');
   return `${l1}<br>${l2}${fame}${v ? billSpan(v.loot, -v.men, '') : billSpan(0, 0, ' before loot')}`;
 }
-const notable = id => S.notables.find(m => m.id === id);
+const notable = id => S.notables.find(m => m.id === id) || (S.queen && S.queen.id === id ? S.queen : null); // the Queen has a card too (42.2)
 // line icons at the brand's thin strand weight: one stroke, no fills, nothing that is a symbol
 const ICONS = {
   ship: '<path d="M3 13c2 3 4 4 7 4s5-1 7-4l-1-1H4z M10 12V4 M10 4c3 1 5 3 6 7 M10 4c-3 1-5 3-6 7"/>',
@@ -70,6 +70,8 @@ const stanceTag = m => { const w = stanceWord(m.stance), a = stanceMoved(S, m); 
 const openMan = id => `onclick="event.stopPropagation();openCard('${id}')"`;
 function openCard(id) { UI.man = id; UI.assign = null; UI.assignTo = null; render(); }
 function closeCard() { UI.man = null; UI.assign = null; UI.assignTo = null; render(); }
+function openBrides() { UI.brides = true; UI.bride = null; render(); }
+function closeBrides() { UI.brides = false; UI.bride = null; render(); }
 function openHold(id) { UI.hold = id; UI.assign = null; UI.assignTo = null; UI.build = null; render(); }
 function openHall() { UI.hall = true; render(); }
 function closeHall() { UI.hall = false; render(); }
@@ -87,13 +89,14 @@ function render() {
   if (UI.hold && !isHolding(S, UI.hold)) UI.hold = null; // lost
   const fsc = S.queue[0] && S.queue[0].t === 'fight' && S.queue[0].phases ? S.queue[0] : null;
   clearFight(); // drawn again mid-battle: the battle starts over (only Skip ends it early)
-  const quiet = !S.queue.length, open = UI.man || UI.hold || UI.hall || UI.saga || UI.picker;
+  if (UI.brides && !canWed(S)) UI.brides = false;
+  const quiet = !S.queue.length, open = UI.man || UI.hold || UI.hall || UI.saga || UI.picker || UI.brides;
   // the arrival beat: the first time the Map pane shows a new spring, the band counts, the fog opens, last summer's coasts bloom, the route draws
   const beat = quiet && S.phase === 'spring' && UI.pane === 'map' && !open && UI.beatYear !== S.year;
   if (beat) UI.beatYear = S.year;
-  const sheet = S.queue.length ? overlayHTML(S.queue[0]) : UI.man ? manSheet(UI.man) : UI.hold ? holdSheet(UI.hold) : UI.hall ? hallSheet() : UI.saga ? sagaSheet() : UI.picker ? pickerHTML() : '';
+  const sheet = S.queue.length ? overlayHTML(S.queue[0]) : UI.man ? manSheet(UI.man) : UI.hold ? holdSheet(UI.hold) : UI.brides ? bridesSheet() : UI.hall ? hallSheet() : UI.saga ? sagaSheet() : UI.picker ? pickerHTML() : '';
   // the same sheet drawn again (a tap inside it) keeps its scroll and does not rise again (session 13: the Saga's New dynasty, the Stay confirm)
-  const sheetId = S.queue.length ? S.queue[0] : UI.man || (UI.hold && 'hold:' + UI.hold) || (UI.hall && 'hall') || (UI.saga && 'saga') || (UI.picker && 'picker') || null, sc0 = $('.scene'), keep = sc0 ? sc0.scrollTop : 0, same = sheetId && sheetId === UI.sheetId;
+  const sheetId = S.queue.length ? S.queue[0] : UI.man || (UI.hold && 'hold:' + UI.hold) || (UI.brides && 'brides') || (UI.hall && 'hall') || (UI.saga && 'saga') || (UI.picker && 'picker') || null, sc0 = $('.scene'), keep = sc0 ? sc0.scrollTop : 0, same = sheetId && sheetId === UI.sheetId;
   UI.sheetId = sheetId;
   app.innerHTML = bandHTML(quiet, beat) + paneHTML(beat) + footHTML() + sheet;
   if (same) { const o = $('.overlay'), sc = $('.scene'); if (o) o.classList.add('still'); if (sc) sc.scrollTop = keep; }
@@ -203,7 +206,7 @@ function setupHTML() {
   <div class="imprint">House Hansen</div></div>`;
 }
 // the three stats as dots and what each one does in the rules: Combat multiplies men at sea, Rule multiplies men on land, Followability is men led (F × 10)
-const dots = n => `<span class="dots">${'●'.repeat(n)}${'○'.repeat(5 - n)}</span>`;
+const dots = n => `<span class="dots">${'●'.repeat(Math.min(n, 5))}${n > 5 ? '★' : ''}${'○'.repeat(Math.max(0, 5 - n))}</span>`; // the sixth dot is a mark of the blood (42.2)
 // the King's Rule is his hall's pay and his reach (session 13); the seas are today's, so the hall's yield is today's too
 let todayHall = null; const hallYield = () => todayHall ?? (todayHall = holdPay(buildWorld(new Date().toISOString().slice(0, 10))[HOME_ID]));
 const STAT_WORDS = { c: v => `each man aboard fights as ${v}`, r: v => `the hall pays ${Math.round(hallYield() * v / 3)} a year while he sits home · ${T.reachBase + T.reachRule * v} holdings before they stir`, f: v => `leads ${v * T.menPerF} men` };
@@ -346,11 +349,32 @@ function shipPane(ship) {
 function hallPane(home) {
   const held = S.holdings.filter(h => S.notables.some(m => m.place === h.id)).length;
   return `${foldH('home', 'hall', 'Home · Vestfold', `${home.length} at home · ${unledMen(S)} unled`)}
-  ${UI.fold.home ? '' : `${home.map(m => manCard(m)).join('') || '<div class="card empty">Everyone is at sea. The hall stands thin.</div>'}
+  ${UI.fold.home ? '' : `${queenHTML()}${home.map(m => manCard(m)).join('') || '<div class="card empty">Everyone is at sea. The hall stands thin.</div>'}
   <div class="card row"><span>Unled men</span><span class="stats"><b>${unledMen(S)}</b> — no use, still fed</span></div>`}
   ${foldH('holdings', 'land', 'Holdings', `${S.holdings.length} · ${held} with a jarl${S.hall ? ` · ${hallName(S).toLowerCase()}` : ''}`)}
   ${UI.fold.holdings ? '' : `${hallHTML()}${S.holdings.map(h => holdingHTML(h)).join('')}${lostHTML()}`}
   ${childrenHTML()}`;
+}
+// the Queen's row in the hall, or the way to a wife (42.2): births need her, and the children take the better parent's stats
+function queenHTML() {
+  const q = S.queen;
+  if (q) return `<div class="card"><div class="row"><div class="who" ${openMan(q.id)}><span class="name">${esc(q.name)}<i class="chev">›</i></span><span class="tag">Queen</span><br><span class="stats">C <b>${q.combat}</b> · R <b>${q.rule}</b> · F <b>${q.follow}</b> · age ${q.age}${q.marks.length ? ` · ${q.marks.map(k => MARK_NAMES[k]).join(', ')}` : ''}</span></div></div></div>`;
+  if (S.regency) return '';
+  return `<div class="card row"><span>No wife<br><span class="stats">no births without a Queen</span></span>${canWed(S) ? `<button class="small" onclick="openBrides()">Take a wife ›</button>` : '<span class="stats">in spring</span>'}</div>`;
+}
+// the brides' sheet: three women, each with her stats, her marks and what comes with her; tap one, then wed her under the pick
+function bridesSheet() {
+  const bs = brides(S), on = UI.bride, k = S.king;
+  const comes = b => b.kind === 'jarl' ? `${esc(b.fromName)} is kin then: he kneels to the heir without a price` : b.kind === 'king' ? `${esc(b.fromName)} is an ally while she lives: his stance cannot fall below cool` : 'no house comes with her, and none asks anything';
+  const rows = bs.map((b, i) => `<div class="card dest${on === i ? ' sel' : ''}" onclick="UI.bride=${on === i ? 'null' : i};render()"><div class="who"><span class="name">${esc(b.name)}</span><span class="tag">${b.kind === 'free' ? 'free' : b.kind === 'king' ? "a king's daughter" : "a jarl's daughter"}</span><br>
+      <span class="stats">${b.kind === 'free' ? `of ${esc(b.fromName)}` : `daughter of ${esc(b.fromName)}`} · age ${b.age}</span><br><span class="stats">C <b>${b.combat}</b> · R <b>${b.rule}</b> · F <b>${b.follow}</b>${b.marks.length ? ` · <b>${b.marks.map(k => MARK_NAMES[k]).join(', ')}</b>` : ''}</span>
+      <div class="hint">${b.marks.map(k => markWord(k) + '. ').join('')}${comes(b)}.</div></div>
+    ${on === i ? `<button class="wide primary" onclick="event.stopPropagation();act(()=>{closeBrides();wed(S,${i})})">Wed ${esc(b.name)}</button>` : ''}</div>`).join('');
+  return `<div class="overlay" onclick="if(event.target===this)closeBrides()"><div class="scene">
+    <h1>${ico('men')}A wife${closeX('closeBrides()')}</h1>
+    <p>${esc(k.name)} needs a wife for the line: births need her, and each child takes each stat from the better parent, with her marks of the blood at a coin's toss.</p>
+    ${rows}
+    <div class="actions"><button onclick="closeBrides()">Not this spring</button></div></div></div>`;
 }
 function footHTML() {
   const ship = S.notables.filter(m => m.place === 'ship');
@@ -440,7 +464,7 @@ const whyHint = m => UI.why === m.id ? '<div class="hint">No free men. Take men 
 const menStep = (m, spring = true) => `<div class="men"><button ${spring ? '' : 'disabled'} onclick="event.stopPropagation();act(()=>stepMen(S,'${m.id}',-1))">−</button><span class="n">${m.men}<div class="cap">of ${fCap(S, m)}</div></span><button ${spring ? '' : 'disabled'} onclick="event.stopPropagation();moreMen('${m.id}')">+</button><button class="fill" ${spring && m.men < fCap(S, m) ? '' : 'disabled'} onclick="event.stopPropagation();fillMan('${m.id}')">Fill</button></div>`;
 function manCard(m) {
   const spring = S.phase === 'spring', cap = fCap(S, m);
-  return `<div class="card"><div class="row"><div class="who" ${openMan(m.id)}><span class="name">${esc(m.name)}<i class="chev">›</i></span>${m.isKing ? kingTag() : stanceTag(m)}${kinTag(m)}<br>${statLine(m)}</div>
+  return `<div class="card"><div class="row"><div class="who" ${openMan(m.id)}><span class="name">${esc(m.name)}<i class="chev">›</i></span>${m.isKing ? kingTag() : m.queen ? '<span class="tag">Queen</span>' : stanceTag(m)}${kinTag(m)}<br>${statLine(m)}</div>
     <div class="men"><button ${spring ? '' : 'disabled'} onclick="act(()=>stepMen(S,'${m.id}',-1))">−</button><span class="n">${m.men}<div class="cap">of ${cap}</div></span><button ${spring ? '' : 'disabled'} onclick="moreMen('${m.id}')">+</button><button class="fill" ${spring && m.men < cap ? '' : 'disabled'} onclick="fillMan('${m.id}')">Fill</button></div></div>
     ${whyHint(m)}</div>`;
 }
@@ -514,7 +538,7 @@ const whereWords = m => m.place === 'ship' ? 'on the ship' : m.place === 'home' 
 // a holding lost last summer stays on the pane, struck through, until the next spring (TODO 21)
 function lostHTML() { return (S.lost || []).map(l => `<div class="card lost row"><span class="name">${esc(l.name)}</span><span class="stats">${esc(l.why)} · ${l.y}</span></div>`).join(''); }
 function childrenHTML() {
-  if (!S.children.length) return '';
+  if (!S.children.length) return S.queen || S.regency ? '' : foldH('children', 'men', 'Children', 'none') + `<div class="hint">No children. Births need a Queen${canWed(S) ? ': take a wife from the hall above' : ''}.</div>`;
   const hasJarl = S.notables.some(m => !m.isKing && !m.kin);
   // the line's rule, with the real numbers (TODO 41A.2): no son of sixteen and no in-law when the King dies, and the line ends
   const sons = S.children.filter(c => c.sex === 'm' && !c.ofAge), grown = S.notables.some(m => m.son && !m.isKing), inlaw = S.notables.filter(m => m.kin && !m.son && !m.isKing).sort((a, b) => a.age - b.age)[0];
@@ -525,7 +549,7 @@ function childrenHTML() {
     : young ? `${esc(young.name)} is sixteen in ${S.year + 16 - young.age}. Until then, if the King dies, ${w.kind === 'regent' ? `${esc(w.man.name)} rules for him as regent` : 'the line ends: every man in the hall is hostile'}.`
     : inlaw ? `No son. If the King dies, ${esc(inlaw.name)}, ${kinOf(inlaw)}, takes the hall.`
     : 'No son. A daughter of sixteen may marry a jarl; he is kin then and may take the hall.';
-  return foldH('children', 'men', 'Children', `${S.children.length}`) + `<div class="hint">${rule}</div>` + (UI.fold.children ? '' : S.children.map(c => `<div class="card row"><span>${esc(c.name)} <span class="stats">${c.sex === 'm' ? 'son' : 'daughter'}, ${c.age}${c.married ? `, wife of ${esc(c.married)}` : c.ofAge ? ', in the hall' : c.sex === 'f' && c.age >= 16 ? (hasJarl ? ' · of age. Tap a jarl to marry her to him' : ' · of age') : ''}</span></span></div>`).join(''));
+  return foldH('children', 'men', 'Children', `${S.children.length}`) + `<div class="hint">${rule}</div>` + (UI.fold.children ? '' : S.children.map(c => `<div class="card row"><span>${esc(c.name)} <span class="stats">${c.sex === 'm' ? 'son' : 'daughter'}, ${c.age}${c.married ? `, wife of ${esc(c.married)}` : c.ofAge ? ', in the hall' : c.sex === 'f' && c.age >= 16 ? (hasJarl ? ' · of age. Tap a jarl to marry her to him' : ' · of age') : ''}${c.mother ? ` · born of ${esc(c.mother)}` : ''}${c.blood && c.blood.marks && c.blood.marks.length ? ` · <b>${c.blood.marks.map(k => MARK_NAMES[k]).join(', ')}</b>` : ''}</span></span></div>`).join(''));
 }
 function reignRow(d) {
   return `<div class="card"><span class="name">${esc(d.king)}</span> <span class="stats">${d.from}–${d.now ? 'now' : d.to}${d.title ? ' · ' + d.title : ''}</span><br><span class="stats">${d.bestRaid ? `Richest raid: ${esc(d.bestRaid.shore)}, ${d.bestRaid.loot} silver (${d.bestRaid.year}). ` : 'Never raided. '}Most holdings: ${d.bestHoldings}.</span></div>`;
@@ -615,31 +639,32 @@ function manSheet(id) {
   const h = S.holdings.find(h => h.id === m.place);
   const whereNow = m.place === 'ship' ? 'on the ship' : m.place === 'home' ? 'at home' : `holding ${esc(h ? h.name : m.place)}`;
   const story = [];
-  if (m.isKing && S.regency) story.push(`Regent for ${esc(S.regency.name)} since ${S.reign.start}; he steps down in ${S.regency.until}, the boy's sixteenth spring.`);
+  if (m.queen && !m.isKing) story.push(`Queen. Wed to ${esc(k.name)} in ${m.wedYear}, ${esc(m.house || '')}.${m.marks.length ? ' ' + m.marks.map(markWord).join('. ') + '.' : ''} Each child takes each stat from the better parent${m.marks.length ? ', and her marks at a coin\'s toss' : ''}.`);
+  else if (m.isKing && S.regency) story.push(`Regent for ${esc(S.regency.name)} since ${S.reign.start}; ${m.queen ? 'she' : 'he'} steps down in ${S.regency.until}, the boy's sixteenth spring.`);
   else if (m.isKing) { story.push(`King since ${S.reign.start}, generation ${S.gen}.`); if (m.titles.length) story.push(m.titles.map(t => `${TITLES[t].name}: ${TITLES[t].text}`).join(' ')); }
   else { if (m.son) story.push(`Son of ${esc(k.name)}.`); else if (m.kin) story.push(m.wed ? `Married ${esc(m.wed)}; kin to the line.` : m.sworn ? `Swore the Oath to ${esc(m.swornTo || 'the King')} in ${m.sworn}; he kneels to the heir without a price.` : 'Kin to the line.'); }
-  story.push(`${m.raids ? `${m.raids} raid${m.raids === 1 ? '' : 's'}` : 'Never raided'}.${m.heldRun ? ` Has held land ${m.heldRun} summer${m.heldRun === 1 ? '' : 's'} running.` : ''}`);
+  if (!m.queen || m.isKing) story.push(`${m.raids ? `${m.raids} raid${m.raids === 1 ? '' : 's'}` : 'Never raided'}.${m.heldRun ? ` Has held land ${m.heldRun} summer${m.heldRun === 1 ? '' : 's'} running.` : ''}`);
   // how his stats move (TODO 47): what raises each, how far off the next step is, and what takes a step away
-  { const c = toGrow(m, 'combat', T.grow), r = toGrow(m, 'rule', T.grow), f = toGrow(m, 'follow', T.growF), fh = toGrow(m, 'follow', T.grow), n = (k, what) => `${numW(k)} more ${what}${k === 1 ? '' : 's'}`;
+  if (!m.queen || m.isKing) { const c = toGrow(m, 'combat', T.grow), r = toGrow(m, 'rule', T.grow), f = toGrow(m, 'follow', T.growF), fh = toGrow(m, 'follow', T.grow), n = (k, what) => `${numW(k)} more ${what}${k === 1 ? '' : 's'}`;
     const rises = (stat, k, what) => k ? `${stat} rises after ${n(k, what)}` : `${stat} is at its height`;
     story.push(`${rises('Combat', c, 'raid')}, ${rises('Rule', r, 'held summer')}, ${f ? `Following after ${n(f, 'big win')}${m.isKing && fh ? ` or ${n(fh, 'summer')} in the hall` : ''}` : 'Following at its height'}. A lost fight is laid on the man who led, a holding lost on its jarl, a man who walks from a hungry hall on the King; the arm goes at ${T.ageFall.join(' and ')}.`); }
   if (m.age) story.push(`Born ${S.year - m.age}. ${whereNow[0].toUpperCase() + whereNow.slice(1)}${m.men ? ` with ${nMen(m.men)}` : ''}.`);
   const daughters = S.children.filter(c => c.sex === 'f' && c.age >= 16 && !c.married);
   const cap = fCap(S, m), price = giftPrice(m), gifted = m.gifted === S.year;
-  const verbs = !spring ? '<div class="hint">Verbs are spoken in spring.</div>' : `
+  const verbs = m.queen && !m.isKing ? '' : !spring ? '<div class="hint">Verbs are spoken in spring.</div>' : `
     <h2>Where he stands</h2><div class="where">${[['ship', 'Ship'], ['home', 'Home']].map(([pid, nm]) => `<button class="small ${m.place === pid ? 'sel' : ''}" onclick="act(()=>place(S,'${m.id}','${pid}'))">${nm}</button>`).join('')}${h ? `<button class="small sel" onclick="openHold('${h.id}')">${esc(h.name)} ›</button>` : ''}</div>
     ${assignHTML(m)}
     <div class="row" style="margin-top:12px"><span>Men he leads</span>${menStep(m)}</div>${whyHint(m)}
     ${m.isKing ? '' : `<h2>Warm him</h2>
     <div class="where"><button class="small" ${S.silver < price || gifted ? 'disabled' : ''} onclick="act(()=>gift(S,'${m.id}'))">${gifted ? 'Gifted this year' : `Gift ${price} silver`}</button><span class="hint" style="margin:0;align-self:center">once a year · +${T.giftWarm}</span></div>
     ${!m.kin && daughters.length ? `<div class="where" style="margin-top:8px">${daughters.map(d => `<button class="small" onclick="act(()=>marry(S,'${d.id}','${m.id}'))">Marry ${esc(d.name)} to him</button>`).join('')}<span class="hint" style="margin:0;align-self:center">he is kin then · +30</span></div>` : ''}`}`;
-  const children = m.isKing && S.children.length ? `<h2>Children</h2><p class="stats">${S.children.map(c => `${esc(c.name)} ${c.age}${c.married ? `, wife of ${esc(c.married)}` : ''}`).join(' · ')}</p>` : '';
+  const children = (m.isKing || m.queen) && S.children.length ? `<h2>Children</h2><p class="stats">${S.children.map(c => `${esc(c.name)} ${c.age}${c.married ? `, wife of ${esc(c.married)}` : ''}`).join(' · ')}</p>` : '';
   // the card opens large: a portrait's place (art per man is coming), then who he is, then what can be done with him (Levi, 2026-10-26)
   return `<div class="overlay" onclick="if(event.target===this)closeCard()"><div class="scene card-big">
-    <h1>${esc(m.name)}${m.isKing ? kingTag() : ''}${kinTag(m)}${closeX('closeCard()')}</h1>
-    <div class="portrait${m.isKing ? ' king' : ''}"><span>${esc(m.name[0])}</span><div class="pstats">${['combat', 'rule', 'follow'].map(k => `<div><small>${k === 'follow' ? 'Follow' : k[0].toUpperCase() + k.slice(1)}</small><b>${m[k]}</b></div>`).join('')}${m.age ? `<div><small>Age</small><b>${m.age}</b></div>` : ''}</div></div>
-    ${m.isKing ? '' : `<h2>Toward the King</h2>${stanceHTML(m)}`}
-    <h2>His story</h2><p>${story.join(' ')}</p>${children}
+    <h1>${esc(m.name)}${m.isKing ? kingTag() : m.queen ? '<span class="tag">Queen</span>' : ''}${kinTag(m)}${closeX('closeCard()')}</h1>
+    <div class="portrait${m.isKing ? ' king' : ''}"><span>${esc(m.name[0])}</span><div class="pstats">${['combat', 'rule', 'follow'].map(k => `<div><small>${k === 'follow' ? 'Follow' : k[0].toUpperCase() + k.slice(1)}</small><b>${m[k]}</b></div>`).join('')}${m.age ? `<div><small>Age</small><b>${m.age}</b></div>` : ''}</div></div>${m.marks && m.marks.length ? `<div class="hint">${m.marks.map(markWord).join('. ')}.</div>` : ''}
+    ${m.isKing || m.queen ? '' : `<h2>Toward the King</h2>${stanceHTML(m)}`}
+    <h2>${m.queen && !m.isKing ? 'Her story' : 'His story'}</h2><p>${story.join(' ')}</p>${children}
     ${verbs}
     <div class="actions"><button onclick="closeCard()">Back</button></div></div></div>`;
 }

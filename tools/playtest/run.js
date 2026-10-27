@@ -104,6 +104,7 @@ const fCap = (s, m) => G.fCap(s, m);
 
 function springPlan(s, P, run) {
   const k = s.king;
+  if (G.canWed(s)) { const o = G.brides(s); const i = P.wife ? P.wife(s, o) : 0; if (o[i]) { G.wed(s, i); run.weddings = (run.weddings || 0) + 1; } } // 42.2: a King takes a wife the first spring he can
   P.extras(s);
   // 1. everyone not holding a shore starts at home
   for (const m of s.notables) if (!s.holdings.some(h => h.id === m.place)) m.place = 'home';
@@ -187,7 +188,7 @@ function runOne(name, seed) {
         break; }
       case 'winter': {
         trackRulers(s, run, M);
-        for (const e of sc.events || []) { if (/will not starve/.test(e.t)) M.starveWalk++; if (/ stirs\.$/.test(e.t)) M.stirs++; if (/ came for /.test(e.t)) { M.strikes++; M.strikesHeld++; } if (/ took /.test(e.t)) M.strikes++; }
+        for (const e of sc.events || []) { if (/will not starve/.test(e.t)) M.starveWalk++; if (e.n) M.stirs += e.n; else if (/ stirs\.$/.test(e.t)) M.stirs++; if (/ came for /.test(e.t)) { M.strikes++; M.strikesHeld++; } if (/ took /.test(e.t)) M.strikes++; }
         if (sc.eat && sc.eat.starve) { M.starveYears++; M.starveMen += sc.eat.starve; if (/hard/.test(sc.eat.why) || sc.eat.due > sc.eat.base) M.starveHard++; else if (!s.king.titles.includes('deepchest') && s.pt.deepKing) M.starveNewKing++; }
         s.pt.deepKing = s.king.titles.includes('deepchest');
         { const inc = Math.max(0, s.silver + (sc.eat ? sc.eat.paid : 0) - (sc.spring == null ? s.silver : sc.spring)); s.pt.last = s.pt.last == null ? inc : s.pt.last; s.pt.income = Math.min(inc, s.pt.last); s.pt.last = inc; } // the lesser of this year's and last year's (a doubled harvest is not a trend)
@@ -244,7 +245,7 @@ function runOne(name, seed) {
     hostileJarlYears: M.hostileJarlYears, kingDeaths: M.kingDeaths, jarlDeaths: M.jarlDeaths, titles: M.titles, menBought: M.menBought,
     kingC: M.st ? M.st.kc / M.st.n : 0, kingR: M.st ? M.st.kr / M.st.n : 0, kingF: M.st ? M.st.kf / M.st.n : 0, jarlC: M.st && M.st.jn ? M.st.jc / M.st.jn : 0, jarlR: M.st && M.st.jn ? M.st.jr / M.st.jn : 0, jarlF: M.st && M.st.jn ? M.st.jf / M.st.jn : 0,
     chestAvg: M.chestYears ? M.chestSum / M.chestYears : 0, chestMin: isFinite(M.chestMin) ? M.chestMin : 0, menAvg: M.years ? M.menSum / M.years : 0,
-    sails: run.sails, noSail: run.noSail, blind: run.blind, eventsBy: M.eventsBy,
+    weddings: run.weddings || 0, sails: run.sails, noSail: run.noSail, blind: run.blind, eventsBy: M.eventsBy,
     finalSilver: s.silver, finalMen: s.men, finalHoldings: s.holdings.length, finalNotables: s.notables.length,
     built: M.built, builtSilver: M.builtSilver, raised: M.raised, raisedSilver: M.raisedSilver, tier3Year: M.tier3Year,
   };
@@ -274,7 +275,7 @@ const S = (f) => rs => cell(stat(rs, f));
 console.log(`Ring Giver persona playtest  ·  ${SEEDS} seeds (pt-0000001..${String(SEEDS).padStart(7, '0')}) · king ${KING} · cells are mean (min-max) over seeds`);
 table('THE LINE', [['broke/runs', rs => `${rs.filter(r => r.broke).length}/${rs.length}`], ['end year', S(r => r.endYear)], ['kings', S(r => r.gens)], ['king deaths', S(r => r.kingDeaths)], ['jarl deaths', S(r => r.jarlDeaths)], ['titles', S(r => r.titles)]]);
 table('WAR AND HALL', [['fights', S(r => r.fights)], ['lost', S(r => r.fightsLost)], ['lost %', S(r => r.lossPct)], ['starve yrs', S(r => r.starveYears)], ['starve men', S(r => r.starveMen)], ['hall fell', S(r => r.hallFell)], ['men bought', S(r => r.menBought)]]);
-table('THE BATTLE (audit 4)', [['luck in play %', S(r => r.luckPct)], ['exchanges a fight', S(r => r.phasesAvg)], ['turned home', S(r => r.turnedHome)], ['king fell', S(r => r.kingFell)], ['champions', S(r => r.champions)]]);
+table('THE BATTLE (audit 4)', [['luck in play %', S(r => r.luckPct)], ['exchanges a fight', S(r => r.phasesAvg)], ['turned home', S(r => r.turnedHome)], ['king fell', S(r => r.kingFell)], ['champions', S(r => r.champions)], ['weddings', S(r => r.weddings)]]);
 table('LAND', [['hold avg/yr', S(r => r.holdAvg)], ['hold peak', S(r => r.holdMax)], ['gained', S(r => r.holdGained)], ['lost', S(r => r.holdLost)], ['jarl walked', S(r => r.holdWalked)], ['hostile jarl-yrs', S(r => r.hostileJarlYears)]]);
 table('NEW TEETH (TODO 25)', [['king fell', S(r => r.kingFell)], ['king slain', S(r => r.kingSlain)], ['jarls fell', S(r => r.jarlFell)], ['hall slain', S(r => r.hallSlain)], ['starve walk', S(r => r.starveWalk)], ['stirs', S(r => r.stirs)], ['strikes', S(r => r.strikes)], ['struck held', S(r => r.strikesHeld)], ['revolt', S(r => r.holdRevolt)], ['taken', S(r => r.holdTaken)], ['hold@843-852', S(r => r.holdAt850)]]);
 table('RULERS', [['went hostile', S(r => r.hostileEpisodes)], ['calmed', S(r => r.hostileResolved)], ['winters to calm', S(r => r.hostileWinters)], ['still hostile', S(r => r.hostileOpen)], ['realms broken', S(r => r.realmsBroken)], ['hostile→kneels yrs', S(r => r.breakWinters)]]);
