@@ -542,6 +542,10 @@ function buyMen(s, n) {
   for (const m of [...s.notables].sort((a, b) => (b.isKing ? 1 : 0) - (a.isKing ? 1 : 0) || (a.place === 'home' ? 0 : 1) - (b.place === 'home' ? 0 : 1))) {
     if (left <= 0) break; const take = Math.min(left, Math.max(0, fCap(s, m) - m.men)); m.men += take; left -= take; }
 }
+// what the chest can buy this winter, in lots of five (the market's stepper); the market sheet opens only when it is five or more and the King is not about to die on his card
+const marketMax = s => Math.floor(s.silver / (has(s,'fairdealer') ? 2 : T.manPrice) / 5) * 5;
+const kingFalls = s => !!s.kingSlain || (s.rolled === s.year && !!s.oldDeath);
+const canMarket = s => marketMax(s) >= 5 && !kingFalls(s);
 function upkeep(s, events = []) {
   const home = s.notables.filter(m => m.place === 'home').reduce((a, m) => a + m.men, 0) + unledMen(s);
   const hard = !!s.flags.hardWinter, deep = has(s,'deepchest'), base = Math.round(home * T.upkeep);
@@ -563,7 +567,7 @@ function upkeep(s, events = []) {
   const why = starve ? `only ${cost} in the chest` : hard && deep ? 'hard winter, Deep-chest' : hard ? 'hard winter · doubled' : deep ? 'Deep-chest · halved' : '';
   return { lines, eat: { men: home, base, due, paid: cost, why, starve } };
 }
-function closeWinter(s) { winterCard(s); next(s); }
+function closeWinter(s) { winterCard(s); s.queue.push({ t:'market' }); next(s); } // autumn ledger, then the card turns, then the market (TODO 41B.4): the hard winter is known before the men are bought
 function trimMen(s) { let over = placedMen(s) - s.men; for (const m of s.notables) { if (over <= 0) break; const d = Math.min(m.men, over); m.men -= d; over -= d; } }
 
 function winterCard(s) {
@@ -761,6 +765,7 @@ function finishCoronation(s) { if (s.phase === 'summer' || s.queue[0].spring) ne
 // ---- Scene queue ------------------------------------------------------------------------------
 function next(s) {
   s.queue.shift();
+  while (s.queue.length && s.queue[0].t === 'market' && !canMarket(s)) s.queue.shift(); // the rival sail may have emptied the chest, or the King dies on his card
   if (!s.queue.length) {
     if (s.phase === 'summer') resolveLand(s);
     else if (s.phase === 'winter' && !s.flags.winterDone) { s.flags.winterDone = true; endWinter(s); }
@@ -790,8 +795,8 @@ function migrate(s) {
   if (s.reign && !s.reign.oath) s.reign.oath = { knelt: 0, paidN: 0, paid: 0, walked: [] };
   // where a coast sits on the map is presentation, not state: re-project every save from the table (the real coast came in session 5)
   for (const [id, , lon, lat, , , , side] of COASTS) { const sh = s.shores[id]; if (!sh) continue; const { x, y } = proj(lon, lat); sh.x = +x.toFixed(1); sh.y = +y.toFixed(1); sh.side = side || 'r'; }
-  // a save caught between the old market card and this build: finish its winter the new way
-  s.queue = s.queue.filter(sc => sc.t !== 'market' && !(sc.t === 'summary' && (sc.title === 'The land' || sc.title === 'The hall eats')));
+  // a save caught between the old market card and this build: finish its winter the new way (a queued {t:'market'} is the market sheet now and stays)
+  s.queue = s.queue.filter(sc => !(sc.t === 'summary' && (sc.title === 'The land' || sc.title === 'The hall eats')));
   if (s.phase === 'winter' && !s.queue.length && !s.flags.winterDone) s.queue.push({ t:'winter', land: [], hall: [] });
   return s;
 }

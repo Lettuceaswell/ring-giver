@@ -189,7 +189,6 @@ function runOne(name, seed) {
         if (sc.eat && sc.eat.starve) { M.starveYears++; M.starveMen += sc.eat.starve; if (/hard/.test(sc.eat.why) || sc.eat.due > sc.eat.base) M.starveHard++; else if (!s.king.titles.includes('deepchest') && s.pt.deepKing) M.starveNewKing++; }
         s.pt.deepKing = s.king.titles.includes('deepchest');
         { const inc = Math.max(0, s.silver + (sc.eat ? sc.eat.paid : 0) - (sc.spring == null ? s.silver : sc.spring)); s.pt.last = s.pt.last == null ? inc : s.pt.last; s.pt.income = Math.min(inc, s.pt.last); s.pt.last = inc; } // the lesser of this year's and last year's (a doubled harvest is not a trend)
-        const n = Math.min(P.buy(s, sc), Math.floor(s.silver / (G.has(s, 'fairdealer') ? 2 : G.T.manPrice))); if (n > 0) { G.buyMen(s, n); M.menBought += n; }
         const sv = s.silver, mn = s.men; G.closeWinter(s);
         const ev = s.queue[0];
         if (CARDS && ev) cardShot(s, ev, name, seed);
@@ -197,6 +196,9 @@ function runOne(name, seed) {
           if (ev.ev === 'rival') { M.rivalSails++; if (process.env.TRACE) console.log(s.year, 'rival:', ev.lines.join(' / '), 'silver', sv); if (/hall fell/.test(ev.lines[0])) { M.hallFell++; M.rivalSilver += sv - s.silver; M.rivalMen += mn - s.men; }
             if (ev.lines.some(l => /died in the door of his hall/.test(l))) M.kingSlain++; else if (ev.lines.some(l => /died in the door/.test(l))) M.hallSlain++; } }
         break; }
+      case 'market': { // after the card has turned (TODO 41B.4): the persona's buy, unchanged, with the hard winter now in s.flags
+        const n = Math.min(P.buy(s, sc), Math.floor(s.silver / (G.has(s, 'fairdealer') ? 2 : G.T.manPrice))); if (n > 0) { G.buyMen(s, n); M.menBought += n; }
+        G.next(s); break; }
       case 'event': G.acceptSuitor(s, sc.choice ? P.suitor(s, sc) : false); break;
       case 'fork': G.takeTitle(s, P.titles(sc.offers)); M.titles++; break;
       case 'death': if (process.env.TRACE) console.log(s.year, s.phase, 'dies:', s.king.name, s.king.age, 'sons:', s.notables.filter(m => m.son).map(m => m.name + m.age).join(' ')); M.kingDeaths++; if (s.phase === 'summer') M.kingFell++; G.startSuccession(s); break;

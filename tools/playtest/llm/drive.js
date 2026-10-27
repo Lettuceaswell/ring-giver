@@ -38,7 +38,7 @@ const UNTIL = meta.until;
 function die(m) { console.error(m); process.exit(2); }
 
 // kinds of screen that are the player's to decide; `go` stops at them
-const DECISIONS = new Set(['arrive', 'fight', 'stay', 'winter', 'fork', 'heir', 'oath', 'end', 'setup']);
+const DECISIONS = new Set(['arrive', 'fight', 'stay', 'winter', 'market', 'fork', 'heir', 'oath', 'end', 'setup']);
 const MIME = { html: 'text/html', js: 'text/javascript', json: 'application/json', woff2: 'font/woff2', svg: 'image/svg+xml', png: 'image/png', css: 'text/css' };
 
 (async () => {
