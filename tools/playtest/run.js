@@ -221,6 +221,7 @@ function runOne(name, seed) {
     trackRulers(s, run, M);
     const d = Math.floor((s.year - 793) / 10), hs = holdSeries[d] = holdSeries[d] || [0, 0]; hs[0] += s.holdings.length; hs[1]++;
     M.chestSum += s.silver; M.chestYears++; M.chestMin = Math.min(M.chestMin, s.silver); M.menSum += s.men; M.years++;
+    { const js = s.notables.filter(m => !m.isKing), k = s.king; M.st = M.st || { kc: 0, kr: 0, kf: 0, jc: 0, jr: 0, jf: 0, n: 0, jn: 0 }; M.st.kc += k.combat; M.st.kr += k.rule; M.st.kf += k.follow; M.st.n++; for (const j of js) { M.st.jc += j.combat; M.st.jr += j.rule; M.st.jf += j.follow; M.st.jn++; } } // the stats as they stand each spring (TODO 47)
     M.hostileJarlYears += s.notables.filter(m => !m.isKing && G.stanceWord(m.stance) === 'hostile').length;
     springPlan(s, P, run);
   }
@@ -241,6 +242,7 @@ function runOne(name, seed) {
     holdAt850: (holdSeries[5] ? holdSeries[5][0] / holdSeries[5][1] : null),
     hostileEpisodes: M.hostileEpisodes, hostileResolved: M.hostileResolved, hostileOpen: M.hostileOpen, hostileWinters, hostileWintersAll: M.hostileWinters, realmsBroken: M.realmsBroken,
     hostileJarlYears: M.hostileJarlYears, kingDeaths: M.kingDeaths, jarlDeaths: M.jarlDeaths, titles: M.titles, menBought: M.menBought,
+    kingC: M.st ? M.st.kc / M.st.n : 0, kingR: M.st ? M.st.kr / M.st.n : 0, kingF: M.st ? M.st.kf / M.st.n : 0, jarlC: M.st && M.st.jn ? M.st.jc / M.st.jn : 0, jarlR: M.st && M.st.jn ? M.st.jr / M.st.jn : 0, jarlF: M.st && M.st.jn ? M.st.jf / M.st.jn : 0,
     chestAvg: M.chestYears ? M.chestSum / M.chestYears : 0, chestMin: isFinite(M.chestMin) ? M.chestMin : 0, menAvg: M.years ? M.menSum / M.years : 0,
     sails: run.sails, noSail: run.noSail, blind: run.blind, eventsBy: M.eventsBy,
     finalSilver: s.silver, finalMen: s.men, finalHoldings: s.holdings.length, finalNotables: s.notables.length,
@@ -276,6 +278,7 @@ table('THE BATTLE (audit 4)', [['luck in play %', S(r => r.luckPct)], ['exchange
 table('LAND', [['hold avg/yr', S(r => r.holdAvg)], ['hold peak', S(r => r.holdMax)], ['gained', S(r => r.holdGained)], ['lost', S(r => r.holdLost)], ['jarl walked', S(r => r.holdWalked)], ['hostile jarl-yrs', S(r => r.hostileJarlYears)]]);
 table('NEW TEETH (TODO 25)', [['king fell', S(r => r.kingFell)], ['king slain', S(r => r.kingSlain)], ['jarls fell', S(r => r.jarlFell)], ['hall slain', S(r => r.hallSlain)], ['starve walk', S(r => r.starveWalk)], ['stirs', S(r => r.stirs)], ['strikes', S(r => r.strikes)], ['struck held', S(r => r.strikesHeld)], ['revolt', S(r => r.holdRevolt)], ['taken', S(r => r.holdTaken)], ['hold@843-852', S(r => r.holdAt850)]]);
 table('RULERS', [['went hostile', S(r => r.hostileEpisodes)], ['calmed', S(r => r.hostileResolved)], ['winters to calm', S(r => r.hostileWinters)], ['still hostile', S(r => r.hostileOpen)], ['realms broken', S(r => r.realmsBroken)], ['hostile→kneels yrs', S(r => r.breakWinters)]]);
+table('THE STATS (TODO 47: the King and the jarls, each spring)', [['King C', S(r => r.kingC)], ['King R', S(r => r.kingR)], ['King F', S(r => r.kingF)], ['jarl C', S(r => r.jarlC)], ['jarl R', S(r => r.jarlR)], ['jarl F', S(r => r.jarlF)]]);
 table('THE END', [['final silver', S(r => r.finalSilver)], ['final men', S(r => r.finalMen)], ['final holdings', S(r => r.finalHoldings)], ['chest avg', S(r => r.chestAvg)], ['chest min', S(r => r.chestMin)], ['men avg', S(r => r.menAvg)], ['built', S(r => r.built)], ['built silver', S(r => r.builtSilver)], ['raised', S(r => r.raised)], ['raised silver', S(r => r.raisedSilver)], ['tier 3 yr', S(r => r.tier3Year)]]);
 // holdings by era
 const ERAS = [[793, 849], [850, 899], [900, 949], [950, 999], [1000, 1066]];

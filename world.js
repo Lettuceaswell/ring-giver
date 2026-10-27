@@ -35,6 +35,7 @@ const LINES = {
     daughter: [({ name, king }) => `${name}, daughter of ${king}.`, ({ name }) => `${name}, born in the dark of the year. The hall drinks to her.`, ({ name, king }) => `${king} takes the child in his arms and names her ${name}.`,
       ({ name }) => `A daughter. ${name}. In sixteen winters a jarl may ask for her.`, ({ name, king }) => `The women say a girl. ${name}, daughter of ${king}.`],
   },
+  arm: ['His arm is not what it was.', 'The sword sits heavier in his hand.', 'He is slower to the shield wall than he was.', 'The young men row past him now.'],
   quiet: ['Snow on the roof. Nothing stirs.', 'The fjord freezes at its edges. Nothing comes up it.', 'A long night, a short day, and the fire kept. Nothing stirs.', 'The wind drops. The hall sleeps through the dark.', 'Ice on the oars. The men mend nets and tell the old tales.'],
   wanderer: ['He winters in the hall and talks of far coasts.', 'A stranger at the door with salt in his cloak. He has seen coasts you have not.', 'An old sailor asks for the fire and pays in talk of far shores.', 'He comes in out of the snow with a hundred place names, and the hall listens.'],
   // the verdict under the stamp; `at` is the phase the fight ended in ("the landing"). lostLate is a fight fought to the press and lost

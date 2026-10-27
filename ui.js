@@ -431,7 +431,7 @@ const numW = n => NUM[n] || String(n);
 // the hall's own rows, shared by its card on the Hall pane and its sheet: what it pays, where the King is, the guard
 function hallRows() {
   const k = S.king, home = k.place === 'home', spring = S.phase === 'spring', gd = guardNow(S).g;
-  const text = !spring ? 'The King\'s hall. It cannot revolt.' : home ? `${esc(k.name)} keeps his hall this summer: it pays ${hallPay(S)} (a third of its yield for each point of his Rule), his Rule grows every third year, and every man at home warms to him. His Rule keeps ${reachFree(S)} holdings calm.` : `${esc(k.name)} sails. The hall pays nothing and stands thin against a rival sail.`;
+  const text = !spring ? 'The King\'s hall. It cannot revolt.' : home ? `${esc(k.name)} keeps his hall this summer: it pays ${hallPay(S)} (a third of its yield for each point of his Rule), his Rule grows after ${numW(toGrow(k, 'rule', T.grow))} more summer${toGrow(k, 'rule', T.grow) === 1 ? '' : 's'} at home, and every man at home warms to him. His Rule keeps ${reachFree(S)} holdings calm.` : `${esc(k.name)} sails. The hall pays nothing and stands thin against a rival sail.`;
   return { row: `<span class="stats">pays <b>${hallPay(S)}</b> · King ${home ? 'home' : 'at sea'} · Guard <b>${gd}</b></span>`, hint: `<div class="hint">${text} ${guardLine(false)}</div>` };
 }
 const benchWords = () => `${benchCap(S)} benches, ${benchSat(S)} sat`;
@@ -591,6 +591,10 @@ function manSheet(id) {
   else if (m.isKing) { story.push(`King since ${S.reign.start}, generation ${S.gen}.`); if (m.titles.length) story.push(m.titles.map(t => `${TITLES[t].name}: ${TITLES[t].text}`).join(' ')); }
   else { if (m.son) story.push(`Son of ${esc(k.name)}.`); else if (m.kin) story.push(m.wed ? `Married ${esc(m.wed)}; kin to the line.` : m.sworn ? `Swore the Oath to ${esc(m.swornTo || 'the King')} in ${m.sworn}; he kneels to the heir without a price.` : 'Kin to the line.'); }
   story.push(`${m.raids ? `${m.raids} raid${m.raids === 1 ? '' : 's'}` : 'Never raided'}.${m.heldRun ? ` Has held land ${m.heldRun} summer${m.heldRun === 1 ? '' : 's'} running.` : ''}`);
+  // how his stats move (TODO 47): what raises each, how far off the next step is, and what takes a step away
+  { const c = toGrow(m, 'combat', T.grow), r = toGrow(m, 'rule', T.grow), f = toGrow(m, 'follow', T.growF), fh = toGrow(m, 'follow', T.grow), n = (k, what) => `${numW(k)} more ${what}${k === 1 ? '' : 's'}`;
+    const rises = (stat, k, what) => k ? `${stat} rises after ${n(k, what)}` : `${stat} is at its height`;
+    story.push(`${rises('Combat', c, 'raid')}, ${rises('Rule', r, 'held summer')}, ${f ? `Following after ${n(f, 'big win')}${m.isKing && fh ? ` or ${n(fh, 'summer')} in the hall` : ''}` : 'Following at its height'}. A lost fight is laid on the man who led, a holding lost on its jarl, a man who walks from a hungry hall on the King; the arm goes at ${T.ageFall.join(' and ')}.`); }
   if (m.age) story.push(`Born ${S.year - m.age}. ${whereNow[0].toUpperCase() + whereNow.slice(1)}${m.men ? ` with ${nMen(m.men)}` : ''}.`);
   const daughters = S.children.filter(c => c.sex === 'f' && c.age >= 16 && !c.married);
   const cap = fCap(S, m), price = giftPrice(m), gifted = m.gifted === S.year;

@@ -38,7 +38,7 @@ Named cards. The King is one; sons become them; the world supplies more. Three s
 Named men are not safe aboard: each may fall in a lost fight or a bloody win, the King too. Past sixty they die in their beds.
 
 A Notable Man is placed on exactly one of: the ship, a holding, or home. His men go with him.
-Stats grow by doing: raiding feeds Combat, holding feeds Rule, a big win feeds Followability.
+Stats move both ways (TODO 47, decided 2026-10-26). They rise by doing, slower each step: Combat after 2, 3, 5, 8 raids, Rule after as many summers held, Followability after 1, 1, 2, 3 big wins (or, for a King who sits his hall, after 2, 3, 5, 8 summers at home). They fall by what goes wrong: a lost fight takes a step of Combat from the man who led the most men in, a holding lost takes a step of Rule from its jarl, a named man who walks from a hungry hall or with his holding takes a step of the King's Followability, and the arm goes at 50 and 60. Swept at 16 seeds (TODO 47): 3/5/8/12 with the arm at 46 took the King's Combat from 4.9 to 3.7 and doubled the idle chest. Five is the height; the marks of the blood (42.2) are the only sixth.
 
 **Why:** the player never touches individual men. Five named cards instead of forty tokens. Pros and cons per man are read off three numbers.
 
@@ -153,6 +153,7 @@ A dynasty started today shares its world seed with every dynasty started today: 
 - No AI kings that play turns. Named rulers exist (§15) but they hold a stance, not a strategy. The world pushes back through walls, unrest, realms that grow on a clock, and jarls who walked.
 - No council, no separate screens per system. The Man card (§15.4) is the one place a person is acted on.
 - No currency other than silver; no prestige, piety, renown, or score. Stance is a view of you, not a currency.
+- No intrigue: no schemes, spies, murder plots or secrets. No faith currency, and no reformation of the Old Gods: a man or a coast keeps a faith, it is never a number (42.4). (42.1, decided 2026-10-26.)
 - No accounts, no network. One dynasty per device, saved locally.
 
 Revised 2026-10-23 after playtest 1. Earlier versions also ruled out map interaction, AI kings of any kind, and any loyalty stat; the playtest overturned those (§15).

@@ -13,7 +13,8 @@ const T = { startMen: 40, menPerF: 10, manPrice: 3, upkeep: 1, rumor: 20, startY
   oldAge: 0.04,                    // past sixty a named man dies in his bed at oldAge x (age - 60) a winter
   reachBase: 4, reachRule: 2, reachRise: 0.003, reachMax: 0.05, // past reachBase + reachRule x the King's Rule holdings (10 at Rule 3), each holding stirs (unrest +15..40) at reachRise x the excess a summer, at most reachMax
   build: { market: 300, longhouse: 300, palisade: 200 }, marketPay: 0.5, longhouseMen: 5, palisadeCalm: 20,
-  hall: { price: [400, 800, 1600], bench: 1, quiet: 1, seaman: 1, oath: 0.15 } }; // 41B.2 (reflex run 3), raise the hall: three tiers in spring; each adds a bench, takes a year off the wait for a new man, +1 to the seaman's weight in the winter deck, and 15% off the next Oath's price; cumulative // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
+  hall: { price: [400, 800, 1600], bench: 1, quiet: 1, seaman: 1, oath: 0.15 },
+  grow: [2, 3, 5, 8], growF: [1, 1, 2, 3], ageFall: [50, 60] }; // TODO 47: a stat rises by doing, slower each step (raids or held summers to the next step, by the stat as it stands; big wins for Following), and falls by what goes wrong: a lost fight (the man who led), a holding lost, a named man who walks from a hungry hall, and the arm at 50 and 60; swept at 16 seeds, TODO 47: 3/5/8/12 and 46/56 took the King's Combat from 4.9 to 3.7 and doubled the idle chest // 41B.2 (reflex run 3), raise the hall: three tiers in spring; each adds a bench, takes a year off the wait for a new man, +1 to the seaman's weight in the winter deck, and 15% off the next Oath's price; cumulative // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -31,8 +32,13 @@ const unled = n => n ? ` ${n === 1 ? 'One man walks' : `${n} men walk`} home unl
 const deathOdds = s => s.king.age > 50 ? 0.05 * (s.king.age - 50) * (has(s,'oldwise') ? 0.5 : 1) : 0;
 function makeMan(name, c, r, f, extra = {}) {
   return { id: uid(), name, combat: clamp(c,1,5), rule: clamp(r,1,5), follow: clamp(f,1,5), place: 'home', men: 0, age: 25,
-    kin: false, raids: 0, heldRun: 0, stance: 0, why: [], ...extra };
+    kin: false, raids: 0, raidRun: 0, heldRun: 0, winRun: 0, stance: 0, why: [], ...extra };
 }
+// ---- Stats move both ways (TODO 47): a run of doing raises a stat when it reaches T.grow[stat − 1], and a fall ends the run ----
+const RUN = { combat: 'raidRun', rule: 'heldRun', follow: 'winRun' };
+function grow(m, stat, table) { if (m[stat] >= 5) return false; const run = RUN[stat]; m[run] = (m[run] || 0) + 1; if (m[run] < table[m[stat] - 1]) return false; m[run] = 0; m[stat]++; return true; }
+function fall(m, stat) { m[RUN[stat]] = 0; if (m[stat] <= 1) return false; m[stat]--; return true; }
+const toGrow = (m, stat, table) => m[stat] >= 5 ? 0 : table[m[stat] - 1] - (m[RUN[stat]] || 0); // how many more before the next step
 // ---- Stance: one number per named man, read in words (GDD §15.1) ---------------
 // Deeds move it; it is a view of the King, never a currency.
 const STANCE = [[60, 'devoted'], [20, 'loyal'], [-20, 'cool'], [-60, 'sour'], [-Infinity, 'hostile']];
@@ -378,9 +384,9 @@ function chooseTarget(s, id) {
   if (win) {
     loot = Math.round(sh.loot * clamp(0.5 + margin / 2, 0.3, 1) * (has(s,'seawolf') ? 1.25 : 1));
     sh.loot = Math.round(sh.loot * 0.6); sh.def = Math.min(T.defCap, Math.round(sh.def * T.defWin)); // a coast arms against the raider who keeps coming (TODO 25)
-    for (const m of ship) { m.raids++; if (m.raids % 3 === 0) m.combat = clamp(m.combat + 1, 1, 5); if (margin > 1) m.follow = clamp(m.follow + 1, 1, 5); moveStance(s, m, margin > 1 ? 10 : 5, `shared the loot of ${sh.name}`); }
+    for (const m of ship) { m.raids++; grow(m, 'combat', T.grow); if (margin > 1) grow(m, 'follow', T.growF); moveStance(s, m, margin > 1 ? 10 : 5, `shared the loot of ${sh.name}`); }
     if (margin > 1) s.deeds.bigWins++;
-  } else { sh.def = Math.min(T.defCap, Math.round(sh.def * 1.1)); for (const m of ship) moveStance(s, m, -5, `bled at ${sh.name} for nothing`); log(s, `Driven back at ${sh.name}. ${nMen(losses)} lost.`); if (s.yr) s.yr.beaten = sh.name; }
+  } else { sh.def = Math.min(T.defCap, Math.round(sh.def * 1.1)); const led = [...ship].sort((a, b) => b.men - a.men)[0]; fall(led, 'combat'); for (const m of ship) moveStance(s, m, -5, `bled at ${sh.name} for nothing`); /* the man who led the most men in is the one a lost fight is laid on: a step of Combat (TODO 47; the first cut took it from every leader aboard and old jarls sank to one) */ log(s, `Driven back at ${sh.name}. ${nMen(losses)} lost.`); if (s.yr) s.yr.beaten = sh.name; }
   // distribute losses across the ship's men
   let left = losses; for (const m of ship) { const l = Math.min(m.men, Math.round(losses * m.men / Math.max(1, menAboard))); m.men -= l; left -= l; }
   if (left > 0) { const m = ship[0]; const l = Math.min(m.men, left); m.men -= l; }
@@ -451,9 +457,9 @@ function resolveLand(s) {
   // the King holds the hall (GDD §15.2): home, it pays and his Rule grows and the hall warms to him
   if (k.place === 'home') {
     const pay = Math.round(hallPay(s) * (s.flags.harvest ? 2 : 1)); s.silver += pay; s.deeds.homeYears++;
-    k.heldRun++; const grew = k.heldRun % 3 === 0 && k.rule < 5; if (grew) k.rule++;
+    const grew = grow(k, 'rule', T.grow), grewF = grow(k, 'follow', T.grow); // men come to a King who sits his hall: a summer at home is a step toward Following too, on the slower table (TODO 47; a King who never sails had no road up once it could fall)
     for (const m of s.notables) if (m.place === 'home') moveStance(s, m, T.hallWarm, 'a summer in the hall with the King');
-    lines.push(`${k.name} kept his hall. Vestfold pays ${pay}.${grew ? ` His Rule is ${k.rule} now.` : ''}`);
+    lines.push(`${k.name} kept his hall. Vestfold pays ${pay}.${grew ? ` His Rule is ${k.rule} now.` : ''}${grewF ? ` His Following is ${k.follow} now.` : ''}`);
     rows.push({ n: 'Vestfold', v: pay, why: `${k.name} kept his hall${dbl}` });
     if (grew) events.push({ k:'rule', t:`${k.name}'s Rule is ${k.rule} now.`, s:'three summers in his hall' });
   } else { lines.push(`The King was at sea. Vestfold paid nothing.`); rows.push({ n: 'Vestfold', v: 0, why: 'the King was at sea' }); }
@@ -475,7 +481,7 @@ function resolveLand(s) {
     if (S > h.unrest) {
       const pay = Math.round(h.pay * (s.flags.harvest ? 2 : 1));
       s.silver += pay; h.unrest = clamp(h.unrest - (has(s,'lawgiver') ? 10 : T.heldCalm), 0, 100); h.quiet++; h.empty = 0;
-      j.heldRun++; if (j.heldRun % 3 === 0) j.rule = clamp(j.rule + 1, 1, 5);
+      grow(j, 'rule', T.grow);
       s.deeds.heldYears++; moveStance(s, j, 3, `held ${h.name} and it paid`);
       lines.push(`${h.name} pays ${pay}. ${j.name} holds it.`); rows.push({ n: h.name, v: pay, why: `${j.name} holds it${built(s.shores[h.id], 'market') ? ' · the market' : ''}${dbl}` });
       const n = s.holdings.length; // a long reach: past a few holdings, any one may stir, and next summer asks more of its jarl (TODO 25)
@@ -490,9 +496,9 @@ function resolveLand(s) {
         const qw = ['', 'one', 'two', 'three', 'four', 'five'][quietWait(s)]; lines.push(`${upFirst(qw)} quiet years at ${h.name}. ${nm} comes to the hall.`); events.push({ k:'new', t:`${nm} comes to the hall.`, s:`${qw} quiet years at ${h.name}` });
       }
     } else {
-      const lost = Math.round(j.men * 0.3); j.men -= lost; s.men -= lost; j.heldRun = 0; moveStance(s, j, -10, `lost ${h.name} and ${nMen(lost)}`);
-      loseHolding(s, h, j, `rose against ${j.name}`); lines.push(`${h.name} rose against ${j.name}. ${nMen(lost)} dead. The holding is lost.`);
-      rows.push({ n: h.name, v: 0, why: 'lost' }); events.push({ k:'lost', t:`${h.name} rose against ${j.name}.`, s:`${lost ? `${nMen(lost)} dead` : 'no men dead'} · the holding is lost` });
+      const lost = Math.round(j.men * 0.3); j.men -= lost; s.men -= lost; const rf = fall(j, 'rule'); moveStance(s, j, -10, `lost ${h.name} and ${nMen(lost)}`);
+      loseHolding(s, h, j, `rose against ${j.name}`); lines.push(`${h.name} rose against ${j.name}. ${nMen(lost)} dead. The holding is lost.${rf ? ` His Rule falls to ${j.rule}.` : ''}`);
+      rows.push({ n: h.name, v: 0, why: 'lost' }); events.push({ k:'lost', t:`${h.name} rose against ${j.name}.`, s:`${lost ? `${nMen(lost)} dead` : 'no men dead'} · the holding is lost${rf ? ` · his Rule falls to ${j.rule}` : ''}` });
       bigMoment(s, 'Autumn', 'land', events[events.length - 1], [...(lost ? [{ t:`−${nMen(lost)}`, cls:'down' }] : []), { t:`−${h.pay} a year`, cls:'down' }]);
     }
   }
@@ -505,12 +511,12 @@ function resolveLand(s) {
     const D = Math.round((T.strikeBase + T.strikePer * k.coasts.filter(c => !isHolding(s, c)).length) * (0.85 + r() * 0.3));
     const G = j ? Math.round(j.rule * j.men * (0.85 + r() * 0.3)) : 0;
     if (G > D) { moveStance(s, j, 5, `held ${h.name} against ${k.name}`); lines.push(`${k.name} came for ${h.name}. ${j.name} held it (${G} vs ${D}).`); events.push({ k:'realm', t:`${k.name} came for ${h.name}.`, s:`${j.name} held it · ${G} vs ${D}` }); continue; }
-    const lost = j ? Math.round(j.men * 0.4) : 0; if (j) { j.men -= lost; s.men -= lost; j.heldRun = 0; moveStance(s, j, -10, `lost ${h.name} to ${k.name}`); }
+    const lost = j ? Math.round(j.men * 0.4) : 0, rf = j ? fall(j, 'rule') : false; if (j) { j.men -= lost; s.men -= lost; moveStance(s, j, -10, `lost ${h.name} to ${k.name}`); }
     loseHolding(s, h, j, `taken by ${k.name}`); if (!k.coasts.includes(h.id)) k.coasts.push(h.id);
     const st0 = stanceWord(k.stance); moveStance(s, k, T.strikeSated, `took ${h.name} from you`); const st1 = stanceWord(k.stance);
     lines.push(`${k.name} came for ${h.name} and took it (${G} vs ${D}).${lost ? ` ${nMen(lost)} dead.` : ''}`);
     const trow = { n: h.name, v: 0, why: `taken by ${k.name}` }, ti = rows.findIndex(x => x.n === h.name); if (ti >= 0) rows[ti] = trow; else rows.push(trow); // one Rent line for a coast a king took back (TODO 41A.8)
-    events.push({ k:'lost', t:`${k.name} took ${h.name}.`, s:`${j ? `${j.name} could not hold it · ${G} vs ${D}` : 'no one held it'}${lost ? ` · ${nMen(lost)} dead` : ''} · it is his now` });
+    events.push({ k:'lost', t:`${k.name} took ${h.name}.`, s:`${j ? `${j.name} could not hold it · ${G} vs ${D}` : 'no one held it'}${lost ? ` · ${nMen(lost)} dead` : ''}${rf ? ` · his Rule falls to ${j.rule}` : ''} · it is his now` });
     bigMoment(s, 'Summer', 'sail', events[events.length - 1], [...(lost ? [{ t:`−${nMen(lost)}`, cls:'down' }] : []), { t:`−${h.pay} a year`, cls:'down' }, ...(st1 !== st0 ? [{ t:`${k.name} warms: ${st0} → ${st1}` }] : [])]);
   }
   // a held realm bends before it breaks: its king kneels only when every coast has stayed held (TODO 25)
@@ -541,6 +547,7 @@ function walkAway(s, j, h) {
   const sh = s.shores[h.id];
   s.holdings = s.holdings.filter(x => x !== h);
   markLost(s, h, `${j.name} walked with it`);
+  fall(s.king, 'follow'); // men walked from the King's service (TODO 47)
   sh.walked ={ name: j.name, combat: j.combat, rule: j.rule, follow: j.follow }; sh.def = clamp(j.rule * j.men + 20, 20, 200); sh.loot = Math.round(h.pay * 3);
   s.notables = s.notables.filter(m => m !== j); s.men -= j.men;
   log(s, `${j.name} walks. ${h.name} is his now.`);
@@ -572,7 +579,8 @@ function upkeep(s, events = []) {
     for (const m of s.notables) if (!m.isKing) moveStance(s, m, m.place === 'home' ? -T.starveSour : -Math.round(T.starveSour / 2), 'the hall went hungry');
     const gone = s.notables.filter(m => !m.isKing && !m.kin && m.place === 'home' && m.stance <= -20).sort((a, b) => a.stance - b.stance)[0];
     lines.push(`The hall could not feed everyone. ${nMen(starve)} walked.`); events.unshift({ k:'starve', t:'The hall could not feed everyone.', s:`${nMen(starve)} walked · every jarl remembers it` });
-    if (gone) { s.notables = s.notables.filter(m => m !== gone); s.men -= gone.men; lines.push(`${gone.name} will not starve in this hall. He goes, and his ${nMen(gone.men)} with him.`); events.splice(1, 0, { k:'starve', t:`${gone.name} will not starve in this hall.`, s:`he goes, and his ${nMen(gone.men)} with him` }); }
+    // a named man who walks out takes a step of the King's Following with him (TODO 47); the first cut fell on every hungry winter and the harness said the King's cap collapsed
+    if (gone) { s.notables = s.notables.filter(m => m !== gone); s.men -= gone.men; const ff = fall(s.king, 'follow'); lines.push(`${gone.name} will not starve in this hall. He goes, and his ${nMen(gone.men)} with him.${ff ? ` ${s.king.name}'s Following falls to ${s.king.follow}.` : ''}`); events.splice(1, 0, { k:'starve', t:`${gone.name} will not starve in this hall.`, s:`he goes, and his ${nMen(gone.men)} with him${ff ? ` · the King's Following falls to ${s.king.follow}` : ''}` }); }
   }
   s.silver -= cost; lines.push(`${nMen(home)} at home ate ${cost} silver.`);
   if (hard) events.push({ k:'hard', t:'Hard winter.', s:'the ice came early · the hall ate double' });
@@ -670,7 +678,7 @@ function endWinter(s) {
 }
 function newYear(s) {
   s.year++; s.deeds.years++;
-  for (const m of s.notables) m.age++;
+  for (const m of s.notables) { m.age++; if (T.ageFall.includes(m.age) && fall(m, 'combat')) log(s, `${m.name} is ${m.age}. ${rng(s.day + ':arm:' + m.id).pick(LINES.arm)} Combat ${m.combat}.`); } // the arm goes past 45 and 55 (TODO 47)
   for (const c of s.children) { c.age++; if (c.sex === 'm' && c.age === 16) comeOfAge(s, c); }
   if (s.year >= T.endYear) { s.dynasty.push(reignCard(s)); s.queue.push({ t:'end', reason: '1066' }); return; }
   s.phase = 'spring'; s.rumorOffer = null;
@@ -790,7 +798,7 @@ function next(s) {
 // saves from before stance and the hall: fill what is missing, change nothing that is there
 function migrate(s) {
   if (!s) return s;
-  for (const m of s.notables) { if (m.stance === undefined) m.stance = m.kin ? 20 : 0; if (!m.why) m.why = []; }
+  for (const m of s.notables) { if (m.stance === undefined) m.stance = m.kin ? 20 : 0; if (!m.why) m.why = []; if (m.raidRun === undefined) m.raidRun = (m.raids || 0) % 3; if (m.winRun === undefined) m.winRun = 0; if (m.heldRun === undefined) m.heldRun = 0; } // TODO 47: an old save keeps its progress toward the next raid step
   // a save holds the King twice (s.king and his row in notables) and JSON parts them: after a reload he aged, grew and moved only in one of the two.
   // The row is the one every rule reads; the King is that row (found by the LLM playtest driver, which reloads the page on every tap)
   s.king = s.notables.find(m => m.isKing) || s.king;

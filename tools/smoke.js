@@ -78,6 +78,13 @@ while (S && maxYears-- > 0) {
     const silver = S.silver; build(S, h.id, 'market'); if (S.silver !== silver) { console.log('market built twice'); fails++; }
     render(); check('build built'); closeHold(); S.silver = Math.min(S.silver, was); global.builtOnce = { id: h.id, line: lines }; }
   if (global.builtOnce && global.builtOnce.line === lines && S.shores[global.builtOnce.id].built.length !== 2) { console.log('the coast lost its buildings', global.builtOnce.id); fails++; }
+  // the stats move both ways (TODO 47): a run reaches the step and the stat rises, a fall ends the run, five is the height, one is the floor; an old save keeps its raid progress
+  if (global.statsOnce !== lines) { global.statsOnce = lines; const m = makeMan('Smoke', 3, 2, 5, {}); m.raidRun = T.grow[2] - 1;
+    if (!grow(m, 'combat', T.grow) || m.combat !== 4 || m.raidRun !== 0 || toGrow(m, 'combat', T.grow) !== T.grow[3]) { console.log('grow combat', m.combat, m.raidRun); fails++; }
+    if (grow(m, 'follow', T.growF) || m.follow !== 5 || toGrow(m, 'follow', T.growF) !== 0) { console.log('grow past five', m.follow); fails++; }
+    m.heldRun = 2; if (!fall(m, 'rule') || m.rule !== 1 || m.heldRun !== 0 || fall(m, 'rule') || m.rule !== 1) { console.log('fall rule', m.rule, m.heldRun); fails++; }
+    const old = migrate(JSON.parse(JSON.stringify(S))); for (const x of old.notables) { delete x.raidRun; delete x.winRun; } const mg = migrate(old); if (mg.notables.some(x => x.raidRun === undefined || x.winRun === undefined || x.raidRun !== (x.raids || 0) % 3)) { console.log('migrate runs'); fails++; }
+    openMan(S.king.id) && 0; UI.man = S.king.id; render(); check('man card stats'); if (!app.innerHTML.includes('Combat rises')) { console.log('no stats line on the card'); fails++; } UI.man = null; render(); }
   // the hall (reflex run 3): the sheet opened at every tier; raised once with the chest forced high; short of silver, twice, and at the top it is refused
   if (S.hall === 0 && global.hallOnce !== lines) { const was = S.silver, cap = benchCap(S), wait = quietWait(S), p0 = T.hall.price[0];
     openHall(); check('hall'); S.silver = p0 - 1; render(); check('hall short'); const short = S.silver; raiseHall(S); if (S.hall !== 0 || S.silver !== short) { console.log('hall raised short of silver'); fails++; }
