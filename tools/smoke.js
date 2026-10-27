@@ -78,6 +78,16 @@ while (S && maxYears-- > 0) {
     const silver = S.silver; build(S, h.id, 'market'); if (S.silver !== silver) { console.log('market built twice'); fails++; }
     render(); check('build built'); closeHold(); S.silver = Math.min(S.silver, was); global.builtOnce = { id: h.id, line: lines }; }
   if (global.builtOnce && global.builtOnce.line === lines && S.shores[global.builtOnce.id].built.length !== 2) { console.log('the coast lost its buildings', global.builtOnce.id); fails++; }
+  // the hall (reflex run 3): the sheet opened at every tier; raised once with the chest forced high; short of silver, twice, and at the top it is refused
+  if (S.hall === 0 && global.hallOnce !== lines) { const was = S.silver, cap = benchCap(S), wait = quietWait(S), p0 = T.hall.price[0];
+    openHall(); check('hall'); S.silver = p0 - 1; render(); check('hall short'); const short = S.silver; raiseHall(S); if (S.hall !== 0 || S.silver !== short) { console.log('hall raised short of silver'); fails++; }
+    S.silver = p0 + 40; render(); check('hall affordable'); act(() => raiseHall(S));
+    if (S.hall !== 1 || S.silver !== 40 || benchCap(S) !== cap + 1 || quietWait(S) !== wait - 1 || S.deeds.raised !== 1 || !hallName(S)) { console.log('hall raise failed', S.hall, S.silver, benchCap(S), cap); fails++; }
+    const after = S.silver; raiseHall(S); if (S.hall !== 1 || S.silver !== after) { console.log('hall raised twice on a short chest'); fails++; }
+    S.silver = T.hall.price[0]; raiseHall(S); if (S.hall !== 1) { console.log('hall raised out of order (tier 2 for tier 1 silver)'); fails++; }
+    render(); check('hall raised'); S.hall = 2; render(); check('hall tier 2'); S.hall = T.hall.price.length; S.silver = 99999; render(); check('hall top'); if (canRaise(S)) { console.log('hall raised past the top'); fails++; }
+    S.hall = 1; closeHall(); S.silver = Math.min(S.silver, was); global.hallOnce = lines; }
+  if (global.hallOnce === lines && S.hall < 1) { console.log('the hall lost its tier'); fails++; }
   // a man over his cap (a dead Ring-giver's men): − steps him down to the next five, + gives him nothing (reflex run 1)
   { const m = S.notables.find(m => !m.isKing); if (m) { const was = m.men, cap = fCap(S, m); m.men = cap + 7; stepMen(S, m.id, -1); if (m.men !== cap + 5) { console.log('step over cap down', cap + 7, m.men); fails++; } stepMen(S, m.id, 1); if (m.men !== cap + 5) { console.log('step over cap up', cap + 5, m.men); fails++; } m.men = was; } }
   if (r() < 0.15) { act(() => kingStays(S, true)); act(() => boardAll(S)); if (S.king.place !== 'home') { console.log('king boarded with kingHome'); fails++; } act(() => kingStays(S, false)); }

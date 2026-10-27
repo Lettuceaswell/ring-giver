@@ -12,7 +12,8 @@ const T = { startMen: 40, menPerF: 10, manPrice: 3, upkeep: 1, rumor: 20, startY
   benches: 8,                      // named men without a holding the hall will feed at its table; past that no wanderer or local comes (sons always do)
   oldAge: 0.04,                    // past sixty a named man dies in his bed at oldAge x (age - 60) a winter
   reachBase: 4, reachRule: 2, reachRise: 0.003, reachMax: 0.05, // past reachBase + reachRule x the King's Rule holdings (10 at Rule 3), each holding stirs (unrest +15..40) at reachRise x the excess a summer, at most reachMax
-  build: { market: 300, longhouse: 300, palisade: 200 }, marketPay: 0.5, longhouseMen: 5, palisadeCalm: 20 }; // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
+  build: { market: 300, longhouse: 300, palisade: 200 }, marketPay: 0.5, longhouseMen: 5, palisadeCalm: 20,
+  hall: { price: [400, 800, 1600], bench: 1, quiet: 1, seaman: 1, oath: 0.15 } }; // 41B.2 (reflex run 3), raise the hall: three tiers in spring; each adds a bench, takes a year off the wait for a new man, +1 to the seaman's weight in the winter deck, and 15% off the next Oath's price; cumulative // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -92,7 +93,10 @@ function checkBreak(s, k) {
   log(s, `${k.name} kneels. His realm is yours.`);
 }
 // the hall's benches: only so many named men can sit at the King's table without a holding of their own; a full hall draws no more (TODO 25)
-function benchRoom(s) { return s.notables.filter(m => !m.isKing && !s.holdings.some(h => h.id === m.place)).length < T.benches; }
+const benchSat = s => s.notables.filter(m => !m.isKing && !s.holdings.some(h => h.id === m.place)).length;
+const benchCap = s => T.benches + (s.hall || 0) * T.hall.bench;
+const quietWait = s => Math.max(2, T.quietYears - (s.hall || 0) * T.hall.quiet); // quiet years at a holding before a new man comes to the hall
+function benchRoom(s) { return benchSat(s) < benchCap(s); }
 function fCap(s, m) { return (m.follow + (has(s,'ringgiver') ? 1 : 0)) * T.menPerF; }
 // a named man fights with his own arm too: he counts as one man at his Combat, whether or not he leads any (session 13)
 function strengthShip(s) { return s.notables.filter(m => m.place === 'ship').reduce((a, m) => a + m.combat * (m.men + 1), 0); }
@@ -227,6 +231,16 @@ function build(s, id, k) {
   if (k === 'palisade') h.unrest = clamp(h.unrest - T.palisadeCalm, 0, 100);
   log(s, rng(s.day + id + k).pick(LINES.built[k])(sh.name));
 }
+// ---- The hall (41B.2, reflex run 3): the King's hall at Vestfold is raised in spring, tier by tier, for silver. Not a holding, so it lives on the state (s.hall, 0..3)
+const HALL_TIERS = ['The hall', 'A longer hall', 'A gabled hall', 'A king\'s hall'];
+const hallName = s => HALL_TIERS[s.hall || 0];
+const hallGives = () => `a bench · a new man a year sooner · the Oath ${Math.round(T.hall.oath * 100)}% cheaper`;
+function canRaise(s) { return s.phase === 'spring' && (s.hall || 0) < T.hall.price.length && s.silver >= T.hall.price[s.hall || 0]; }
+function raiseHall(s) {
+  if (!canRaise(s)) return;
+  s.silver -= T.hall.price[s.hall || 0]; s.hall = (s.hall || 0) + 1; s.deeds.raised = (s.deeds.raised || 0) + 1; s.hallYears = (s.hallYears || []).concat(s.year);
+  log(s, rng(s.day + 'hall' + s.hall).pick(LINES.raised[s.hall - 1]));
+}
 function unrestRise(s, h, up) { return clamp(h.unrest + (built(s.shores[h.id], 'palisade') ? Math.round(up / 2) : up), 0, 100); }
 
 // ---- New game ------------------------------------------------------------------
@@ -235,8 +249,8 @@ function newGame(kingKey, custom) {
   const stats = { ragnar: ['Ragnar', 4, 2, 3], rollo: ['Rollo', 2, 4, 3], custom: ['Custom', ...(custom || [3, 3, 3])] }[kingKey];
   const king = makeMan(custom && custom.name ? custom.name : stats[0], stats[1], stats[2], stats[3], { age: 20, isKing: true, titles: [], offeredPairs: [], born: T.startYear - 20 });
   const s = { seed: day, day, year: T.startYear, phase: 'spring', silver: 60, men: T.startMen, king, notables: [king], children: [],
-    holdings: [], shores: buildWorld(day), rulers: buildRulers(day), destination: null, rumorOffer: null, queue: [], log: [], envoy: null, guard: null,
-    deeds: { raids:0, blind:0, heldYears:0, jarlYears:0, bigWins:0, homeYears:0, rumors:0, menBought:0, stays:0, upkeep:0, marriages:0, years:0, built:0 },
+    holdings: [], hall: 0, hallYears: [], shores: buildWorld(day), rulers: buildRulers(day), destination: null, rumorOffer: null, queue: [], log: [], envoy: null, guard: null,
+    deeds: { raids:0, blind:0, heldYears:0, jarlYears:0, bigWins:0, homeYears:0, rumors:0, menBought:0, stays:0, upkeep:0, marriages:0, years:0, built:0, raised:0 },
     reign: { bestRaid: null, bestHoldings: 0, title: null, start: T.startYear },
     dynasty: [], flags: {}, gen: 1 };
   king.men = Math.min(T.startMen, fCap(s, king));
@@ -470,10 +484,10 @@ function resolveLand(s) {
         const up = 15 + r.int(0, 25); h.unrest = unrestRise(s, h, up);
         events.push({ k:'empty', t:`${h.name} stirs.`, s:`unrest ${h.unrest} next summer · ${n} holdings, and a King of Rule ${k.rule} keeps ${free} calm` });
       }
-      if (h.quiet > 0 && h.quiet % T.quietYears === 0 && benchRoom(s)) {
+      if (h.quiet > 0 && h.quiet % quietWait(s) === 0 && benchRoom(s)) {
         const sh = s.shores[h.id], nm = freshName(s, LOCAL_NAMES[sh.culture], rng(s.day + h.id + s.year), sh.name);
         s.notables.push(makeMan(nm, 1 + r.int(0, 1), 3 + r.int(0, 2), 2 + r.int(0, 1), { age: 22 + r.int(0, 15) }));
-        lines.push(`Five quiet years at ${h.name}. ${nm} comes to the hall.`); events.push({ k:'new', t:`${nm} comes to the hall.`, s:`five quiet years at ${h.name}` });
+        const qw = ['', 'one', 'two', 'three', 'four', 'five'][quietWait(s)]; lines.push(`${upFirst(qw)} quiet years at ${h.name}. ${nm} comes to the hall.`); events.push({ k:'new', t:`${nm} comes to the hall.`, s:`${qw} quiet years at ${h.name}` });
       }
     } else {
       const lost = Math.round(j.men * 0.3); j.men -= lost; s.men -= lost; j.heldRun = 0; moveStance(s, j, -10, `lost ${h.name} and ${nMen(lost)}`);
@@ -588,7 +602,7 @@ function winterCard(s) {
   if (k.age < 55 && !s.regency) deck.push(['birth', kids < 2 ? 7 : 4]);
   if (s.notables.some(m => !m.isKing && m.age > 45)) deck.push(['jarlDeath', 2]);
   deck.push(['wanderer', 2]); deck.push(['rival', 1 + 2 * foes.length + Math.min(6, 2 * Math.floor(s.silver / T.richHall))]); deck.push(['hardWinter', 1]); deck.push(['harvest', s.holdings.length ? 2 : 0]); // a rich chest draws sails
-  if (benchRoom(s)) deck.push(['seaman', 2]);
+  if (benchRoom(s)) deck.push(['seaman', 2 + (s.hall || 0) * T.hall.seaman]);
   if (s.children.some(c => c.sex === 'f' && c.age >= 16 && !c.married) && s.notables.some(m => !m.isKing && !m.kin)) deck.push(['suitor', 3]);
   if (s.notables.filter(m => !m.isKing).length >= 2) deck.push(['feud', 1]);
   deck.push(['quiet', 1]);
@@ -746,7 +760,7 @@ function crown(s, heir, spring = s.phase === 'spring') {
   for (const j of s.notables.filter(m => !m.isKing && s.holdings.some(h => h.id === m.place))) {
     const w = stanceWord(j.stance);
     const kneels = j.kin || w === 'loyal' || w === 'devoted' || (w !== 'hostile' && j.follow <= heir.rule + (r() < 0.5 ? 1 : 0));
-    const price = Math.round(j.follow * 15 * (old.titles && old.titles.includes('beloved') ? 0.5 : 1) * (w === 'hostile' ? 2 : w === 'sour' ? 1.5 : 1));
+    const price = Math.round(j.follow * 15 * (1 - (s.hall || 0) * T.hall.oath) * (old.titles && old.titles.includes('beloved') ? 0.5 : 1) * (w === 'hostile' ? 2 : w === 'sour' ? 1.5 : 1));
     s.queue.push({ t:'oath', jarl: j.id, kneels, price });
   }
   s.queue.push({ t:'coronation', spring }); // crowned in spring (the regent steps down as the year turns): the coronation does not turn it again
@@ -787,6 +801,9 @@ function migrate(s) {
   if (s.regency === undefined) s.regency = null;
   if (!s.guardWho) s.guardWho = [];
   if (s.deeds.built === undefined) s.deeds.built = 0;
+  if (s.deeds.raised === undefined) s.deeds.raised = 0;
+  if (s.hall === undefined) s.hall = 0;
+  if (!s.hallYears) s.hallYears = [];
   for (const sh of Object.values(s.shores)) if (!sh.built) sh.built = []; // buildings belong to the coast (41B.2)
   if (!s.rulers) { s.rulers = buildRulers(s.day); s.envoy = null; for (const k of Object.values(s.rulers)) k.coasts = k.coasts.filter(c => !isHolding(s, c)); discoverRulers(s); }
   s.log = s.log.map(l => typeof l === 'string' ? { y: +(l.match(/^(\d{3,4}): /) || [])[1] || null, t: l.replace(/^\d{3,4}: /, '') } : l);

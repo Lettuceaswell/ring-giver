@@ -1,6 +1,6 @@
 let S = migrate(load());
 // screen state that is not game state: which pane, the picker, the open Man card, the Saga sheet, the two-tap arm, and what changed since the band last showed it
-const UI = { hold: null, assign: null, assignTo: null, fold: (() => { try { return JSON.parse(localStorage.getItem('seaking-fold')) || {}; } catch (e) { return {}; } })(), fightDone: null, fightT: [], pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10, beatYear: 0, routeDrawn: null, winterYear: 0, winterBeat: false, cardYear: 0, cardBeat: false, rolled: 0 };
+const UI = { hold: null, assign: null, assignTo: null, fold: (() => { try { return JSON.parse(localStorage.getItem('seaking-fold')) || {}; } catch (e) { return {}; } })(), fightDone: null, fightT: [], pane: 'map', picker: false, man: null, saga: false, armed: 0, scroll: {}, pend: { silver: 0, men: 0 }, buy: 10, beatYear: 0, routeDrawn: null, winterYear: 0, winterBeat: false, cardYear: 0, cardBeat: false, rolled: 0, hall: false };
 const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = sel => document.querySelector(sel);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
@@ -71,6 +71,8 @@ const openMan = id => `onclick="event.stopPropagation();openCard('${id}')"`;
 function openCard(id) { UI.man = id; UI.assign = null; UI.assignTo = null; render(); }
 function closeCard() { UI.man = null; UI.assign = null; UI.assignTo = null; render(); }
 function openHold(id) { UI.hold = id; UI.assign = null; UI.assignTo = null; UI.build = null; render(); }
+function openHall() { UI.hall = true; render(); }
+function closeHall() { UI.hall = false; render(); }
 function closeHold() { UI.hold = null; UI.assign = null; UI.assignTo = null; UI.build = null; render(); }
 const kingTag = () => `<span class="tag">${S.regency ? 'Regent' : 'King'}</span>`;
 function toggleFold(k) { UI.fold[k] = !UI.fold[k]; try { localStorage.setItem('seaking-fold', JSON.stringify(UI.fold)); } catch (e) {} render(); }
@@ -85,13 +87,13 @@ function render() {
   if (UI.hold && !isHolding(S, UI.hold)) UI.hold = null; // lost
   const fsc = S.queue[0] && S.queue[0].t === 'fight' && S.queue[0].phases ? S.queue[0] : null;
   clearFight(); // drawn again mid-battle: the battle starts over (only Skip ends it early)
-  const quiet = !S.queue.length, open = UI.man || UI.hold || UI.saga || UI.picker;
+  const quiet = !S.queue.length, open = UI.man || UI.hold || UI.hall || UI.saga || UI.picker;
   // the arrival beat: the first time the Map pane shows a new spring, the band counts, the fog opens, last summer's coasts bloom, the route draws
   const beat = quiet && S.phase === 'spring' && UI.pane === 'map' && !open && UI.beatYear !== S.year;
   if (beat) UI.beatYear = S.year;
-  const sheet = S.queue.length ? overlayHTML(S.queue[0]) : UI.man ? manSheet(UI.man) : UI.hold ? holdSheet(UI.hold) : UI.saga ? sagaSheet() : UI.picker ? pickerHTML() : '';
+  const sheet = S.queue.length ? overlayHTML(S.queue[0]) : UI.man ? manSheet(UI.man) : UI.hold ? holdSheet(UI.hold) : UI.hall ? hallSheet() : UI.saga ? sagaSheet() : UI.picker ? pickerHTML() : '';
   // the same sheet drawn again (a tap inside it) keeps its scroll and does not rise again (session 13: the Saga's New dynasty, the Stay confirm)
-  const sheetId = S.queue.length ? S.queue[0] : UI.man || (UI.hold && 'hold:' + UI.hold) || (UI.saga && 'saga') || (UI.picker && 'picker') || null, sc0 = $('.scene'), keep = sc0 ? sc0.scrollTop : 0, same = sheetId && sheetId === UI.sheetId;
+  const sheetId = S.queue.length ? S.queue[0] : UI.man || (UI.hold && 'hold:' + UI.hold) || (UI.hall && 'hall') || (UI.saga && 'saga') || (UI.picker && 'picker') || null, sc0 = $('.scene'), keep = sc0 ? sc0.scrollTop : 0, same = sheetId && sheetId === UI.sheetId;
   UI.sheetId = sheetId;
   app.innerHTML = bandHTML(quiet, beat) + paneHTML(beat) + footHTML() + sheet;
   if (same) { const o = $('.overlay'), sc = $('.scene'); if (o) o.classList.add('still'); if (sc) sc.scrollTop = keep; }
@@ -320,7 +322,7 @@ function hallPane(home) {
   return `${foldH('home', 'hall', 'Home · Vestfold', `${home.length} at home · ${unledMen(S)} unled`)}
   ${UI.fold.home ? '' : `${home.map(m => manCard(m)).join('') || '<div class="card empty">Everyone is at sea. The hall stands thin.</div>'}
   <div class="card row"><span>Unled men</span><span class="stats"><b>${unledMen(S)}</b> — no use, still fed</span></div>`}
-  ${foldH('holdings', 'land', 'Holdings', `${S.holdings.length} · ${held} with a jarl`)}
+  ${foldH('holdings', 'land', 'Holdings', `${S.holdings.length} · ${held} with a jarl${S.hall ? ` · ${hallName(S).toLowerCase()}` : ''}`)}
   ${UI.fold.holdings ? '' : `${hallHTML()}${S.holdings.map(h => holdingHTML(h)).join('')}${lostHTML()}`}
   ${childrenHTML()}`;
 }
@@ -425,10 +427,32 @@ function guardLine(short) {
   if (!g) return short ? `Guard 0 · the hall stands empty: ${why}` : `The hall stands empty against a strange sail: ${why}.`;
   return short ? `Guard ${g} at home · a strange sail finds the hall ${w} (${pct(p)})` : `A strange sail finds the hall ${w} (${pct(p)}).`;
 }
-function hallHTML() {
+const numW = n => NUM[n] || String(n);
+// the hall's own rows, shared by its card on the Hall pane and its sheet: what it pays, where the King is, the guard
+function hallRows() {
   const k = S.king, home = k.place === 'home', spring = S.phase === 'spring', gd = guardNow(S).g;
   const text = !spring ? 'The King\'s hall. It cannot revolt.' : home ? `${esc(k.name)} keeps his hall this summer: it pays ${hallPay(S)} (a third of its yield for each point of his Rule), his Rule grows every third year, and every man at home warms to him. His Rule keeps ${reachFree(S)} holdings calm.` : `${esc(k.name)} sails. The hall pays nothing and stands thin against a rival sail.`;
-  return `<div class="card"><div class="row"><span class="name">Vestfold<span class="tag">the hall</span></span><span class="stats">pays <b>${hallPay(S)}</b> · King ${home ? 'home' : 'at sea'} · Guard <b>${gd}</b></span></div><div class="hint">${text} ${guardLine(false)}</div></div>`;
+  return { row: `<span class="stats">pays <b>${hallPay(S)}</b> · King ${home ? 'home' : 'at sea'} · Guard <b>${gd}</b></span>`, hint: `<div class="hint">${text} ${guardLine(false)}</div>` };
+}
+const benchWords = () => `${benchCap(S)} benches, ${benchSat(S)} sat`;
+// the hall on the Hall pane: its tier, its benches, and a tap to open it (41B.2, Raise the hall)
+function hallHTML() {
+  const r = hallRows();
+  return `<div class="card hrow" onclick="openHall()"><div class="row"><span class="name">Vestfold<span class="tag">${S.hall ? hallName(S) : 'the hall'}</span><i class="chev">›</i></span>${r.row}</div>
+    <div class="row hsub"><span class="stats">${benchWords()}</span><span class="stats">${S.hall < T.hall.price.length ? 'can be raised' : 'raised to the roof-tree'}</span></div>${r.hint}</div>`;
+}
+// the hall opened: its state in a sentence, what it pays and guards, and the three tiers it can be raised through (41B.2)
+function hallSheet() {
+  const spring = S.phase === 'spring', n = T.hall.price.length, r = hallRows();
+  const word = `${upFirst(numW(benchCap(S)))} benches, ${numW(benchSat(S))} sat; a new man comes after ${numW(quietWait(S))} quiet years.`;
+  const tiers = HALL_TIERS.slice(1).map((nm, i) => { const on = S.hall > i, next = S.hall === i, p = T.hall.price[i], ok = canRaise(S);
+    return `<div class="aopt${on ? ' here' : next && spring ? ' sel' : ''}"><div class="row"><span class="name">${nm}</span><span class="stats">${on ? `raised in ${(S.hallYears || [])[i] || 'an earlier year'}` : `${p} silver`}</span></div><div class="stats">${hallGives()}</div></div>${next && spring ? `<div class="aconf"><button class="primary" ${ok ? '' : 'disabled'} onclick="act(()=>raiseHall(S))">${ok ? `Raise the hall · ${p} silver` : `Not enough silver · ${p} needed, ${S.silver} in the chest`}</button></div>` : ''}`; }).join('');
+  return `<div class="overlay" onclick="if(event.target===this)closeHall()"><div class="scene">
+    <h1>${ico('land')}Vestfold${closeX('closeHall()')}</h1>
+    <p class="hint">${hallName(S)}. ${word}</p>
+    <div class="card"><div class="row"><span class="name">Vestfold<span class="tag">the hall</span></span>${r.row}</div>${r.hint}</div>
+    <h2>${ico('land')}Raise the hall</h2>${spring ? '' : '<div class="hint">Raised in spring, from this sheet.</div>'}<div class="alist">${tiers}</div>
+    <div class="actions"><button onclick="closeHall()">Back</button></div></div></div>`;
 }
 // one line per holding on the Hall: what it pays, who holds it, his odds; the tap opens it (Levi, 2026-10-26)
 const holdTone = p => p >= .97 ? 'sure' : p >= .7 ? 'likely' : p >= .4 ? 'even' : 'long';
@@ -641,7 +665,7 @@ function cardRead(sc) {
   if (aged.length === 1) { const a = aged[0]; o.rows.push({ tone: 'quiet', t: `${a.n}, ${a.a}, died in his bed.`, s: a.m ? `${a.m === 1 ? 'one man walks' : `${nMen(a.m)} walk`} home unled` : '' }); }
   else if (aged.length > 1) { const sum = aged.reduce((x, a) => x + a.m, 0); o.rows.push({ tone: 'quiet', t: `${aged.length} old men died in their beds.`, s: aged.map(a => `${a.n} ${a.a}`).join(' · ') + (sum ? ` · ${nMen(sum)} unled` : '') }); }
   for (const n of sc.gather || []) o.rows.push({ tone: 'omen', t: `${n}'s fleet is gathering.`, s: 'It sails on the hall next winter if he is still hostile. Warm him with silver in spring, or leave men home.' });
-  if (sc.benchFull) o.rows.push({ tone: 'quiet', t: 'The benches are full.', s: `${T.benches} named men sit without land. No new man comes until one is given a holding.` });
+  if (sc.benchFull) o.rows.push({ tone: 'quiet', t: 'The benches are full.', s: `${benchCap(S)} named men sit without land. No new man comes until one is given a holding.` });
   if (sc.answer) { const j = notable(sc.choice.j), d = S.children.find(c => c.id === sc.choice.d); o.rows.unshift(sc.answer === 'yes' ? { tone: 'boon', t: `${j ? j.name : 'He'} is kin.`, s: 'He kneels to your heir without a price.' } : { tone: 'quiet', t: `${d ? d.name : 'She'} stays in the hall.`, s: `${j ? j.name : 'He'} says nothing at the table.` }); }
   return o;
 }
@@ -871,7 +895,7 @@ function overlayHTML(sc) {
   else if (sc.t === 'heir') h = `<h1>${ico('men')}The Heir</h1><p>Pick a son. The jarls will weigh his Rule against their own following.</p>${sc.sons.map(id => { const m = notable(id); return `<div class="pick" onclick="act(()=>chooseHeir(S,'${id}'))"><span class="name">${esc(m.name)}</span><br>${statLine(m)}</div>`; }).join('')}`;
   else if (sc.t === 'oath') { const j = notable(sc.jarl), h2 = S.holdings.find(h => h.id === j.place);
     h = `<h1>${ico('oath')}${esc(j.name)} of ${esc(h2.name)}</h1><p>${statLine(j)} · ${nMen(j.men)}</p>${sc.kneels ? `<p class="rich">He kneels${j.wed || j.son ? ' — he is kin' : j.kin ? ' — he has sworn before' : ''}.</p><div class="actions">${btn('On', 'oathPay(S,false)')}</div>`
-      : `<p>He hesitates. His following outweighs the heir's Rule.</p><p>Price of his knee: <b class="rich">${sc.price}</b> silver. You have ${S.silver}.</p><div class="actions">${btn(`Pay ${sc.price}`, 'oathPay(S,true)', S.silver >= sc.price ? 'primary' : '')}${btn('Let him walk with his holding', 'oathPay(S,false)', '')}</div>`}`; }
+      : `<p>He hesitates. His following outweighs the heir's Rule.</p><p>Price of his knee: <b class="rich">${sc.price}</b> silver${S.hall > 0 ? ' · the hall eases it' : ''}. You have ${S.silver}.</p><div class="actions">${btn(`Pay ${sc.price}`, 'oathPay(S,true)', S.silver >= sc.price ? 'primary' : '')}${btn('Let him walk with his holding', 'oathPay(S,false)', '')}</div>`}`; }
   else if (sc.t === 'coronation') h = `<h1>${ico('hall')}${esc(S.king.name)}, king</h1><p>${oathWords()}</p><p>${plural(S.holdings.length, 'holding')}. ${nMen(S.men)}. ${S.silver} silver.</p><div class="actions">${btn('First spring', 'finishCoronation(S)')}</div>`;
   else if (sc.t === 'end') h = `<h1>${sc.reason === '1066' ? 'The dynasty ends at 1066' : 'The line is broken'}</h1><p>${sc.reason === '1066' ? 'The age of the sea kings is over.' : noHeirWords()}</p><h2>Dynasty Saga</h2>${dynastyHTML()}<div class="actions">${btn('Begin again', `archive(S,'${sc.reason === '1066' ? 'reached 1066' : 'the line broke'}');S=null`)}</div>`;
   return `<div class="overlay"><div class="scene">${h}</div></div>`;

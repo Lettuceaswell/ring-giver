@@ -2,6 +2,14 @@
 
 Each entry: **Picked** (what and why, the class), **Predicted** (which band or judgment moves, by how much), **Measured** (the scoreboard before → after), **Shipped** (commit), **Lesson** (what to do differently; the next run reads this first), **For Levi** (calls filed, by number). A run that failed verification still gets an entry: what was tried, why it was reverted.
 
+## Session 19 — 2026-10-26, the card before the market and the hall tiers (41B.4 A, Q3), not a reflex run
+
+Levi's "build both", run as a lean delegation rather than the loop (two Haiku scouts, two Sonnet builders, verification here). Logged so the queue and the numbers stay honest.
+**Built:** 41B.4 A (the Autumn sheet is the ledger, the card turns, then the market as its own sheet, skipped when nothing can be bought; the market's bill line knows a hard winter) and Q3 (three hall tiers at 400/800/1,600, each a bench, a year off the quiet wait, a heavier seaman card, 15% off the knee).
+**Measured:** the reorder alone moved the harness (the rival deck now sees the pre-market chest): builder chest 719 → 631, levi 530 → 438, builder alive 7/8 → 6/8. The tiers on top: builder chest 631 → 492 at the shipped prices (521 at 500/1000/2000, 579 at 700/1400/2800, 512 at 250/500/1000), alive 6/8 at every set; raised 1.4 a game; tier 3 unreached by the builder at any set. The careful four do not move (none raises).
+**Lesson:** a purchase that does not pay back is a sink, as run 2 predicted, and it shows: −22% on the builder's chest from one verb. But the sink is only measured where a persona spends, and the richest chests (the hall-sitter's 13,000) belong to personas that never raise; Q19 gives them the verb before the second ship is priced. Also: an order change with no number in it moved every band (the deck reads `s.silver`); run.js before and after is the rule for flow changes too, not only for number changes.
+**For Levi:** the four builders' calls in LOG session 19; the band "builder chest ≤ 300" still WARNs at 492 and the second ship is the last sink in the signed order.
+
 ## Run 2 — 2026-10-26, buildings in holdings, the rule (Q2a)
 
 **Reflection on run 1:** its Predicted line came true to the letter (gate green, fates `c06892e611e1` unchanged, no band moved), which is also its weakness: a run the harness cannot feel is a run the loop cannot learn from. The Q16 read it asked for took two minutes with grep: `menRoom` is clamped at 0, `buyMen` and the market's lead-count skip a man at or over his cap, `boardAll`'s fill and `fillShip` take `min(cap, men + unled)`, which strips a man over his cap down to it when he fills the ship (the stripped men fall to the unled pool, so nothing is lost, but the tap on Fill says "fills" and takes). One `Math.max` fixes it; folded into this run as the small A beside the big B.

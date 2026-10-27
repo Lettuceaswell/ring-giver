@@ -142,6 +142,7 @@ module.exports = function (G) {
     extras(s) {
       base.extras(s);
       const bill = s.men - s.notables.filter(m => isHolding(s, m.place)).reduce((a, m) => a + m.men, 0);
+      if (G.canRaise(s) && s.silver - T.hall.price[s.hall] >= bill + 60) G.raiseHall(s);
       for (const h of s.holdings) for (const k of Object.keys(G.BUILDINGS)) if (G.canBuild(s, h.id, k) && s.silver - T.build[k] >= bill + 60) G.build(s, h.id, k);
     },
     titles: prio(['landtaker', 'lawgiver', 'deepchest', 'ringgiver', 'hallward', 'fairdealer']),

@@ -51,6 +51,12 @@ const LINES = {
     longhouse: [n => `A longhouse goes up at ${n}, with benches for men who were not there before.`, n => `${n} has a longhouse now. Farmers' sons sit on its benches and learn the shield.`, n => `The roof-tree is raised at ${n}. Its benches will fill every spring.`],
     palisade: [n => `A palisade rings ${n}. Oak stakes, a ditch, and a gate that shuts.`, n => `${n} is fenced in oak now. The men inside sleep better than the men outside.`, n => `A ditch and a wall of stakes at ${n}. Trouble finds it harder to get in.`],
   },
+  // the saga's line when the King's hall is raised (41B.2), one list per tier
+  raised: [
+    ['The hall at Vestfold is lengthened by two bays. There is room on the benches for one more man.', 'Timber comes down the fjord, and the hall at Vestfold grows a bay. A longer table, and a longer list of those who sit at it.', 'The King\'s hall is made longer. The new bench is already spoken for.'],
+    ['Gables rise on the hall at Vestfold, carved at the peaks. Men who see them from the water know whose roof it is.', 'The hall at Vestfold takes a gabled roof and a second door. The skalds will have more to count.', 'Carvers come to Vestfold and leave their beasts on the gables. A gabled hall draws men, and keeps them.'],
+    ['Vestfold has a king\'s hall now: high, long and dark with smoke. Jarls who would not kneel will think again at its door.', 'The last beam is raised at Vestfold. A hundred could eat under that roof, and none of them would forget it.', 'The hall at Vestfold is finished, and it is bigger than the fear of it. Men will kneel more easily under that roof.'],
+  ],
   // one line for the places a saga would name; shown under the account of the coast (destSub)
   famous: { lindisfarne: 'A holy house on a tidal island. Monks, silver, and no wall worth the name.', york: 'The old Roman walls still stand, and a king\'s hall inside them.',
     paris: 'An island city behind two bridges. The Franks will pay to be left alone.', jutland: 'A market town at the neck of the land: traders from every sea.' },

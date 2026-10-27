@@ -27,7 +27,7 @@ for (const n of names) {
       : { t: sc.t, ev: sc.ev, title: sc.title, lines: sc.lines, choice: sc.choice ? { d: s.children.find(x => x.id === sc.choice.d).name, j: man(s.notables.find(x => x.id === sc.choice.j)) } : null },
     kids: s.children.filter(x => !x.ofAge && !(x.sex === 'f' && x.married)).map(x => ({ name: x.name, sex: x.sex, age: x.age })),
     sons: s.notables.filter(m => m.son).map(m => ({ name: m.name, age: m.age })),
-    bench: s.notables.filter(m => !m.isKing && !held(m)).map(man), benchMax: G.T.benches, benchFull: !G.benchRoom(s),
+    bench: s.notables.filter(m => !m.isKing && !held(m)).map(man), benchMax: G.benchCap(s), benchFull: !G.benchRoom(s),
     holdings: s.holdings.length, rent: s.holdings.reduce((a, h) => a + G.holdPay(s.shores[h.id]), 0),
     homeMen: s.notables.filter(m => m.place === 'home').reduce((a, m) => a + m.men, 0), guard: s.guard,
     rulers: Object.values(s.rulers).filter(x => x.known).map(x => ({ name: x.name, st: G.stanceWord(x.stance), wroth: x.wroth ?? null, broken: !!x.broken })),
