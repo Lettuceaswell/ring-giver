@@ -220,7 +220,7 @@ function winterHTML(sc) {
   if (y.rumor) L += row('Rumor · the Wanderer', '', `−${y.rumor}`, 'down');
   if (y.gifts) L += row(`Gifts · ${nMen(y.giftN)}`, '', `−${y.gifts}`, 'down');
   for (const o of y.oath || []) L += row(`The Oath · ${esc(o.n)}'s knee`, '', `−${o.v}`, 'down');
-  if (S.yr && S.yr.bought) L += row(`Men bought · ${S.yr.bought}`, '', `−${S.yr.bought * p}`, 'down');
+  if (S.yr && S.yr.bought) L += row(`Men hired · ${S.yr.bought}`, '', `−${S.yr.bought * p}`, 'down');
   const from = beat && spring != null ? spring : S.silver, delta = spring != null ? S.silver - spring : 0;
   L += `<div class="tot"><span class="k">Chest</span><span class="v"><b id="btot" data-count="${S.silver}">${from}</b>${delta ? `<span class="d ${delta > 0 ? 'up' : 'down'}">${delta > 0 ? '+' : ''}${delta}</span>` : ''}</span></div>`;
   const ev = events.length ? events.map((e, j) => `<div class="ev ${e.k}${beat ? ' in' : ''}"${beat ? ` style="animation-delay:${120 * i + 110 * j}ms"` : ''}><i></i><div><div class="t">${esc(e.t)}</div>${e.s ? `<div class="s">${esc(e.s)}</div>` : ''}</div></div>`).join('') : `<p class="quiet">A quiet summer on the land.</p>`;
@@ -230,8 +230,8 @@ function winterHTML(sc) {
 // the market, its own sheet after the winter card has turned (TODO 41B.4): the hard winter is known by now, so the bill line can say it
 function marketSheetHTML() {
   const p = has(S,'fairdealer') ? 2 : T.manPrice, first = S.year === T.startYear;
-  return `<h1>${ico('men')}The market${closeX('act(()=>next(S))')}</h1>
-  <p>Men can be bought for spring, at ${p === 2 ? '<s>3</s> <b>2</b> silver a man, Fair-dealer' : `<b>${p}</b> silver a man`}. The chest holds ${S.silver}.</p>
+  return `<h1>${ico('men')}The thing${closeX('act(()=>next(S))')}</h1>
+  <p>Men can be hired for spring at the thing, ${p === 2 ? '<s>3</s> <b>2</b> silver a man, Fair-dealer' : `<b>${p}</b> silver a man`}. The chest holds ${S.silver}.</p>
   <div class="market">${marketHTML()}${first ? '<div class="teach">Men at home eat 1 silver a winter. Men aboard raid. A named man leads ten men for every point of his Followability; past that, they sit unled.</div>' : ''}</div>
   <div class="exit"><button onclick="act(()=>next(S))">Spring · ${S.year + 1}</button></div>`;
 }
@@ -242,7 +242,7 @@ function marketHTML() {
   <div class="cons"><span>Silver</span><b id="bsil"></b><span>Men</span><b id="bmen"></b><span id="bleadk"></span><b id="bleadv"></b><span class="w" id="bwarn" hidden></span>
     <div class="room"><i class="led" id="bled"></i><i class="add" id="badd"></i></div><span class="full" id="broom"></span></div>
   <div class="bill" id="bbill"></div>
-  <button class="buy" id="bbuy" onclick="buyNow()"></button>${S.yr && S.yr.bought ? `<div class="bought">${nMen(S.yr.bought)} bought this winter. ${nMen(S.men)} now${unled ? ` · ${unled} unled` : ''}.</div>` : ''}`;
+  <button class="buy" id="bbuy" onclick="buyNow()"></button>${S.yr && S.yr.bought ? `<div class="bought">${nMen(S.yr.bought)} hired at the thing. ${nMen(S.men)} now${unled ? ` · ${unled} unled` : ''}.</div>` : ''}`;
 }
 function setBuy(d) { if (d) UI.buy += d; marketNums(); }
 function buyNow() { const t = $('#btot'), from = t ? t.textContent : null; act(() => buyMen(S, UI.buy)); const e = $('#btot'); if (e && from !== null) { e.textContent = from; countUp(e.closest('.scene')); } }
@@ -263,7 +263,7 @@ function marketNums() {
   set('broom', `room for ${room} more under the named men`);
   const dec = $('#bdec'), inc = $('#binc'), buy = $('#bbuy');
   if (dec) dec.disabled = n <= 5; if (inc) inc.disabled = n + 5 > max;
-  if (buy) { buy.disabled = n <= 0; buy.textContent = n > 0 ? `Buy ${n} men for ${cost} silver` : 'Not enough silver for five men'; }
+  if (buy) { buy.disabled = n <= 0; buy.textContent = n > 0 ? `Hire ${n} men for ${cost} silver` : 'Not enough silver for five men'; }
 }
 
 // ---- The band: year, king, silver and men; tap it for the Saga. What changed shows once, when the band is in view (TODO 21) ----
@@ -409,7 +409,7 @@ function barHTML(Sv, D, labelS = 'Ship', labelD = 'Defenders', anim = false, odd
 // "+" or Fill with no free men says why instead of nothing (TODO 41A.3)
 function moreMen(id) { if (unledMen(S) === 0) { UI.why = id; render(); } else act(() => stepMen(S, id, 1)); }
 function fillMan(id) { const m = S.notables.find(x => x.id === id); if (!m) return; if (unledMen(S) === 0) { UI.why = id; render(); } else act(() => addMen(S, id, fCap(S, m))); }
-const whyHint = m => UI.why === m.id ? '<div class="hint">No free men. Take men from another with −, or buy them in winter.</div>' : '';
+const whyHint = m => UI.why === m.id ? '<div class="hint">No free men. Take men from another with −, or hire them at the thing.</div>' : '';
 // a named man's row: his name opens his card (where he is sent from); the row only steps his men (Levi, 2026-10-26: no one-tap moves)
 const menStep = (m, spring = true) => `<div class="men"><button ${spring ? '' : 'disabled'} onclick="event.stopPropagation();act(()=>stepMen(S,'${m.id}',-1))">−</button><span class="n">${m.men}<div class="cap">of ${fCap(S, m)}</div></span><button ${spring ? '' : 'disabled'} onclick="event.stopPropagation();moreMen('${m.id}')">+</button><button class="fill" ${spring && m.men < fCap(S, m) ? '' : 'disabled'} onclick="event.stopPropagation();fillMan('${m.id}')">Fill</button></div>`;
 function manCard(m) {
@@ -697,7 +697,7 @@ function winterCardHTML(sc) {
   if (j && !sc.answer) foot = `<div class="cardfoot two"><button class="primary" onclick="act(()=>answerSuitor(S,true))">Give her</button><button onclick="act(()=>answerSuitor(S,false))">Refuse</button></div>`;
   else if (r && !rolled) foot = cardFoot('Turn his card', `${Math.round(100 * r.p)}% · ${k.name}, ${k.age}`, 'roll', 'turnRoll(this)');
   else if (sc.kingSlain || (r && r.dies)) foot = cardFoot(`${k.name} is dead`, 'his saga', 'grave', 'act(()=>next(S))');
-  else if (S.queue[1] && S.queue[1].t === 'market' && canMarket(S)) foot = cardFoot('To the market', `${S.silver} silver`, 'primary', 'act(()=>next(S))');
+  else if (S.queue[1] && S.queue[1].t === 'market' && canMarket(S)) foot = cardFoot('To the thing', `${S.silver} silver`, 'primary', 'act(()=>next(S))');
   else foot = cardFoot('Spring', String(S.year + 1), 'primary', 'act(()=>next(S))');
   return `<div class="overlay night"><div class="stage">${big.map((m, i) => momentCard(m, i, beat)).join('')}${card}${rows}${roll}</div>${foot}</div>`;
 }

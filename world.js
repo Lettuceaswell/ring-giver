@@ -59,8 +59,12 @@ const LINES = {
     ['Vestfold has a king\'s hall now: high, long and dark with smoke. Jarls who would not kneel will think again at its door.', 'The last beam is raised at Vestfold. A hundred could eat under that roof, and none of them would forget it.', 'The hall at Vestfold is finished, and it is bigger than the fear of it. Men will kneel more easily under that roof.'],
   ],
   // one line for the places a saga would name; shown under the account of the coast (destSub)
-  famous: { lindisfarne: 'A holy house on a tidal island. Monks, silver, and no wall worth the name.', york: 'The old Roman walls still stand, and a king\'s hall inside them.',
-    paris: 'An island city behind two bridges. The Franks will pay to be left alone.', jutland: 'A market town at the neck of the land: traders from every sea.' },
+  famous: { lindisfarne: 'A holy house on a tidal island. Monks, silver, and no wall worth the name; what is knocked down is slow to rise again.', york: 'The old Roman walls still stand, and a king\'s hall inside them.',
+    paris: 'An island city behind two bridges. The Franks will pay to be left alone.', jutland: 'A market town at the neck of the land: traders from every sea.',
+    hebrides: 'Columba\'s island house. The monks have fled before and come back; they always come back, and the wall never does.',
+    tours: 'Saint Martin\'s house, three days up the Loire: the richest shrine in Francia, no wall but prayer, and too far up the river to keep.',
+    galicia: 'A long coast under the Asturian king\'s mountains: rich churches, no harbour to winter in.',
+    lisbon: 'The Moors\' city at the river\'s mouth: walls, a garrison, and a sea too far from home to hold.' },
 };
 
 // ---- The coast ----------------------------------------------------------------
@@ -88,19 +92,19 @@ const COASTS = [
   ['paris','Paris',2.35,48.86,false,'frank',{loot:300,def:180}],
   ['brittany','Brittany',-3.5,48.6,true,'frank',null,'l'],
   ['loire','Nantes',-1.6,47.2,true,'frank',null,'l'],
-  ['tours','Tours',0.7,47.4,false,'frank'],
-  ['galicia','Galicia',-8.4,43.4,false,'frank'],
-  ['lisbon','Lisbon',-9.1,38.7,false,'frank'],
+  ['tours','Tours',0.7,47.4,false,'frank',{loot:200,def:40,holy:true,late:true}],
+  ['galicia','Galicia',-8.4,43.4,false,'frank',{loot:150,def:90,late:true}],
+  ['lisbon','Lisbon',-9.1,38.7,false,'frank',{loot:260,def:170,late:true}],
   ['kent','Kent',1.1,51.3,true,'saxon',null,'a'],
   ['london','London',-0.1,51.5,true,'saxon',null,'l'],
   ['eastanglia','East Anglia',1.3,52.4,true,'saxon'],
   ['humber','Humber',-0.3,53.65,true,'saxon',null],
   ['york','York',-1.1,53.96,true,'saxon',{loot:220,def:120},'a'],
-  ['lindisfarne','Lindisfarne',-1.8,55.67,false,'saxon',{loot:180,def:30}],
+  ['lindisfarne','Lindisfarne',-1.8,55.67,false,'saxon',{loot:180,def:30,holy:true}],
   ['pictland','Pictland',-3.0,56.4,true,'gael',null,'l'],
   ['orkney','Orkney',-3.0,59.0,true,'norse',null,'l'],
   ['shetland','Shetland',-1.3,60.3,true,'norse'],
-  ['hebrides','Hebrides',-6.5,57.3,true,'gael',null,'l'],
+  ['hebrides','Iona',-6.5,57.3,true,'gael',{loot:120,def:35,holy:true,late:true},'l'],
   ['ulster','Ulster',-5.9,54.6,true,'gael',null,'l'],
   ['dublin','Dublin',-6.26,53.35,true,'gael',{loot:160,def:80},'l'],
   ['munster','Munster',-8.5,51.9,true,'gael',null,'l'],
@@ -130,9 +134,9 @@ function buildWorld(seed) {
   for (const [id, name, lon, lat, holdable, culture, famous, side] of COASTS) {
     const { x, y } = proj(lon, lat);
     let loot, def;
-    if (famous) { loot = famous.loot; def = famous.def; }
-    else { loot = r.int(20, 140); def = Math.max(20, Math.min(150, Math.round(loot * (0.4 + r() * 0.6)) + 10)); }
-    shores[id] = { id, name, x: +x.toFixed(1), y: +y.toFixed(1), side: side || 'r', holdable, culture, famous: !!famous, baseLoot: loot, baseDef: def, loot, def,
+    if (famous && !famous.late) { loot = famous.loot; def = famous.def; }
+    else { loot = r.int(20, 140); def = Math.max(20, Math.min(150, Math.round(loot * (0.4 + r() * 0.6)) + 10)); if (famous) { loot = famous.loot; def = famous.def; } } // a coast made famous after the world was seeded (late) draws like a plain one first, so the seed's world stays the world
+    shores[id] = { id, name, x: +x.toFixed(1), y: +y.toFixed(1), side: side || 'r', holdable, culture, famous: !!famous, baseLoot: loot, baseDef: def, loot, def, holy: !!(famous && famous.holy), // a monastery (41B.7): weak walls that never become a fortress, and treasure that comes back slowly
       known: id === HOME_ID, seen: id === HOME_ID, rumored: false, neighbors: nb[id] || [], walked: null };
   }
   return shores;
@@ -140,18 +144,29 @@ function buildWorld(seed) {
 
 // ---- Named rulers (GDD §15.3): a stance and a clock, never a turn -----------------
 // [id, name, title, anchor, starting realm, map tint (a brand token)]
+// the ids are the seats (a save keys its rulers by them); the name is the man of the year (41B.7): RULER_NAMES gives each seat its kings by the
+// year they took it, so 793 opens on Beorhtric, Æthelred and Charles, and when kings become mortal (42.3) the next name on the list follows
 const RULERS = [
-  ['gudrod',   'Gudrød',   'sea king of Hordaland',  'hordaland', ['hordaland', 'rogaland'],  'oxblood'],
-  ['aella',    'Ælla',     'King of Northumbria',    'york',      ['york', 'humber'],         'chestnut'],
-  ['ecgberht', 'Ecgberht', 'King of Wessex',         'wessex',    ['wessex', 'cornwall'],     'accent'],
-  ['charles',  'Charles',  'King of the Franks',     'paris',     ['paris', 'rouen', 'seine'], 'pine'],
-  ['aed',      'Áed',      'King of Tara',           'dublin',    ['dublin', 'munster'],      'iron'],
-  ['anund',    'Anund',    'King at Birka',          'birka',     ['birka', 'gotland'],       'text'],
+  ['gudrod',   'sea king of Hordaland',  'hordaland', ['hordaland', 'rogaland'],  'oxblood'],
+  ['aella',    'King of Northumbria',    'york',      ['york', 'humber'],         'chestnut'],
+  ['ecgberht', 'King of Wessex',         'wessex',    ['wessex', 'cornwall'],     'accent'],
+  ['charles',  'King of the Franks',     'paris',     ['paris', 'rouen', 'seine'], 'pine'],
+  ['aed',      'King of Tara',           'dublin',    ['dublin', 'munster'],      'iron'],
+  ['anund',    'King at Birka',          'birka',     ['birka', 'gotland'],       'text'],
 ];
+const RULER_NAMES = { // [year he took the seat, name]; the half-century is right even where the man is a saga's guess (the Svear before Rimbert)
+  gudrod:   [[793, 'Gudrød'], [840, 'Halfdan'], [872, 'Harald'], [934, 'Hákon'], [961, 'Harald Greycloak'], [995, 'Olaf'], [1015, 'Olaf'], [1046, 'Harald Hardrada']],
+  aella:    [[793, 'Æthelred'], [806, 'Eardwulf'], [841, 'Æthelred'], [862, 'Osberht'], [866, 'Ælla'], [876, 'Halfdan'], [919, 'Ragnall'], [939, 'Olaf'], [948, 'Eirik'], [954, 'Oswulf'], [1016, 'Eirik'], [1055, 'Tostig']],
+  ecgberht: [[793, 'Beorhtric'], [802, 'Ecgberht'], [839, 'Æthelwulf'], [858, 'Æthelbald'], [860, 'Æthelberht'], [865, 'Æthelred'], [871, 'Alfred'], [899, 'Edward'], [924, 'Æthelstan'], [939, 'Edmund'], [946, 'Eadred'], [955, 'Eadwig'], [959, 'Edgar'], [975, 'Edward'], [978, 'Æthelred'], [1016, 'Cnut'], [1035, 'Harold'], [1040, 'Harthacnut'], [1042, 'Edward'], [1066, 'Harold']],
+  charles:  [[793, 'Charles'], [814, 'Louis'], [840, 'Charles the Bald'], [877, 'Louis'], [879, 'Carloman'], [884, 'Charles the Fat'], [888, 'Odo'], [898, 'Charles the Simple'], [922, 'Robert'], [923, 'Rudolph'], [936, 'Louis'], [954, 'Lothair'], [986, 'Louis'], [987, 'Hugh Capet'], [996, 'Robert'], [1031, 'Henry'], [1060, 'Philip']],
+  aed:      [[793, 'Áed'], [819, 'Conchobar'], [833, 'Niall'], [846, 'Máel Sechnaill'], [862, 'Áed Findliath'], [879, 'Flann'], [916, 'Niall Glúndub'], [919, 'Donnchad'], [944, 'Congalach'], [956, 'Domnall'], [980, 'Máel Sechnaill'], [1002, 'Brian'], [1014, 'Máel Sechnaill'], [1022, 'Donnchad'], [1064, 'Toirdelbach']],
+  anund:    [[793, 'Sigurd'], [829, 'Björn'], [845, 'Anund'], [852, 'Olof'], [882, 'Erik'], [920, 'Björn'], [970, 'Erik the Victorious'], [995, 'Olof'], [1022, 'Anund Jacob'], [1050, 'Emund'], [1060, 'Stenkil']],
+};
+const rulerName = (id, year) => { let n = RULER_NAMES[id][0][1]; for (const [y, nm] of RULER_NAMES[id]) if (y <= year) n = nm; return n; };
 function buildRulers(seed) {
   const r = rng(seed + ':rulers'), out = {};
-  for (const [id, name, title, anchor, coasts, tint] of RULERS)
-    out[id] = { id, name, title, anchor, coasts: [...coasts], tint, stance: 0, why: [], known: false, broken: false, nextGrow: 793 + r.int(6, 30) };
+  for (const [id, title, anchor, coasts, tint] of RULERS)
+    out[id] = { id, name: rulerName(id, 793), title, anchor, coasts: [...coasts], tint, stance: 0, why: [], known: false, broken: false, nextGrow: 793 + r.int(6, 30) };
   return out;
 }
 

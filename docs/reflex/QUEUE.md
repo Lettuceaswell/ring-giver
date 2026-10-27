@@ -29,7 +29,7 @@ Class per RUBRIC.md (A build now · B decided, build in order · C never build, 
 | Q12 | LLM playtest round 2: two agents from `spring-850` (one in-genre, one outside), the brief's categories, to measure 41A and see the middle game nobody saw | A (evidence) | Want / People | 3 | LOG 15 "next round" | ~300k tokens per agent; run on the evidence cadence |
 | Q13 | Mono micro-labels at 9.5 / 11 / 11.5 px: look at them on the phone shots; keep or lift to 12 | A | Thumb | 2 | lint | judge |
 | Q14 | Draft the winter deck's list to sixteen cards (TODO 16) as a page for Levi; no card introduces a new noun | C (prepare) | Juice / Saga | 2 | TODO 16 | a list, not code |
-| Q15 | **41B.7 decided A:** period names per anchor, the market renamed "hire men at the thing", monasteries with their own line and weak walls that recover slowly; copy and names, no rule | B | Saga | 4 | panel, history teacher; decided 2026-10-26 | names first, then the thing, then the monasteries |
+| ~~Q15~~ | ~~41B.7: period names, the thing, the monasteries~~ **built session 20** (with TODO 17's lines) | B | Saga | — | | the names table waits for 42.3's mortal kings to read past 793 |
 | Q22 | **41B.5 decided A:** a wash in the player's colour on held coasts, a broken king's wash fading, and pinch-zoom and pan (TODO 15) in the same session | B | Thumb / Juice | 4 | decided 2026-10-26 | one session; shoot every map state after |
 | Q23 | **41B.6 decided A:** a champion offered on the reckoning after a rout, a seaman card the player can refuse, once per reign-decade; the bench cap tuned with the harness | B | People / Want | 4 | decided 2026-10-26 | teach a persona to take him |
 

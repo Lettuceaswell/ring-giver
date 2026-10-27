@@ -67,7 +67,7 @@ Levi likes them and is open to more. Item 6 capped the deck at ten. **Recommend:
 
 ## 17. Unholdable shores
 Lindisfarne, Paris, Tours, Galicia, Lisbon cannot be held. It now says so before you sail. The question is whether that rule stays. **Recommend:** keep it, and let the world say why in one line each (a monastery, a walled city three turns upstream, too far). Famous shores that can never be owned are what keep raiding worth doing after the map is full.
-**Decided (Levi, 2026-10-26): A.** They stay unholdable; the world says why in one line each. Not built yet.
+**Decided (Levi, 2026-10-26): A.** They stay unholdable; the world says why in one line each. **Built session 20** with 41B.7: Tours, Galicia and Lisbon have their lines under the account of the coast (Lindisfarne and Paris had theirs), and fixed loot and walls so the line is true.
 
 ---
 
@@ -249,7 +249,7 @@ Each is the UI or the copy saying what the rules already do, or a plain bug. No 
 6. **Named men on demand.** Expansion is capped by named men who come on their own clock (five quiet years, the sea's offer). Let the player buy or earn one? **Recommend:** not a market line; a champion offered on the reckoning after a rout (a seaman card the player can refuse), once per reign-decade. Flag: tune the bench cap with the harness.
    **Decided (Levi, 2026-10-26): A.** A champion offered on the reckoning after a rout, a seaman card the player can refuse, once per reign-decade; earned, not bought; the bench cap tuned with the harness. Not built yet.
 7. **Period and tone.** The history teacher: Ælla in 796, men "bought by the head", Lindisfarne as a fortress. **Recommend:** names from the right half-century per anchor, "the market" renamed ("hire men at the thing"), monasteries with their own line and weak walls that recover slowly; the rule stays.
-   **Decided (Levi, 2026-10-26): A.** Names from the right half-century per anchor, the market renamed "hire men at the thing", monasteries with their own line and weak walls that recover slowly. Copy and names; every rule stays. Not built yet.
+   **Decided (Levi, 2026-10-26): A.** Names from the right half-century per anchor, the market renamed "hire men at the thing", monasteries with their own line and weak walls that recover slowly. Copy and names; every rule stays. **Built session 20:** `RULER_NAMES` in `world.js` gives every seat its kings by the year they took it (793 opens on Beorhtric of Wessex, Æthelred of Northumbria, Sigurd of the Svear; Ælla comes in 866), ready for 42.3's mortal kings; the market sheet is **The thing** (men are hired, the ledger says hired, the card's foot says To the thing; the Market building keeps its name); three monasteries (Lindisfarne, Iona, Tours) with their lines, walls that rise a tenth a sack and never past twice their own, and treasure the monks flee with (a sack leaves 30%, back at 3% a year), so a holy house is raided once a generation, as it was.
 
 ## 40. A king's coasts are no richer than free ones (open)
 The temptation Levi described in 39 only shows up by chance: in the saved springs a king's coasts average 104 / 97 / 91 base loot against 89 / 94 / 107 for free coasts (815 / 850 / 900), so the best net is as often a free coast as a king's. **Recommendation:** after he has played with the net on screen, if raiding a king never tempts, give a realm's coasts more loot than the free shore (×1.4, the seat ×2), so the richest returns sit under a king and the anger is the price. Not built: tune after play (TODO 11).

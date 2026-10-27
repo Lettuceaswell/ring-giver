@@ -14,7 +14,8 @@ const T = { startMen: 40, menPerF: 10, manPrice: 3, upkeep: 1, rumor: 20, startY
   reachBase: 4, reachRule: 2, reachRise: 0.003, reachMax: 0.05, // past reachBase + reachRule x the King's Rule holdings (10 at Rule 3), each holding stirs (unrest +15..40) at reachRise x the excess a summer, at most reachMax
   build: { market: 300, longhouse: 300, palisade: 200 }, marketPay: 0.5, longhouseMen: 5, palisadeCalm: 20,
   hall: { price: [400, 800, 1600], bench: 1, quiet: 1, seaman: 1, oath: 0.15 },
-  grow: [2, 3, 5, 8], growF: [1, 1, 2, 3], ageFall: [50, 60] }; // TODO 47: a stat rises by doing, slower each step (raids or held summers to the next step, by the stat as it stands; big wins for Following), and falls by what goes wrong: a lost fight (the man who led), a holding lost, a named man who walks from a hungry hall, and the arm at 50 and 60; swept at 16 seeds, TODO 47: 3/5/8/12 and 46/56 took the King's Combat from 4.9 to 3.7 and doubled the idle chest // 41B.2 (reflex run 3), raise the hall: three tiers in spring; each adds a bench, takes a year off the wait for a new man, +1 to the seaman's weight in the winter deck, and 15% off the next Oath's price; cumulative // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
+  grow: [2, 3, 5, 8], growF: [1, 1, 2, 3], ageFall: [50, 60],
+  holyMend: 1.03, holyWall: 2, holySack: 0.3 }; // 41B.7, a monastery: its treasure comes back at holyMend a year (a town's at 1.1), its wall rises a tenth a sack and never past holyWall x its own; a sack leaves holySack of its treasure (a town keeps 0.6): the monks flee with the rest, so it is raided once a generation, as Lindisfarne was // TODO 47: a stat rises by doing, slower each step (raids or held summers to the next step, by the stat as it stands; big wins for Following), and falls by what goes wrong: a lost fight (the man who led), a holding lost, a named man who walks from a hungry hall, and the arm at 50 and 60; swept at 16 seeds, TODO 47: 3/5/8/12 and 46/56 took the King's Combat from 4.9 to 3.7 and doubled the idle chest // 41B.2 (reflex run 3), raise the hall: three tiers in spring; each adds a bench, takes a year off the wait for a new man, +1 to the seaman's weight in the winter deck, and 15% off the next Oath's price; cumulative // priced by the builder persona, reflex run 2: at 60/60/40 the chest rose; at 300/300/200 it fell 1177 → 719 and the line still lives // 41B.2 (reflex run 2): a Market adds marketPay x the coast's rent; a Longhouse sends longhouseMen to the jarl each spring; a Palisade takes palisadeCalm off the unrest and halves every rise after
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -383,7 +384,7 @@ function chooseTarget(s, id) {
   let loot = 0;
   if (win) {
     loot = Math.round(sh.loot * clamp(0.5 + margin / 2, 0.3, 1) * (has(s,'seawolf') ? 1.25 : 1));
-    sh.loot = Math.round(sh.loot * 0.6); sh.def = Math.min(T.defCap, Math.round(sh.def * T.defWin)); // a coast arms against the raider who keeps coming (TODO 25)
+    sh.loot = Math.round(sh.loot * (sh.holy ? T.holySack : 0.6)); sh.def = sh.holy ? Math.min(sh.baseDef * T.holyWall, Math.round(sh.def * 1.1)) : Math.min(T.defCap, Math.round(sh.def * T.defWin)); // a coast arms against the raider who keeps coming (TODO 25); a monastery's wall never becomes a fortress (41B.7)
     for (const m of ship) { m.raids++; grow(m, 'combat', T.grow); if (margin > 1) grow(m, 'follow', T.growF); moveStance(s, m, margin > 1 ? 10 : 5, `shared the loot of ${sh.name}`); }
     if (margin > 1) s.deeds.bigWins++;
   } else { sh.def = Math.min(T.defCap, Math.round(sh.def * 1.1)); const led = [...ship].sort((a, b) => b.men - a.men)[0]; fall(led, 'combat'); for (const m of ship) moveStance(s, m, -5, `bled at ${sh.name} for nothing`); /* the man who led the most men in is the one a lost fight is laid on: a step of Combat (TODO 47; the first cut took it from every leader aboard and old jarls sank to one) */ log(s, `Driven back at ${sh.name}. ${nMen(losses)} lost.`); if (s.yr) s.yr.beaten = sh.name; }
@@ -526,7 +527,7 @@ function resolveLand(s) {
   }
   s.deeds.jarlYears += s.notables.filter(m => !m.isKing && m.place !== 'home').length;
   // shores recover slowly
-  for (const sh of Object.values(s.shores)) { if (sh.loot < sh.baseLoot) sh.loot = Math.min(sh.baseLoot, Math.round(sh.loot * 1.1) + 1); if (sh.def > sh.baseDef) sh.def = Math.max(sh.baseDef, Math.round(sh.def * T.defMend)); }
+  for (const sh of Object.values(s.shores)) { if (sh.loot < sh.baseLoot) sh.loot = Math.min(sh.baseLoot, Math.round(sh.loot * (sh.holy ? T.holyMend : 1.1)) + 1); /* a monastery's treasure comes back slowly: the monks fled (41B.7) */ if (sh.def > sh.baseDef) sh.def = Math.max(sh.baseDef, Math.round(sh.def * T.defMend)); }
   growRealms(s, lines, events);
   s.reign.bestHoldings = Math.max(s.reign.bestHoldings, s.holdings.length);
   // everyone home for winter; those who sailed board again in spring, and the destination stands (TODO 20)
@@ -819,7 +820,7 @@ function migrate(s) {
   s.yr = Object.assign(newYr(s.silver), s.yr || {});
   if (s.reign && !s.reign.oath) s.reign.oath = { knelt: 0, paidN: 0, paid: 0, walked: [] };
   // where a coast sits on the map is presentation, not state: re-project every save from the table (the real coast came in session 5)
-  for (const [id, , lon, lat, , , , side] of COASTS) { const sh = s.shores[id]; if (!sh) continue; const { x, y } = proj(lon, lat); sh.x = +x.toFixed(1); sh.y = +y.toFixed(1); sh.side = side || 'r'; }
+  for (const [id, name, lon, lat, , , famous, side] of COASTS) { const sh = s.shores[id]; if (!sh) continue; const { x, y } = proj(lon, lat); sh.x = +x.toFixed(1); sh.y = +y.toFixed(1); sh.side = side || 'r'; if (sh.holy === undefined) sh.holy = !!(famous && famous.holy); if (id === 'hebrides' && sh.name === 'Hebrides') sh.name = name; if (famous && famous.late && !sh.famous) { sh.famous = true; sh.baseLoot = famous.loot; sh.baseDef = famous.def; if (!sh.seen) { sh.loot = famous.loot; sh.def = famous.def; } } } // 41B.7: a monastery's slow walls and Iona's name reach old saves
   // a save caught between the old market card and this build: finish its winter the new way (a queued {t:'market'} is the market sheet now and stays)
   s.queue = s.queue.filter(sc => !(sc.t === 'summary' && (sc.title === 'The land' || sc.title === 'The hall eats')));
   if (s.phase === 'winter' && !s.queue.length && !s.flags.winterDone) s.queue.push({ t:'winter', land: [], hall: [] });

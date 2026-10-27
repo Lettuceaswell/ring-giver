@@ -1,0 +1,74 @@
+{
+ "at": "2026-10-27T03:14:47.724Z",
+ "head": "7bb1205",
+ "tag": "after-41B7",
+ "seeds": 16,
+ "gate": "fail",
+ "smoke": {
+  "ok": false,
+  "bad": [
+   "<anonymous_script>:1939",
+   "",
+   "",
+   "",
+   "SyntaxError: Unexpected end of input",
+   "    at Object.<anonymous> (/mnt/g/Projects/ring-giver/tools/smoke.js:19:6)",
+   "    at Module._compile (node:internal/modules/cjs/loader:1934:14)",
+   "    at Object..js (node:internal/modules/cjs/loader:2074:10)",
+   "    at Module.load (node:internal/modules/cjs/loader:1656:32)",
+   "    at Module._load (node:internal/modules/cjs/loader:1448:12)",
+   "    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)",
+   "    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)",
+   "    at node:internal/main/run_main_module:33:47",
+   "",
+   "Node.js v26.8.2"
+  ]
+ },
+ "personas": {},
+ "bands": [],
+ "lints": [
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 11.5px"
+  },
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 9.5px"
+  },
+  {
+   "kind": "type",
+   "where": "index.html",
+   "text": "font-size 11px"
+  }
+ ],
+ "notes": [
+  "persona harness failed: e (node:internal/modules/cjs/loader:1934:14)\n    at Object..js (node:internal/modules/cjs/loader:2074:10)\n    at Module.load (node:internal/modules/cjs/loader:1656:32)\n    at Module._load (node:internal/modules/cjs/loader:1448:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n\nNode.js v26.8.2\n"
+ ],
+ "fuzz": {
+  "ok": false,
+  "bad": [
+   "<anonymous_script>:1939",
+   "",
+   "",
+   "",
+   "SyntaxError: Unexpected end of input",
+   "    at Object.<anonymous> (/mnt/g/Projects/ring-giver/tools/smoke.js:19:6)",
+   "    at Module._compile (node:internal/modules/cjs/loader:1934:14)",
+   "    at Object..js (node:internal/modules/cjs/loader:2074:10)",
+   "    at Module.load (node:internal/modules/cjs/loader:1656:32)",
+   "    at Module._load (node:internal/modules/cjs/loader:1448:12)",
+   "    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)",
+   "    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)",
+   "    at node:internal/main/run_main_module:33:47",
+   "",
+   "Node.js v26.8.2"
+  ]
+ },
+ "bytes": 287869,
+ "todo": {
+  "decided": 30,
+  "built": 26
+ }
+}
